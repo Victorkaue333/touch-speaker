@@ -15,9 +15,9 @@
 
 > 🗣️ O **Touch Speaker** é um app de bandeja para Windows que transforma fala em texto digitado no app em foco. Você **segura o Ctrl direito**, fala e solta — em menos de um segundo o texto aparece no cursor do VS Code, do navegador, do WhatsApp ou de qualquer outro app, como se tivesse sido digitado. A transcrição em português é feita pelo Whisper (via Groq, plano gratuito) e o que você tinha copiado no clipboard volta ao lugar depois.
 
-Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) · Requisitos: [`docs/PRD.md`](docs/PRD.md) · Contrato de engenharia: [`docs/spec/spec-driven-development.md`](docs/spec/spec-driven-development.md)
+Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) · Requisitos: [`docs/PRD.md`](docs/PRD.md) · Contrato de engenharia: [`docs/spec/spec-driven-development.md`](docs/spec/spec-driven-development.md) · Decisões: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**📅 Estágio:** **Fase 1 (MVP) implementada e funcionando de ponta a ponta** no Windows do mantenedor desde 17/out/2026 (commit inicial `bb7364a`). Medido nos primeiros ditados reais: **0,66–0,88 s** do fim da fala até o texto inserido e microfone aberto em 75–270 ms. Falta concluir o roteiro de verificação manual V1–V13 da [spec da feature](docs/spec/features/ditado-por-voz.md) (segurar, `Esc`, clipboard, outros apps, janela de administrador). Não há instalador: roda em modo de desenvolvimento, com a chave Groq do próprio usuário.
+**📅 Estágio:** **Fase 1 (MVP) implementada e funcionando de ponta a ponta** no Windows do mantenedor desde 17/out/2026 (commit `bae6eba`). Medido nos primeiros ditados reais: **0,66–0,88 s** do fim da fala até o texto inserido e microfone aberto em 75–270 ms. Falta concluir o roteiro de verificação manual V1–V13 da [spec da feature](docs/spec/features/ditado-por-voz.md) (segurar, `Esc`, clipboard, outros apps, janela de administrador). Não há instalador: roda em modo de desenvolvimento, com a chave Groq do próprio usuário.
 
 ---
 
@@ -27,7 +27,7 @@ Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) �
 | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | **Atalho global** (`hotkey.ts`, `keyboard.ts`) | Hook de teclado (`uiohook-napi`); segurar ≥ 500 ms = falar segurando, toque curto = mãos livres, `Esc` cancela | ✅ Funciona — lógica coberta por 10 testes                               |
 | **Pílula** (`pill-window.ts`, `renderer/`)    | Janela flutuante que não rouba foco; grava o microfone (WebM/Opus) e mostra ouvindo / transcrevendo / erro          | ✅ Funciona                                                                |
-| **Transcrição** (`transcribe/`)                | `GroqTranscriber` com filtros contra alucinações do Whisper em silêncio                                         | ✅ Funciona — 14 testes                                                   |
+| **Transcrição** (`transcribe/`)                | `GroqTranscriber` com filtros contra alucinações do Whisper em silêncio                                         | ✅ Funciona — 17 testes (filtros 8 + `GroqTranscriber` 9)                |
 | **Inserção** (`insert/`)                       | Clipboard + Ctrl+V via `SendInput` (`koffi`), restaura o clipboard, fallback para janelas de administrador       | ✅ Colagem comprovada; fallback de admin ainda não verificado manualmente |
 | **Sessão** (`session.ts`)                       | Máquina de estados, dono único do estado do ditado                                                                 | ✅ Funciona                                                                |
 | **Bandeja, config e log**                          | Ícone, `config.json`, log só com metadados                                                                       | ✅ Funciona                                                                |
@@ -38,7 +38,7 @@ Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) �
 **Fluxo do produto:** segura Ctrl direito → a pílula aparece "Ouvindo…" e o microfone abre → você fala → solta → "Transcrevendo…" → o áudio vai à Groq → o texto passa pelos filtros anti-lixo → é colado no cursor do app em foco → o clipboard volta ao que era → a pílula some. Em mãos livres, um toque começa e outro termina.
 
 **Regras inegociáveis:**
-🔒 **Privacidade por padrão** — microfone aberto só durante o ditado, áudio nunca vai para disco, texto ditado, clipboard e teclas nunca vão para log (C1). 🎯 **Nunca roubar o foco** — o texto vai para o app em que você está (C2). 🗑️ **Nunca digitar lixo** — toque acidental ou silêncio não inserem nada (C3). 🧼 **Sala limpa** — nada copiado de outro produto (C7). Princípios completos no [SDD §1](docs/spec/spec-driven-development.md#1-constituição).
+🔒 **Privacidade por padrão** — microfone aberto só durante o ditado, áudio nunca vai para disco, texto ditado, clipboard e teclas nunca vão para log (C1). 🎯 **Nunca roubar o foco** — o texto vai para o app em que você está (C2). 🗑️ **Nunca digitar lixo** — toque acidental ou silêncio não inserem nada (C3). 🧼 **Sala limpa** — nada copiado de outro produto (C7). Princípios completos no [SDD §1.5](docs/spec/spec-driven-development.md#15-princípios-do-produto--constituição-c1c8).
 
 ---
 
@@ -51,15 +51,104 @@ Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) �
 | 📦 **npm**           | o que vem com o Node (conferido com 11.21) | Dependências                         | `npm --version`                                       |
 | 🔧 **Git**           | atual                                      | Versionamento                         | `git --version`                                       |
 | 🎤 **Microfone**     | qualquer                                   | Captura da voz                        | Configurações → Sistema → Som                       |
-| 🔑 **Chave da Groq** | gratuita                                   | Transcrição                         | [console.groq.com](https://console.groq.com) → API Keys |
+| 🔑 **Chave da Groq** | gratuita                                   | Transcrição                         | [Passo a passo logo abaixo](#-como-obter-sua-chave-da-groq-gratuita) |
 
-> O plano gratuito da Groq cobre com folga o uso de uma pessoa (números públicos de set/2026: 2.000 requisições e 8 h de áudio por dia; o console da Groq é a fonte oficial). Não há banco, fila nem servidor para subir na Fase 1.
+> Não há banco, fila nem servidor para subir na Fase 1.
+
+---
+
+## 🔑 Como obter sua chave da Groq (gratuita)
+
+<!-- Prints em docs/assets/groq/ (01 a 07), um por passo. Nos prints 04 e 05 a chave tem de estar borrada (ou use uma chave já revogada). -->
+
+O Touch Speaker não tem servidor próprio: o áudio vai do seu computador direto para a Groq, autenticado com a **sua** chave. A Groq tem um **plano gratuito** que basta para o ditado de uma pessoa (veja os [limites](#limites-do-plano-gratuito) abaixo).
+
+> ⚠️ **Groq não é Grok.** A **Groq** ([groq.com](https://groq.com)) é a empresa que roda o Whisper usado aqui. O **Grok** é o assistente de IA da xAI: outra empresa, outro produto. A chave do Grok não serve para o Touch Speaker.
+
+### Passo 1 — Crie sua conta ou entre
+
+Abra [console.groq.com](https://console.groq.com) e crie uma conta. Se já tiver uma, só entre.
+
+![Página inicial do console da Groq, com as opções para criar conta e para entrar](docs/assets/groq/01-criar-conta.png)
+
+### Passo 2 — Abra a página API Keys
+
+No menu do console, abra **API Keys**. Se preferir, vá direto em [console.groq.com/keys](https://console.groq.com/keys).
+
+![Console da Groq com a página API Keys aberta e o item API Keys destacado no menu](docs/assets/groq/02-api-keys.png)
+
+### Passo 3 — Crie uma chave nova
+
+Clique em **Create API Key** e dê à chave um nome que lembre para que ela serve, por exemplo `touch-speaker`. Confirme.
+
+![Janela de criação de chave do console da Groq, com o nome touch-speaker preenchido](docs/assets/groq/03-nova-chave.png)
+
+### Passo 4 — Copie a chave na hora
+
+A chave aparece na tela (ela começa com `gsk_`). **Copie agora**: o console pode não mostrá-la de novo. Se você perder a chave, não tem problema: apague essa e crie outra (passo 3).
+
+![Chave recém-criada no console da Groq, com o valor borrado e o botão de copiar em destaque](docs/assets/groq/04-copiar-chave.png)
+
+### Passo 5 — Coloque a chave no Touch Speaker
+
+Se ainda não baixou o projeto, faça antes os passos 1️⃣ (clone) e 2️⃣ (dependências) do **Setup local detalhado**, mais abaixo. Depois, dentro da pasta `frontend/`:
+
+```powershell
+copy .env.example .env
+notepad .env
+```
+
+No Bloco de Notas, cole a chave logo depois do `=` na linha `GROQ_API_KEY=`, sem espaços e sem aspas, e salve. A linha fica `GROQ_API_KEY=` seguida da sua chave.
+
+![Arquivo frontend/.env aberto no Bloco de Notas, com a linha GROQ_API_KEY preenchida e a chave borrada](docs/assets/groq/05-env.png)
+
+### Passo 6 — Abra o app e confira
+
+```powershell
+npm run dev
+```
+
+Passe o mouse sobre o ícone do Touch Speaker na bandeja (talvez escondido na setinha `^`) ou clique nele com o botão direito. Deve aparecer **"Touch Speaker — pronto"**. Se aparecer **"Touch Speaker — falta a chave da Groq"**, o app não achou a chave: confira se o arquivo é `frontend/.env` e se a linha `GROQ_API_KEY=` está preenchida.
+
+O app só lê o `.env` quando abre. Se trocar a chave com o app aberto, clique em **Sair** no menu da bandeja e rode `npm run dev` de novo.
+
+![Menu do ícone do Touch Speaker na bandeja do Windows mostrando "Touch Speaker — pronto"](docs/assets/groq/06-app-na-bandeja.png)
+
+### Cuidados com a chave
+
+- A chave é pessoal, como uma senha: quem tiver a sua usa a sua cota.
+- **Nunca** faça commit do `.env`. Ele já está no `.gitignore` (`.env` e `.env.*`; só o `.env.example`, sem chave, é versionado).
+- Não cole a chave em issue, chat, e-mail ou print. Num print, borre a chave antes.
+- **Vazou?** Na mesma página [API Keys](https://console.groq.com/keys), apague (revogue) a chave, crie outra e troque no `.env`.
+- O app usa a chave só no processo principal e nunca a escreve no log. Detalhes em [`docs/Security-Guide.md` §10](docs/Security-Guide.md#10-segredos-e-configuração).
+
+### Limites do plano gratuito
+
+Para o modelo `whisper-large-v3-turbo`, em out/2026:
+
+| Limite | Plano gratuito | No Touch Speaker |
+| --- | --- | --- |
+| Requisições por minuto | 20 | Cada ditado é uma requisição |
+| Requisições por dia | 2.000 | — |
+| Áudio por hora | 7.200 s (2 h) | Soma da duração dos ditados |
+| Áudio por dia | 28.800 s (8 h) | Soma da duração dos ditados |
+| Tamanho do arquivo | até 25 MB | O app grava no máximo 5 min por ditado, em Opus, bem abaixo disso |
+
+Os limites valem por **organização** (a sua conta da Groq), não por chave: criar mais chaves não aumenta a cota. Se passar do limite, a pílula mostra "Limite gratuito da Groq atingido — tente em instantes" e aquele ditado não é inserido; é só esperar um pouco.
+
+Esses números podem mudar. A fonte oficial é a página de limites da sua conta, [console.groq.com/settings/limits](https://console.groq.com/settings/limits) (documentação: [console.groq.com/docs/rate-limits](https://console.groq.com/docs/rate-limits)).
+
+![Página de limites do console da Groq, com a linha do modelo whisper-large-v3-turbo](docs/assets/groq/07-limites.png)
+
+### E se um dia precisar de mais?
+
+O uso pago do `whisper-large-v3-turbo` custa **US$ 0,04 por hora de áudio**, com cobrança mínima de 10 s por requisição. Preços atualizados em [groq.com/pricing](https://groq.com/pricing).
 
 ---
 
 ## 🏗️ Arquitetura
 
-Decisões estruturais e ADRs em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). O resumo visual:
+Componentes, fluxo e fronteiras em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); as decisões (ADR-01…07) em [`docs/DECISIONS.md`](docs/DECISIONS.md). O resumo visual:
 
 ```text
 Teclado ──► uiohook-napi (hook global, thread própria)
@@ -117,7 +206,7 @@ flowchart TD
     MAIN --> FILES[("%APPDATA%\Touch Speaker<br/>config.json · logs/")]
 ```
 
-A única integração externa é a Groq; contrato em [`docs/API.md §2`](docs/API.md#2-api-externa-groq-transcription).
+A única integração externa é a Groq: visão da integração (fluxo, nova tentativa, limites, riscos) em [`docs/INTEGRATION.md`](docs/INTEGRATION.md) e contrato campo a campo em [`docs/API.md` — Transcrição (Groq)](docs/API.md#transcrição-groq).
 
 ---
 
@@ -153,8 +242,9 @@ touch-speaker/
 │       └── test/                   # hotkey · filters · groq · config
 ├── backend/                        # API própria — Fase 4
 ├── database/                       # migrations SQLite — Fase 2
-├── docs/                           # PRD, arquitetura, API, dados, design, segurança, specs, referência
-└── README.md · PROJECT_CONTEXT.md · CLAUDE.md · SECURITY.md · LICENSE.md
+├── docs/                           # PRD, arquitetura, decisões, API, integração, dados, ambiente, design,
+│                                   # segurança, estilo de código, changelog, specs, templates, referência
+└── README.md · PROJECT_CONTEXT.md · CLAUDE.md · AGENTS.md · SECURITY.md · LICENSE.md
 ```
 
 ---
@@ -180,12 +270,14 @@ O npm avisa que os scripts de instalação de `koffi` e `uiohook-napi` não roda
 
 ### 3️⃣ Chave da Groq
 
+Ainda não tem a chave? Siga [Como obter sua chave da Groq](#-como-obter-sua-chave-da-groq-gratuita) (é gratuita). Com ela copiada:
+
 ```powershell
 copy .env.example .env
-notepad .env        # cole a chave: GROQ_API_KEY=gsk_...
+notepad .env        # cole a chave logo depois de GROQ_API_KEY= e salve
 ```
 
-O `.env` está no `.gitignore`. **Nunca** faça commit dele.
+O `.env` está no `.gitignore`. **Nunca** faça commit dele. Variáveis e o arquivo `.env` em detalhe: [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md#variáveis).
 
 ### 4️⃣ Abrir o app
 
@@ -252,12 +344,14 @@ Todos de dentro de `frontend/`.
 | Sintoma                                    | Causa e solução                                                                                                   |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | O app abre e fecha na hora, sem erro       | Variável `ELECTRON_RUN_AS_NODE` herdada do VS Code. Abra sempre por `npm run dev`/`npm start`, que a removem |
-| Pílula "Falta a chave da Groq"            | `frontend/.env` ausente ou vazio — passo 3️⃣                                                                   |
+| Pílula "Falta a chave da Groq — veja o README" | `frontend/.env` ausente ou vazio — [Como obter sua chave da Groq](#-como-obter-sua-chave-da-groq-gratuita) e passo 3️⃣ |
+| Pílula "Chave da Groq inválida"           | Chave incompleta, errada ou revogada — crie outra em [API Keys](https://console.groq.com/keys), troque no `.env` e reabra o app |
+| Pílula "Limite gratuito da Groq atingido — tente em instantes" | Passou de um [limite do plano gratuito](#limites-do-plano-gratuito) — espere um pouco e dite de novo |
 | Pílula "Texto copiado — cole com Ctrl+V" | O app em foco roda como administrador e o Windows bloqueia colagem simulada; o texto ficou no clipboard             |
 | Dois apps reagem ao atalho                 | Feche o Typeless ou outro app de ditado com atalho parecido                                                         |
 | Nada acontece ao segurar a tecla           | Veja `%APPDATA%\Touch Speaker\logs\main.log` — `keyboard_hook` deve estar `true` no `app_ready`            |
 
-O log guarda só tempos, tamanhos e códigos de erro — nunca o que você ditou.
+O log guarda só tempos, tamanhos e códigos de erro — nunca o que você ditou. Mais casos e o formato do log em [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md#problemas-comuns).
 
 ---
 
@@ -267,11 +361,11 @@ O Touch Speaker não expõe API própria na Fase 1. Contratos completos em [`doc
 
 | Contrato                                                                         | Entre           | Resumo                                                                                                                                                                  |
 | -------------------------------------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST https://api.groq.com/openai/v1/audio/transcriptions`                     | main → Groq    | Multipart com `file`, `model`, `language=pt`, `temperature=0`, `response_format=verbose_json`; 401 → chave inválida, 429 → limite, 5xx → 1 nova tentativa |
+| `POST https://api.groq.com/openai/v1/audio/transcriptions`                     | main → Groq    | Multipart com `file`, `model`, `language=pt`, `temperature=0`, `response_format=verbose_json`; timeout 20 s; 401/403 → chave inválida, 413 → gravação longa demais, 429 → limite (sem nova tentativa), 5xx → 1 nova tentativa após 500 ms |
 | `recorder:start` · `recorder:stop` · `recorder:cancel` · `pill:state` | main → pílula | Comandos de gravação e estado visual, sempre com `sessionId`                                                                                                        |
 | `recorder:started` · `recorder:result` · `recorder:error`                | pílula → main | Confirmação, áudio (≤ 25 MB) e erros de microfone — validados no main                                                                                              |
 
-Códigos de erro e mensagens da pílula: [`docs/API.md §4`](docs/API.md#4-códigos-de-erro).
+Códigos de erro e mensagens da pílula: [`docs/API.md` — Códigos de erro](docs/API.md#códigos-de-erro). Visão da integração com a Groq: [`docs/INTEGRATION.md`](docs/INTEGRATION.md).
 
 ---
 
@@ -281,17 +375,26 @@ Códigos de erro e mensagens da pílula: [`docs/API.md §4`](docs/API.md#4-códi
 | ------------------------------------------------------------------------------------ | -------------------------------------------------------- |
 | [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)                                          | Problema, público, fases e métricas                    |
 | [`CLAUDE.md`](CLAUDE.md)                                                            | Regras para a IA atuar no repositório                   |
+| [`AGENTS.md`](AGENTS.md)                                                            | Ponto de entrada para agentes de IA: projeto, docs canônicos e fonte normativa |
 | [`docs/PRD.md`](docs/PRD.md)                                                        | Requisitos (FR-DICT-01…13, NFR-01…07) e roadmap        |
-| [`docs/spec/spec-driven-development.md`](docs/spec/spec-driven-development.md)      | SDD — princípios, fluxo de trabalho e template de spec |
-| [`docs/spec/features/ditado-por-voz.md`](docs/spec/features/ditado-por-voz.md)      | Spec da Fase 1, tarefas e roteiro de verificação       |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                                      | Componentes, fluxo e ADR-01…07                          |
+| [`docs/spec/spec-driven-development.md`](docs/spec/spec-driven-development.md)      | SDD — contrato de engenharia: princípios (C1–C8), requisitos, regras, riscos, pendências e roadmap |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md)                                            | ADR-01…07: contexto, decisão, consequências e implementação |
+| [`docs/spec/features/ditado-por-voz.md`](docs/spec/features/ditado-por-voz.md)      | Spec da Fase 1, tarefas e roteiro de verificação (formato anterior ao template) |
+| [`docs/templates/`](docs/templates/README.md)                                       | Como nasce uma feature (Spec → Gate → Execução) e os templates de spec, milestone e migração |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                                      | Componentes, fluxo, fronteiras e evolução por fase      |
 | [`docs/API.md`](docs/API.md)                                                        | Contratos com a Groq, IPC e códigos de erro             |
+| [`docs/INTEGRATION.md`](docs/INTEGRATION.md)                                        | Integração com a Groq: fluxo, nova tentativa, garantias, limites e riscos |
 | [`docs/DATABASE.md`](docs/DATABASE.md)                                              | `config.json` e o SQLite planejado para a Fase 2       |
+| [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md)                                        | Node.js e Electron, variáveis (`GROQ_API_KEY`), `.env`, log e problemas comuns |
 | [`docs/DESIGN.md`](docs/DESIGN.md)                                                  | Pílula, cores, sons e bandeja                           |
+| [`docs/Code-Style.md`](docs/Code-Style.md)                                          | Estilo de código TypeScript, testes e commits            |
 | [`SECURITY.md`](SECURITY.md) · [`docs/Security-Guide.md`](docs/Security-Guide.md) | Política e guia de segurança                           |
-| [`docs/referencia/estudo-typeless.md`](docs/referencia/estudo-typeless.md)          | Estudo do produto de referência e o que adotamos        |
+| [`docs/CHANGELOG.md`](docs/CHANGELOG.md)                                            | O que mudou e por quê                                    |
+| [`docs/referencia/estudo-typeless.md`](docs/referencia/estudo-typeless.md)          | Estudo do produto de referência e o que adotamos (não normativo) |
 
-**Ordem de leitura sugerida:** `CLAUDE.md` → `PROJECT_CONTEXT.md` → `docs/PRD.md` → SDD → spec da feature.
+**Ordem de leitura sugerida:** `CLAUDE.md` (ou `AGENTS.md`) → `PROJECT_CONTEXT.md` → `docs/PRD.md` → SDD → `docs/DECISIONS.md` → spec da feature.
+
+**Em conflito entre documentos**, vale a ordem da [política de prevalência do SDD](docs/spec/spec-driven-development.md#01-política-de-prevalência-documental): `docs/DECISIONS.md` → SDD → `CLAUDE.md`/`AGENTS.md` → docs específicos → spec da feature → READMEs. O código em `frontend/` é a fonte de fato sobre o que existe.
 
 ---
 
@@ -304,7 +407,7 @@ Códigos de erro e mensagens da pílula: [`docs/API.md §4`](docs/API.md#4-códi
 | **3** | Contexto do app em foco (UI Automation), Ask Anything, tradução, aprendizado com as correções      | ⏳                                |
 | **4** | Backend próprio, contas, streaming de áudio, instalador assinado e atualização automática         | ⏳                                |
 
-Detalhes no [PRD](docs/PRD.md#roadmap). Feature nova começa sempre por uma spec ([SDD §2](docs/spec/spec-driven-development.md#2-fluxo-de-trabalho)).
+Detalhes no [PRD](docs/PRD.md#roadmap). Feature nova começa sempre por uma spec ([os três estágios](docs/templates/README.md#os-três-estágios)).
 
 ---
 
