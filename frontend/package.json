@@ -1,0 +1,31 @@
+{
+  "name": "touch-speaker",
+  "productName": "Touch Speaker",
+  "version": "0.1.0",
+  "description": "Ditado por voz para Windows: segure uma tecla, fale e o texto aparece no cursor.",
+  "private": true,
+  "type": "commonjs",
+  "main": "dist/main/index.js",
+  "author": "Victor Alves",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "tsc -p tsconfig.main.json && tsc -p tsconfig.renderer.json && node scripts/copy-static.mjs",
+    "dev": "npm run build && node scripts/start.mjs",
+    "start": "node scripts/start.mjs",
+    "typecheck": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
+    "test": "npm run build && node --test \"dist/test/**/*.test.js\""
+  },
+  "dependencies": {
+    "koffi": "3.3.3",
+    "uiohook-napi": "1.5.5"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "electron": "44.9.0",
+    "typescript": "7.0.2"
+  },
+  "allowScripts": {
+    "koffi": false,
+    "uiohook-napi": false
+  }
+}

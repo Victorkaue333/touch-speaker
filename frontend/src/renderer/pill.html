@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'; img-src 'self' data:; media-src 'self' blob: mediastream:"
+    />
+    <title>Touch Speaker</title>
+    <link rel="stylesheet" href="pill.css" />
+    <script src="pill.js" defer></script>
+  </head>
+  <body>
+    <div id="pill" class="pill" data-state="hidden" role="status" aria-live="polite">
+      <span class="icon" aria-hidden="true">
+        <span class="dot"></span>
+        <span class="bars">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </span>
+        <span class="working"><span></span><span></span><span></span></span>
+        <svg class="glyph glyph-error" viewBox="0 0 16 16"><path d="M8 1.5 15 14H1z" /><rect x="7.25" y="5.5" width="1.5" height="4.5" rx=".75" /><circle cx="8" cy="12" r=".9" /></svg>
+        <svg class="glyph glyph-notice" viewBox="0 0 16 16"><rect x="3" y="2.5" width="10" height="12" rx="2" /><rect x="5.5" y="1" width="5" height="3" rx="1" /></svg>
+      </span>
+      <span class="label" id="label"></span>
+      <span class="hint" id="hint"></span>
+      <span class="timer" id="timer"></span>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+# Material bruto do estudo do Typeless (binários de terceiros, código decompilado, dados pessoais).
+# Hoje ele fica FORA da pasta do repositório; estas linhas são uma segunda trava caso volte por engano.
+targets/
+analysis/
+rea/
+
+# Dependências, build e segredos
+node_modules/
+dist/
+out/
+.env
+.env.*
+!.env.example
+*.log
+
+# Sistema / editor
+Thumbs.db
+desktop.ini
+.DS_Store
