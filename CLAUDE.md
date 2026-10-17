@@ -70,8 +70,29 @@ docs/        PRD, ARCHITECTURE, API, DATABASE, DESIGN, Security-Guide, spec/, re
 - Textos da interface centralizados em `frontend/src/main/strings.ts`.
 - TypeScript estrito; `any` só com comentário justificando.
 - Commits: Conventional Commits citando o requisito — `feat(dict): FR-DICT-01 segurar para falar`.
+- Commits **sem** trailer `Co-Authored-By` (nem do Claude, nem de ninguém): o autor é só o Victor.
 - Um único dono de estado da sessão: `SessionController`.
 - Provedores (transcrição, limpeza) sempre atrás de interface.
+
+## Orquestração de agentes (IA)
+
+Nunca execute o trabalho por conta própria.
+Sempre delegue a tarefa a um subagente.
+Não use sempre o Fable.
+Use o Opus 5.5 para tarefas mais simples.
+
+### Distribuição de modelos
+
+- **Fable 5.1:** arquitetura, bugs complexos e revisão de código.
+- **Opus 5.5:** edições, testes, documentação e refatoração.
+- **Haiku 4.5:** pesquisas e resumos.
+- Especifique o modelo em cada chamada de agente.
+
+### Delegação
+
+- Um subagente por tarefa. Planeje antes de executar.
+- Execute subagentes independentes em paralelo.
+- Leia o relatório, nunca os arquivos.
 
 ## Feature nova — comece SEMPRE por aqui
 
