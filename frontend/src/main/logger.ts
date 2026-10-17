@@ -1,5 +1,5 @@
 // Local log file with rotation. Only metadata goes in: never dictated text, audio, clipboard content,
-// keys or the API key (docs/Security-Guide.md §10). Field values are restricted to primitives on purpose.
+// keys or the API key (docs/Security-Guide.md §12). Field values are restricted to primitives on purpose.
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 

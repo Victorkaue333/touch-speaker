@@ -11,8 +11,8 @@
 - **Não contém** código do Typeless (nem decompilado), constantes, strings, endereços da API deles,
   chaves, nem detalhes de autenticação, assinatura de requisições ou controle de plano.
 - Nada aqui é para ser copiado. O código do Touch Speaker é escrito do zero a partir da documentação
-  pública da Microsoft, do Electron, do Chromium e da Groq ([ADR-07](../ARCHITECTURE.md#adr-07--sala-limpa-em-relação-ao-typeless),
-  [Security Guide §11](../Security-Guide.md#11-sala-limpa-engenharia-reversa)).
+  pública da Microsoft, do Electron, do Chromium e da Groq ([ADR-07](../DECISIONS.md#adr-07--sala-limpa-em-relação-ao-typeless),
+  [Security Guide §11](../Security-Guide.md#153-sala-limpa-engenharia-reversa)).
 - O material bruto do estudo fica **fora do repositório**.
 
 Legenda: **[observado]** visto no artefato instalado · **[inferido]** conclusão nossa a partir do observado.
@@ -118,7 +118,7 @@ Legenda: **[observado]** visto no artefato instalado · **[inferido]** conclusã
 | Gesto segurar / tocar | Adotado, simplificado: um limite de 500 ms separa segurar de tocar, sem toque duplo | 1 ✅ |
 | Hook de teclado só informa teclas; decisão em JS | Adotado (`uiohook-napi` + `HotkeyController` testável) | 1 ✅ |
 | Hook isolado do processo principal | Atendido de outra forma: o `uiohook` já roda numa thread própria | 1 ✅ |
-| Inserção por clipboard + Ctrl+V atômico, com backup/restauração | Adotado, escrito do zero ([ADR-03](../ARCHITECTURE.md#adr-03--inserção-por-clipboard--ctrlv-via-sendinput)) | 1 ✅ |
+| Inserção por clipboard + Ctrl+V atômico, com backup/restauração | Adotado, escrito do zero ([ADR-03](../DECISIONS.md#adr-03--inserção-por-clipboard--ctrlv-via-sendinput)) | 1 ✅ |
 | Colagem bloqueada em janela de administrador | Detecção de elevação + aviso "Texto copiado" | 1 ✅ |
 | Filtrar silêncio e lixo da transcrição | Adotado com regras próprias para alucinações do Whisper em pt-BR | 1 ✅ |
 | Opus 16 kHz mono, ~32 kbps | Adotado (WebM/Opus no navegador do Electron) | 1 ✅ |

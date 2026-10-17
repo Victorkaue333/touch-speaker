@@ -1,4 +1,4 @@
-// Groq Whisper adapter (docs/API.md §2). Whole recording in one multipart POST (ADR-04).
+// Groq Whisper adapter (docs/API.md, "Transcrição (Groq)"). Whole recording in one multipart POST (ADR-04).
 import type { ErrorCode } from '../errors';
 import { isNoSpeech, type VerboseTranscription } from './filters';
 import type { Transcriber, TranscriptionResult } from './transcriber';

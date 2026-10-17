@@ -30,7 +30,7 @@ app.setAppUserModelId('com.victoralves.touchspeaker');
 // A 40 px pill does not need the GPU; software compositing saves memory (NFR-03).
 app.disableHardwareAcceleration();
 
-// Development key lives in frontend/.env (docs/Security-Guide.md §5).
+// Development key lives in frontend/.env (docs/Security-Guide.md §10).
 try {
   process.loadEnvFile(path.join(app.getAppPath(), '.env'));
 } catch {
@@ -88,7 +88,7 @@ async function main(): Promise<void> {
   const config = loadConfig(userData, (field) => log.warn('config_invalid_field', { field }));
   const distDir = path.join(app.getAppPath(), 'dist');
 
-  // Hardening for every web contents (docs/Security-Guide.md §8).
+  // Hardening for every web contents (docs/Security-Guide.md §9).
   app.on('web-contents-created', (_event, contents) => {
     contents.setWindowOpenHandler(() => ({ action: 'deny' }));
     contents.on('will-navigate', (event) => event.preventDefault());
@@ -103,7 +103,7 @@ async function main(): Promise<void> {
   });
   pill.webContents.on('render-process-gone', (_event, details) => log.error('pill_renderer_gone', { reason: details.reason }));
 
-  // Microphone only, only for the pill (docs/Security-Guide.md §3).
+  // Microphone only, only for the pill (docs/Security-Guide.md §5).
   const ses = electronSession.defaultSession;
   ses.setPermissionRequestHandler((contents, permission, callback, details) => {
     const mediaTypes = 'mediaTypes' in details ? (details.mediaTypes ?? []) : [];

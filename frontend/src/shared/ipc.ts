@@ -1,4 +1,4 @@
-// IPC contract between the main process and the pill window (docs/API.md §3).
+// IPC contract between the main process and the pill window (docs/API.md, "Contratos").
 // The sandboxed preload cannot require local modules, so src/preload/pill.ts keeps its own copy of
 // the channel names. Keep both in sync.
 

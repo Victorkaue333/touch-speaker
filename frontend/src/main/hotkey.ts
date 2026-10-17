@@ -1,6 +1,6 @@
 // Turns raw key events into dictation commands (spec ditado-por-voz §4.1).
 // Only three kinds of key are distinguished: the dictation key, Escape, and "something else".
-// Which other key was pressed is never known here (docs/Security-Guide.md §4).
+// Which other key was pressed is never known here (docs/Security-Guide.md §7).
 
 export type KeyKind = 'hotkey' | 'escape' | 'other';
 

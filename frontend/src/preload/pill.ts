@@ -1,4 +1,4 @@
-// Sandboxed preload for the pill window. Exposes only the functions in docs/API.md §3 — never a
+// Sandboxed preload for the pill window. Exposes only the functions in docs/API.md, "Contratos" — never a
 // generic ipcRenderer. Channel names are duplicated from src/shared/ipc.ts because a sandboxed
 // preload cannot require local modules; keep both in sync.
 import { contextBridge, ipcRenderer } from 'electron';

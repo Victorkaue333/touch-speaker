@@ -1,5 +1,5 @@
 // Bridges the global keyboard hook (uiohook-napi) to the HotkeyController. Each event is reduced to
-// hotkey / escape / other right here; key codes go no further (docs/Security-Guide.md §4).
+// hotkey / escape / other right here; key codes go no further (docs/Security-Guide.md §7).
 import { uIOhook } from 'uiohook-napi';
 import type { HotkeyController, KeyKind } from './hotkey';
 import { ESCAPE_KEYCODE } from './keys';
