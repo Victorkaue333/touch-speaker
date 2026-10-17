@@ -3,6 +3,8 @@
 > **Status:** aprovada (17/out/2026) · em implementação · **Fase:** 1 · **Data:** 17/out/2026
 > **Requisitos:** FR-DICT-01 … FR-DICT-13, NFR-01 … NFR-07
 
+> Spec anterior ao template atual (seções §0–§15 do SDD 1.0). Specs novas usam docs/templates/TEMPLATE-spec-feature.md.
+
 ## 0. Constituição (gate)
 
 | Princípio | Como esta spec respeita |
@@ -65,7 +67,7 @@ Estado do `HotkeyController`: `down: boolean`, `downAt: number`, `otherKeyWhileD
 | qualquer evento | `inserting == true` | Ignora (Ctrl+V sintético) |
 
 Sobre "outra tecla": o controller registra **só o fato** de que outra tecla foi pressionada, nunca qual
-([Security Guide §4](../../Security-Guide.md#4-teclado-global)).
+([Security Guide §7](../../Security-Guide.md#7-entrada-teclado-global-e-ipc)).
 
 ### 4.2 Gravação (FR-DICT-07, 11)
 
@@ -79,7 +81,7 @@ Sobre "outra tecla": o controller registra **só o fato** de que outra tecla foi
 
 ### 4.3 Transcrição (FR-DICT-04)
 
-Requisição conforme [API.md §2](../../API.md#2-api-externa-groq-transcription). Timeout de 20 s.
+Requisição conforme [API.md, "Transcrição (Groq)"](../../API.md#transcrição-groq). Timeout de 20 s.
 Uma nova tentativa só em 5xx, após 500 ms. 429 não tenta de novo.
 
 ### 4.4 Filtros anti-lixo (FR-DICT-08)
@@ -115,7 +117,7 @@ O texto inserido é exatamente `text.trim()` da Groq (passando pelo `Refiner` id
 
 ### 4.6 Bandeja e config (FR-DICT-12, 13)
 
-Conforme [DESIGN.md §6](../../DESIGN.md#ícone-da-bandeja) e [DATABASE.md](../../DATABASE.md#configjson).
+Conforme [DESIGN.md §6](../../DESIGN.md#62-ícone-da-bandeja) e [DATABASE.md](../../DATABASE.md#configjson).
 "Sair" chama `uIOhook.stop()`, cancela a sessão ativa e encerra o app.
 
 ## 5. Requisitos não-funcionais
@@ -174,7 +176,7 @@ interface Refiner {
 
 ## 9. Contrato
 
-IPC e erros em [API.md §3–4](../../API.md#3-contrato-ipc-main--pílula). Nada quebra: é a primeira versão.
+IPC e erros em [API.md, "Contratos" e "Códigos de erro"](../../API.md#contratos). Nada quebra: é a primeira versão.
 
 ## 10. Fluxo ponta a ponta
 
@@ -218,7 +220,7 @@ IPC e erros em [API.md §3–4](../../API.md#3-contrato-ipc-main--pílula). Nada
 - [x] V2 Toque, fala, toque → texto aparece (17/out: 2 ditados de 4,6 s e 10,5 s no Bloco de Notas, inseridos em 0,88 s e 0,66 s; microfone abriu em 270 ms e 75 ms)
 - [ ] V3 `Esc` durante gravação → nada aparece, indicador de microfone apaga
 - [ ] V4 "Vou fazer o deploy no Docker e abrir um pull request" → termos em inglês corretos
-- [ ] V5 Lista de apps do [PRD](../../PRD.md#critérios-de-aceite-da-fase-1)
+- [ ] V5 Lista de apps do [PRD](../../PRD.md#critérios-de-aceite)
 - [ ] V6 Copiar "ABC", ditar, Ctrl+V manual → "ABC"
 - [ ] V7 Pílula aparece rápido, não rouba foco (cursor continua piscando no app)
 - [ ] V8 Toque acidental + 3 s de silêncio + toque → nada inserido
