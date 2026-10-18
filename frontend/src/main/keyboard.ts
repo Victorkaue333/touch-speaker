@@ -16,7 +16,13 @@ export function startKeyboardHook(hotkeyCode: number, controller: HotkeyControll
 
   uIOhook.on('keydown', (e) => controller.onKeyDown(classify(e.keycode)));
   uIOhook.on('keyup', (e) => controller.onKeyUp(classify(e.keycode)));
-  uIOhook.start();
+  try {
+    uIOhook.start();
+  } catch (err) {
+    // "Tentar de novo" calls this again (FR-PKG-15, FR-MAC-03): no listener may be left behind twice.
+    uIOhook.removeAllListeners();
+    throw err;
+  }
 
   let stopped = false;
   return () => {

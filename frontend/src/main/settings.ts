@@ -47,7 +47,7 @@ export type SettingsInput = Omit<EditableSettings, 'hotkey' | 'model' | 'pillPos
 export type SettingsValidation = { ok: true; values: EditableSettings } | { ok: false; field: keyof EditableSettings };
 
 /** Validates the screen values with the rules of normalizeConfig (BR-012), without duplicating them (FR-UI-28). */
-export function validateSettings(input: SettingsInput): SettingsValidation {
+export function validateSettings(input: SettingsInput, platform: NodeJS.Platform = process.platform): SettingsValidation {
   const warned: string[] = [];
   const config = normalizeConfig(
     {
@@ -60,6 +60,7 @@ export function validateSettings(input: SettingsInput): SettingsValidation {
       sounds: input.sounds,
     },
     (field) => warned.push(field),
+    platform,
   );
   const first = warned[0];
   if (first !== undefined) return { ok: false, field: FIELD_FOR_WARNING[first] ?? 'hotkey' };

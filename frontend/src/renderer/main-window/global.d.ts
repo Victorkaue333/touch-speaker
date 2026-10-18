@@ -19,7 +19,8 @@ type HotkeyName =
   | 'F21'
   | 'F22'
   | 'F23'
-  | 'F24';
+  | 'F24'
+  | 'RightMeta';
 
 type GroqKeyState = 'stored' | 'env' | 'none' | 'unreadable';
 type TranscriptionModel = 'whisper-large-v3-turbo' | 'whisper-large-v3';

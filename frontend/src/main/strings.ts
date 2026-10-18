@@ -4,44 +4,69 @@ import type { MainWindowStrings, PillPosition, TranscriptionModel } from '../sha
 import type { ErrorCode } from './errors';
 import type { HotkeyName } from './keys';
 
-export const strings = {
-  listening: 'Ouvindo…',
-  handsFreeHint: 'toque de novo para terminar',
-  endsIn: (seconds: number) => `Termina em 0:${String(seconds).padStart(2, '0')}`,
-  transcribing: 'Transcrevendo…',
-  trayReady: 'Touch Speaker — pronto',
-  trayRecording: 'Touch Speaker — ouvindo',
-  trayNoKey: 'Touch Speaker — falta a chave da Groq',
-  trayMicDefault: 'Microfone: padrão do Windows',
-  trayMicCustom: 'Microfone: definido no config.json',
-  trayOpenWindow: 'Abrir Touch Speaker',
-  trayOpenConfig: 'Abrir pasta de configuração',
-  trayQuit: 'Sair',
-  // Main window — "Como ditar" lines with the values in use (spec janela-principal §7, §10).
-  homeHold: (key: string, ms: number) => `Segure ${key} por ${ms} ms ou mais, fale e solte: o texto aparece no cursor.`,
-  homeTap: (key: string) => `Toque rápido em ${key}: grava com as mãos livres até o próximo toque.`,
-  homeEsc: 'Esc cancela a gravação.',
-} as const;
+// Texts that differ per system (spec distribuicao-windows-macos FR-MAC-10): on macOS nothing says "Windows" or
+// "Ctrl+V", the paste shortcut is ⌘V, the tray is the menu bar and the keys have their Mac names.
 
-/** pt-BR names of the hotkeys of HOTKEY_CODES (spec janela-principal §7). */
-export const hotkeyNames: Readonly<Record<HotkeyName, string>> = {
-  RightCtrl: 'Ctrl direito',
-  RightAlt: 'Alt direito',
-  RightShift: 'Shift direito',
-  CapsLock: 'Caps Lock',
-  F13: 'F13',
-  F14: 'F14',
-  F15: 'F15',
-  F16: 'F16',
-  F17: 'F17',
-  F18: 'F18',
-  F19: 'F19',
-  F20: 'F20',
-  F21: 'F21',
-  F22: 'F22',
-  F23: 'F23',
-  F24: 'F24',
-};
+/** The texts of the pill and of the tray / menu bar on `platform`. */
+export function stringsFor(platform: NodeJS.Platform) {
+  const mac = platform === 'darwin';
+  return {
+    listening: 'Ouvindo…',
+    handsFreeHint: 'toque de novo para terminar',
+    endsIn: (seconds: number) => `Termina em 0:${String(seconds).padStart(2, '0')}`,
+    transcribing: 'Transcrevendo…',
+    trayReady: 'Touch Speaker — pronto',
+    trayRecording: 'Touch Speaker — ouvindo',
+    trayNoKey: 'Touch Speaker — falta a chave da Groq',
+    // FR-PKG-15 and FR-MAC-02: the hook is not running, so the status never says "pronto".
+    trayHookDown: 'Touch Speaker — teclado indisponível',
+    trayNoAccessibility: 'Touch Speaker — falta permissão de Acessibilidade',
+    trayRetry: 'Tentar de novo',
+    trayOpenAccessibility: 'Abrir Ajustes de Acessibilidade…',
+    trayOpenMicrophone: 'Abrir Ajustes de Microfone…',
+    trayRelaunch: 'Reabrir o Touch Speaker',
+    trayMicDefault: mac ? 'Microfone: padrão do sistema' : 'Microfone: padrão do Windows',
+    trayMicCustom: 'Microfone: definido no config.json',
+    trayOpenWindow: 'Abrir Touch Speaker',
+    trayOpenConfig: 'Abrir pasta de configuração',
+    trayQuit: 'Sair',
+    // Main window — "Como ditar" lines with the values in use (spec janela-principal §7, §10).
+    homeHold: (key: string, ms: number) => `Segure ${key} por ${ms} ms ou mais, fale e solte: o texto aparece no cursor.`,
+    homeTap: (key: string) => `Toque rápido em ${key}: grava com as mãos livres até o próximo toque.`,
+    homeEsc: 'Esc cancela a gravação.',
+  } as const;
+}
+
+/** The texts on the system the app runs on. */
+export const strings = stringsFor(process.platform);
+
+/** pt-BR names of the hotkeys of HOTKEY_CODES on `platform` (spec janela-principal §7; FR-MAC-10). */
+export function hotkeyNamesFor(platform: NodeJS.Platform): Readonly<Record<HotkeyName, string>> {
+  const mac = platform === 'darwin';
+  return {
+    RightCtrl: mac ? 'Control direito' : 'Ctrl direito',
+    RightAlt: mac ? 'Option direita' : 'Alt direito',
+    RightShift: 'Shift direito',
+    CapsLock: 'Caps Lock',
+    F13: 'F13',
+    F14: 'F14',
+    F15: 'F15',
+    F16: 'F16',
+    F17: 'F17',
+    F18: 'F18',
+    F19: 'F19',
+    F20: 'F20',
+    F21: 'F21',
+    F22: 'F22',
+    F23: 'F23',
+    F24: 'F24',
+    // Only offered on macOS (keys.ts); on a PC the same code is the right Windows key.
+    RightMeta: mac ? 'Command direito' : 'Tecla Windows direita',
+  };
+}
+
+/** The hotkey names on the system the app runs on. */
+export const hotkeyNames: Readonly<Record<HotkeyName, string>> = hotkeyNamesFor(process.platform);
 
 const pillPositions: Readonly<Record<PillPosition, string>> = {
   'bottom-center': 'Embaixo, no centro',
@@ -56,6 +81,7 @@ const models: Readonly<Record<TranscriptionModel, string>> = {
 
 /** The texts of the main window. `platform` picks the label of the login item (FR-UI-36). */
 export function mainWindowStrings(platform: NodeJS.Platform = process.platform): MainWindowStrings {
+  const texts = stringsFor(platform);
   return {
     appName: 'Touch Speaker',
     navHome: 'Início',
@@ -101,11 +127,11 @@ export function mainWindowStrings(platform: NodeJS.Platform = process.platform):
     },
     holdThresholdRange: '200 a 1500',
     maxRecordingRange: '10 a 300',
-    hotkeyNames: { ...hotkeyNames },
+    hotkeyNames: { ...hotkeyNamesFor(platform) },
     pillPositions: { ...pillPositions },
     models: { ...models },
-    micDefault: strings.trayMicDefault,
-    micCustom: strings.trayMicCustom,
+    micDefault: texts.trayMicDefault,
+    micCustom: texts.trayMicCustom,
     loginTitle: 'Início com o sistema',
     loginItem: platform === 'darwin' ? 'Abrir ao iniciar sessão' : 'Iniciar com o Windows',
     loginItemDevOnly: 'Disponível no app instalado',
@@ -212,20 +238,32 @@ export const historyStrings = {
   noValue: '—',
 } as const;
 
-const errorMessages: Record<ErrorCode, string> = {
-  no_api_key: 'Falta a chave da Groq — abra o Touch Speaker pela bandeja',
-  invalid_api_key: 'Chave da Groq inválida',
-  rate_limited: 'Limite gratuito da Groq atingido — tente em instantes',
-  network_error: 'Sem conexão — tente de novo',
-  provider_error: 'A Groq falhou — tente de novo',
-  audio_too_large: 'Gravação longa demais',
-  mic_denied: 'Sem permissão para usar o microfone',
-  mic_unavailable: 'Microfone indisponível ou em uso',
-  recorder_failed: 'Falha ao gravar',
-  no_speech: '',
-  paste_blocked: 'Texto copiado — cole com Ctrl+V',
-  session_timeout: '',
-};
+/** The pill's message for each error code on `platform` (docs/API.md, "Códigos de erro"). */
+export function errorMessagesFor(platform: NodeJS.Platform): Readonly<Record<ErrorCode, string>> {
+  const mac = platform === 'darwin';
+  return {
+    no_api_key: mac
+      ? 'Falta a chave da Groq — abra o Touch Speaker pela barra de menus'
+      : 'Falta a chave da Groq — abra o Touch Speaker pela bandeja',
+    invalid_api_key: 'Chave da Groq inválida',
+    rate_limited: 'Limite gratuito da Groq atingido — tente em instantes',
+    network_error: 'Sem conexão — tente de novo',
+    provider_error: 'A Groq falhou — tente de novo',
+    audio_too_large: 'Gravação longa demais',
+    // FR-MAC-05: on macOS the way out is a System Settings panel.
+    mic_denied: mac
+      ? 'Sem permissão para usar o microfone — veja Ajustes do Sistema → Privacidade e Segurança → Microfone'
+      : 'Sem permissão para usar o microfone',
+    mic_unavailable: 'Microfone indisponível ou em uso',
+    recorder_failed: 'Falha ao gravar',
+    no_speech: '',
+    // FR-MAC-07 / BR-009: the text stayed in the clipboard; the shortcut is the system's.
+    paste_blocked: mac ? 'Texto copiado — cole com ⌘V' : 'Texto copiado — cole com Ctrl+V',
+    session_timeout: '',
+  };
+}
+
+const errorMessages = errorMessagesFor(process.platform);
 
 export function errorMessage(code: ErrorCode): string {
   return errorMessages[code];

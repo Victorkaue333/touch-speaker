@@ -13,7 +13,7 @@ import {
   isMainWindowSender,
   isPageUrl,
 } from '../main/main-window-ipc';
-import { errorMessage, hotkeyNames, mainWindowStrings } from '../main/strings';
+import { errorMessage, errorMessagesFor, hotkeyNames, hotkeyNamesFor, mainWindowStrings } from '../main/strings';
 import { Channel, EDITABLE_SETTINGS_KEYS } from '../shared/ipc';
 
 // TEST-009 — spec docs/spec/features/janela-principal.md §10 and §14 (FR-UI-10, FR-UI-25, FR-UI-33,
@@ -225,7 +225,8 @@ describe('contract and texts of the main window (FR-UI-10, FR-UI-25, RISK-027)',
     walk(texts, 'strings');
     assert.deepEqual(Object.keys(texts.hotkeyNames).sort(), Object.keys(HOTKEY_CODES).sort());
     assert.deepEqual(Object.keys(texts.fieldLabels).sort(), [...EDITABLE_SETTINGS_KEYS].sort());
-    assert.equal(hotkeyNames.RightAlt, 'Alt direito');
+    assert.equal(hotkeyNamesFor('win32').RightAlt, 'Alt direito');
+    assert.deepEqual(hotkeyNames, hotkeyNamesFor(process.platform));
   });
 
   it('every data-text and data-label of index.html has its text', () => {
@@ -248,6 +249,8 @@ describe('contract and texts of the main window (FR-UI-10, FR-UI-25, RISK-027)',
   });
 
   it('the pill points to the window, not to the README, when the key is missing (FR-UI-25)', () => {
-    assert.equal(errorMessage('no_api_key'), 'Falta a chave da Groq — abra o Touch Speaker pela bandeja');
+    assert.equal(errorMessagesFor('win32').no_api_key, 'Falta a chave da Groq — abra o Touch Speaker pela bandeja');
+    assert.equal(errorMessagesFor('darwin').no_api_key, 'Falta a chave da Groq — abra o Touch Speaker pela barra de menus');
+    assert.equal(errorMessage('no_api_key'), errorMessagesFor(process.platform).no_api_key);
   });
 });

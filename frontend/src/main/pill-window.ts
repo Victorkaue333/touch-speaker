@@ -14,12 +14,18 @@ export class PillWindow {
   readonly win: BrowserWindow;
   private hideTimer: NodeJS.Timeout | null = null;
 
+  /**
+   * `overFullScreen` (macOS — spec distribuicao-windows-macos FR-MAC-13): the pill is an NSPanel that also shows
+   * on every Space and over full-screen apps, still without focus. To be confirmed on a real Mac (T4).
+   */
   constructor(
     distDir: string,
     private readonly position: 'bottom-center' | 'top-center',
     allowDevTools: boolean,
+    overFullScreen = false,
   ) {
     this.win = new BrowserWindow({
+      ...(overFullScreen ? { type: 'panel' } : {}),
       width: WIDTH,
       height: HEIGHT,
       show: false,
@@ -48,6 +54,7 @@ export class PillWindow {
       },
     });
     this.win.setAlwaysOnTop(true, 'screen-saver');
+    if (overFullScreen) this.win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     this.win.setIgnoreMouseEvents(true);
     this.win.setMenu(null);
   }

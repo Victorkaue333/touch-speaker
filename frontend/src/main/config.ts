@@ -32,19 +32,28 @@ export interface AppConfig {
 
 export const MAX_RECORDING_MS = 5 * 60 * 1000;
 
-export const DEFAULT_CONFIG: AppConfig = {
-  version: 1,
-  hotkey: 'RightCtrl',
-  holdThresholdMs: 500,
-  maxRecordingMs: MAX_RECORDING_MS,
-  language: 'pt',
-  transcription: { provider: 'groq', model: 'whisper-large-v3-turbo' },
-  microphoneDeviceId: null,
-  pill: { position: 'bottom-center' },
-  sounds: true,
-  history: { retentionDays: DEFAULT_RETENTION_DAYS },
-  theme: 'system',
-};
+/**
+ * The defaults of a new config.json on `platform`. Only the hotkey differs: Right Ctrl on Windows, Right
+ * Command on macOS, whose built-in keyboards have no Right Control (spec distribuicao-windows-macos FR-MAC-11, D5).
+ */
+export function defaultConfig(platform: NodeJS.Platform): AppConfig {
+  return {
+    version: 1,
+    hotkey: platform === 'darwin' ? 'RightMeta' : 'RightCtrl',
+    holdThresholdMs: 500,
+    maxRecordingMs: MAX_RECORDING_MS,
+    language: 'pt',
+    transcription: { provider: 'groq', model: 'whisper-large-v3-turbo' },
+    microphoneDeviceId: null,
+    pill: { position: 'bottom-center' },
+    sounds: true,
+    history: { retentionDays: DEFAULT_RETENTION_DAYS },
+    theme: 'system',
+  };
+}
+
+/** The defaults on the system the app runs on. */
+export const DEFAULT_CONFIG: AppConfig = defaultConfig(process.platform);
 
 export const TRANSCRIPTION_MODELS: readonly TranscriptionModel[] = ['whisper-large-v3-turbo', 'whisper-large-v3'];
 const MODELS: readonly string[] = TRANSCRIPTION_MODELS;
@@ -59,9 +68,12 @@ function intInRange(value: unknown, min: number, max: number): number | undefine
   return typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max ? value : undefined;
 }
 
-/** Validates a parsed config.json, replacing each invalid or missing field with its default. */
-export function normalizeConfig(raw: unknown, warn: Warn): AppConfig {
-  const config: AppConfig = structuredClone(DEFAULT_CONFIG);
+/**
+ * Validates a parsed config.json, replacing each invalid or missing field with its default. `platform` decides
+ * the default hotkey and which hotkeys are valid (RightMeta only on macOS — FR-MAC-11).
+ */
+export function normalizeConfig(raw: unknown, warn: Warn, platform: NodeJS.Platform = process.platform): AppConfig {
+  const config: AppConfig = defaultConfig(platform);
   if (!isRecord(raw)) {
     warn('root');
     return config;
@@ -73,7 +85,7 @@ export function normalizeConfig(raw: unknown, warn: Warn): AppConfig {
     else apply(value);
   };
 
-  pick('hotkey', isHotkeyName(raw.hotkey) ? raw.hotkey : undefined, (v) => (config.hotkey = v));
+  pick('hotkey', isHotkeyName(raw.hotkey, platform) ? raw.hotkey : undefined, (v) => (config.hotkey = v));
   pick('holdThresholdMs', intInRange(raw.holdThresholdMs, 200, 1500), (v) => (config.holdThresholdMs = v));
   pick('maxRecordingMs', intInRange(raw.maxRecordingMs, 10_000, MAX_RECORDING_MS), (v) => (config.maxRecordingMs = v));
   pick(
@@ -138,19 +150,19 @@ export interface LoadedConfig {
   created: boolean;
 }
 
-/** Reads config.json from `dir`, creating it with defaults on first run. */
-export function loadConfig(dir: string, warn: Warn): LoadedConfig {
+/** Reads config.json from `dir`, creating it with the defaults of `platform` on first run. */
+export function loadConfig(dir: string, warn: Warn, platform: NodeJS.Platform = process.platform): LoadedConfig {
   const file = configFile(dir);
   if (!fs.existsSync(file)) {
     fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(file, JSON.stringify(DEFAULT_CONFIG, null, 2) + '\n', 'utf8');
-    return { config: structuredClone(DEFAULT_CONFIG), created: true };
+    fs.writeFileSync(file, JSON.stringify(defaultConfig(platform), null, 2) + '\n', 'utf8');
+    return { config: defaultConfig(platform), created: true };
   }
   try {
-    return { config: normalizeConfig(JSON.parse(fs.readFileSync(file, 'utf8')), warn), created: false };
+    return { config: normalizeConfig(JSON.parse(fs.readFileSync(file, 'utf8')), warn, platform), created: false };
   } catch {
     warn('json');
-    return { config: structuredClone(DEFAULT_CONFIG), created: false };
+    return { config: defaultConfig(platform), created: false };
   }
 }
 

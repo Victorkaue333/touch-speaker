@@ -1,7 +1,7 @@
 // Tray icon (docs/DESIGN.md §6.2): pixels from icon-bitmap.ts, in the colour variant of the taskbar theme.
 import { nativeImage, nativeTheme, type NativeImage } from 'electron';
 import type { TaskbarTheme } from '../shared/palette';
-import { renderTrayBitmap } from './icon-bitmap';
+import { renderTemplateTrayBitmap, renderTrayBitmap } from './icon-bitmap';
 
 /**
  * Reads the Windows mode (taskbar and tray), which Windows keeps apart from the app mode that the windows
@@ -30,6 +30,14 @@ function glyphImage(base: number, recording: boolean, theme: TaskbarTheme): Nati
 
 export function trayIcon(recording: boolean, theme: TaskbarTheme): NativeImage {
   return glyphImage(16, recording, theme);
+}
+
+/** macOS menu bar icon: a template image the system tints for light and dark (FR-MAC-09). 16 pt, @1x and @2x. */
+export function templateTrayIcon(recording: boolean): NativeImage {
+  const image = nativeImage.createFromBitmap(renderTemplateTrayBitmap(16, recording), { width: 16, height: 16, scaleFactor: 1 });
+  image.addRepresentation({ scaleFactor: 2, width: 32, height: 32, buffer: renderTemplateTrayBitmap(32, recording) });
+  image.setTemplateImage(true);
+  return image;
 }
 
 /**

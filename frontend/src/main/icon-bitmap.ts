@@ -1,6 +1,6 @@
 // Tray icon pixels, drawn in code: a microphone glyph and, while recording, a dot (docs/DESIGN.md §6.2).
 // No image assets from anyone else. No `electron` import, so icon.test.ts can check the pixels.
-import { hexToRgb, TRAY_COLORS, type TaskbarTheme } from '../shared/palette';
+import { hexToRgb, type Rgb, TRAY_COLORS, type TaskbarTheme } from '../shared/palette';
 
 function segmentDistance(px: number, py: number, ax: number, ay: number, bx: number, by: number): number {
   const dx = bx - ax;
@@ -29,8 +29,20 @@ function micDistance(x: number, y: number): number {
  * the taskbar theme (spec design-system D5): glyph and recording dot from `TRAY_COLORS`.
  */
 export function renderTrayBitmap(size: number, recording: boolean, theme: TaskbarTheme): Buffer {
-  const glyph = hexToRgb(TRAY_COLORS[theme].glyph);
-  const dotColor = hexToRgb(TRAY_COLORS[theme].dot);
+  return render(size, recording, hexToRgb(TRAY_COLORS[theme].glyph), hexToRgb(TRAY_COLORS[theme].dot));
+}
+
+/**
+ * The macOS menu bar variant (spec distribuicao-windows-macos FR-MAC-09, D11): a template image — black with
+ * alpha, which the system paints for the light or dark menu bar. Only the shape carries meaning, so
+ * "recording" is the same glyph plus the filled dot (cor nunca é o único sinal — DESIGN §13).
+ */
+export function renderTemplateTrayBitmap(size: number, recording: boolean): Buffer {
+  const black = { r: 0, g: 0, b: 0 };
+  return render(size, recording, black, black);
+}
+
+function render(size: number, recording: boolean, glyph: Rgb, dotColor: Rgb): Buffer {
   const pixels = Buffer.alloc(size * size * 4);
   const aa = 1 / size; // one pixel of anti-aliasing
   for (let py = 0; py < size; py++) {

@@ -149,7 +149,7 @@ export interface SettingsView {
   values: EditableSettings;
   /** Disk differs from what the app is using. */
   restartPending: boolean;
-  /** The 16 names of HOTKEY_CODES, for the list on screen. */
+  /** The names of HOTKEY_CODES valid on this system (keys.ts hotkeysFor), for the list on screen. */
   hotkeys: HotkeyName[];
   /** Read only (FR-UI-27). */
   microphone: MicrophoneSource;

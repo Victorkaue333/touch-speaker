@@ -7,6 +7,8 @@ import {
   nativeTheme,
   safeStorage,
   session as electronSession,
+  shell,
+  systemPreferences,
   type IpcMainEvent,
   type IpcMainInvokeEvent,
 } from 'electron';
@@ -29,14 +31,16 @@ import { historyLocation } from './history/paths';
 import { HistoryService, openHistory } from './history/service';
 import { DEFAULT_HOTKEY_TIMING, HotkeyController } from './hotkey';
 import { TextInserter } from './insert/inserter';
-import { initWin32, isSelfElevated } from './insert/win32';
+import type { PasteDriver } from './insert/paste-driver';
 import { startKeyboardHook } from './keyboard';
-import { HOTKEY_CODES, type HotkeyName } from './keys';
+import { HOTKEY_CODES, hotkeysFor } from './keys';
 import { Logger } from './logger';
 import { LoginItem } from './login-item';
 import { MainWindow } from './main-window';
 import { asGroqKeyInput, asLoginItemInput, asSettingsInput, asThemeInput, isEmptyPayload } from './main-window-ipc';
+import { createPermissions } from './permissions';
 import { PillWindow } from './pill-window';
+import { COPY_ONLY_DRIVER, type HookState, pasteDriverFor, selectPlatform, shouldStartHook } from './platform';
 import { IdentityRefiner } from './refine';
 import { SessionController } from './session';
 import { SettingsStore, shouldOpenOnFirstRun } from './settings';
@@ -109,7 +113,13 @@ function asError(p: unknown): RecorderErrorPayload | null {
 // ---- App --------------------------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  Menu.setApplicationMenu(null);
+  // Windows or macOS; anything else stops here with a clear error (spec distribuicao-windows-macos, ADR-11).
+  const profile = selectPlatform(process.platform);
+  // macOS: a minimal app menu with the Edit roles, or ⌘V would not paste the Groq key in Configurações
+  // (FR-MAC-12). Windows: no menu, as before.
+  Menu.setApplicationMenu(profile.editMenu ? Menu.buildFromTemplate([{ role: 'appMenu' }, { role: 'editMenu' }]) : null);
+  // macOS: menu bar only (FR-MAC-08). The packaged app already has LSUIElement; this covers npm run dev.
+  if (profile.hideDock) app.dock?.hide();
   const userData = app.getPath('userData');
   const log = new Logger(path.join(userData, 'logs'));
   const { config, created: configCreated } = loadConfig(userData, (field) => log.warn('config_invalid_field', { field }));
@@ -133,7 +143,7 @@ async function main(): Promise<void> {
     contents.on('will-navigate', (event) => event.preventDefault());
   });
 
-  const pill = new PillWindow(distDir, config.pill.position, !app.isPackaged);
+  const pill = new PillWindow(distDir, config.pill.position, !app.isPackaged, profile.pillOverFullScreen);
   // Renderer diagnostics. The pill never logs user content, so its console is safe to keep.
   pill.webContents.on('console-message', (details) => {
     if (details.level === 'error' || details.level === 'warning') {
@@ -153,12 +163,34 @@ async function main(): Promise<void> {
 
   await pill.load(distDir);
 
+  // The permissions of the system (macOS: Accessibility and Microphone). Only states are read; fixed URLs.
+  const permissions = createPermissions(profile.platform, {
+    isTrustedAccessibilityClient: (prompt) => systemPreferences.isTrustedAccessibilityClient(prompt),
+    getMediaAccessStatus: (media) => systemPreferences.getMediaAccessStatus(media),
+    askForMediaAccess: (media) => systemPreferences.askForMediaAccess(media),
+    openExternal: (url) => shell.openExternal(url),
+  });
+
+  // The paste of this system, loaded lazily: the Windows libraries are never opened on macOS (FR-MAC-01).
   let selfElevated = false;
+  let pasteDriver: PasteDriver = COPY_ONLY_DRIVER;
   try {
-    initWin32();
-    selfElevated = isSelfElevated();
+    pasteDriver = pasteDriverFor(profile, {
+      win32: () => {
+        const { createWin32PasteDriver } = require('./insert/win32-driver') as typeof import('./insert/win32-driver');
+        const driver = createWin32PasteDriver();
+        selfElevated = driver.selfElevated;
+        return driver;
+      },
+      darwin: () => {
+        const { createMacPasteDriver } = require('./insert/darwin') as typeof import('./insert/darwin');
+        return createMacPasteDriver(() => permissions.accessibility() === 'granted');
+      },
+    });
   } catch (err) {
-    log.error('win32_unavailable', { name: err instanceof Error ? err.name : 'unknown' });
+    log.error(profile.platform === 'win32' ? 'win32_unavailable' : 'paste_driver_unavailable', {
+      name: err instanceof Error ? err.name : 'unknown',
+    });
   }
 
   // The Groq key (ADR-08): groq-key.bin through safeStorage, else the .env (unpackaged only), else none.
@@ -227,7 +259,11 @@ async function main(): Promise<void> {
     inserter: new TextInserter({
       isHotkeyDown: () => hotkey?.isHotkeyDown() ?? false,
       setInserting: (value) => session.setInserting(value),
-      selfElevated,
+      driver: pasteDriver,
+      onBlocked: (reason) => {
+        if (reason === 'secure_input') log.info('secure_input_active');
+        else if (reason === 'no_accessibility') log.warn('accessibility_missing', { at: 'paste' });
+      },
     }),
     pill,
     log,
@@ -261,13 +297,42 @@ async function main(): Promise<void> {
     if (p) session.onRecorderError(p);
   });
 
+  // ---- The keyboard hook (FR-PKG-15, FR-MAC-02, FR-MAC-03) -----------------------------------------
+  // On macOS it only starts once the app is a trusted Accessibility client: libuiohook would otherwise ask
+  // the system again at every attempt. A hook that is not running shows in the tray / menu bar with
+  // "Tentar de novo" (both systems) — never "pronto".
   let stopKeyboard: (() => void) | null = null;
-  try {
-    stopKeyboard = startKeyboardHook(HOTKEY_CODES[config.hotkey], hotkey);
-  } catch (err) {
-    log.error('keyboard_hook_unavailable', { name: err instanceof Error ? err.name : 'unknown' });
-  }
-  keyboardHook = stopKeyboard !== null;
+  let hookState: HookState = 'unavailable';
+  let retryFailed = false;
+  const startHook = (trigger: 'startup' | 'retry' | 'activate'): HookState => {
+    if (stopKeyboard) return hookState;
+    if (!shouldStartHook(profile, permissions.accessibility() === 'granted')) {
+      hookState = 'needs_accessibility';
+      if (trigger === 'startup') log.warn('accessibility_missing', { at: 'startup' });
+    } else {
+      try {
+        stopKeyboard = startKeyboardHook(HOTKEY_CODES[config.hotkey], hotkey);
+        hookState = 'ok';
+      } catch (err) {
+        log.error('keyboard_hook_unavailable', { name: err instanceof Error ? err.name : 'unknown' });
+        hookState = 'unavailable';
+      }
+    }
+    if (trigger !== 'startup') {
+      log.info('hook_retry', { ok: hookState === 'ok', trigger });
+      retryFailed = hookState !== 'ok';
+    }
+    keyboardHook = hookState === 'ok';
+    tray?.setHookState(hookState, retryFailed);
+    pushStatus();
+    // FR-MAC-04: the microphone dialog of macOS, after the Accessibility one, never both at once.
+    if (hookState === 'ok' && profile.platform === 'darwin' && permissions.microphone() === 'not-determined') {
+      void permissions.requestMicrophone();
+    }
+    return hookState;
+  };
+  // macOS: the system's own Accessibility dialog, once per launch, which also lists the app in the settings.
+  if (startHook('startup') === 'needs_accessibility') permissions.promptAccessibility();
 
   let quitting = false;
   const quit = () => {
@@ -309,7 +374,7 @@ async function main(): Promise<void> {
     return {
       values,
       restartPending,
-      hotkeys: Object.keys(HOTKEY_CODES) as HotkeyName[],
+      hotkeys: hotkeysFor(profile.platform),
       microphone: config.microphoneDeviceId !== null ? 'custom' : 'default',
       loginItem: loginItem.read(),
     };
@@ -413,11 +478,34 @@ async function main(): Promise<void> {
   });
 
   tray = new AppTray({
+    profile,
     configDir: userData,
     hasApiKey: transcriber.hasCredentials(),
     customMicrophone: config.microphoneDeviceId !== null,
+    hook: hookState,
+    microphoneBlocked: () => {
+      const mic = permissions.microphone();
+      return mic === 'denied' || mic === 'restricted';
+    },
     onOpenWindow: (trigger) => mainWindow.show(trigger),
+    onAction: (action) => {
+      if (action === 'retry_hook') startHook('retry');
+      else if (action === 'open_accessibility') void permissions.openSettings('accessibility');
+      else if (action === 'open_microphone') void permissions.openSettings('microphone');
+      else {
+        // FR-MAC-03: macOS may only see a new Accessibility permission after the app opens again.
+        log.info('app_relaunch');
+        app.relaunch();
+        quit();
+      }
+    },
     onQuit: quit,
+  });
+
+  // macOS: coming back to the app (e.g. from System Settings) tries the hook again (FR-MAC-03).
+  app.on('did-become-active', () => {
+    if (hookState !== 'ok') startHook('activate');
+    else tray?.refresh();
   });
 
   // Opening the app again shows the window of the instance already running (FR-UI-04).
@@ -446,6 +534,7 @@ async function main(): Promise<void> {
     groq_key: credentials.state(),
     keyboard_hook: keyboardHook,
     self_elevated: selfElevated,
+    ...(profile.platform === 'darwin' ? { accessibility: permissions.accessibility() === 'granted' } : {}),
   });
 
   // The only time the window opens by itself: first run (config.json created now) without a stored key,
