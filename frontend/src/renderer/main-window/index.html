@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>Touch Speaker</title>
+    <link rel="stylesheet" href="../tokens.css" />
+    <link rel="stylesheet" href="main-window.css" />
+    <script src="main-window.js" defer></script>
+  </head>
+  <body>
+    <!-- No text here: every text comes from strings.ts through app:get-strings (FR-UI-10). -->
+    <div class="app" id="app" hidden>
+      <nav class="sidebar" aria-labelledby="brand">
+        <div class="brand">
+          <!-- The mark of docs/assets/logo.svg (the square only, no text), coloured by the theme tokens in
+               main-window.css. The name beside it comes from strings.ts. -->
+          <svg class="brand-logo" viewBox="20 20 160 160" aria-hidden="true" focusable="false">
+            <rect class="logo-tile" x="20" y="20" width="160" height="160" rx="40" />
+            <g class="logo-line" fill="none" stroke-width="10" stroke-linecap="round">
+              <path d="M70 92 a30 30 0 0 0 60 0" />
+              <line x1="100" y1="122" x2="100" y2="146" />
+              <line x1="82" y1="148" x2="118" y2="148" />
+            </g>
+            <rect class="logo-ink" x="84" y="48" width="32" height="62" rx="16" />
+            <g class="logo-ink" opacity="0.55">
+              <rect x="142" y="76" width="6" height="20" rx="3" />
+              <rect x="154" y="68" width="6" height="36" rx="3" />
+            </g>
+          </svg>
+          <p class="brand-name" id="brand" data-text="appName"></p>
+        </div>
+        <!-- Nav icons: Lucide 1.52.0 (house, rotate-ccw-clock — the old "history" —, book-open, settings), paths
+             unmodified, ISC licence in LICENSE-lucide.txt next to this file (docs/DESIGN.md §6.5, §11). -->
+        <ul class="nav-list">
+          <li>
+            <button type="button" class="nav-item" data-section="home">
+              <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
+              <span class="nav-label" data-text="navHome"></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-item" data-section="history">
+              <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></svg>
+              <span class="nav-label" data-text="navHistory"></span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-item" data-section="dictionary">
+              <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v16" /><path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></svg>
+              <span class="nav-label" data-text="navDictionary"></span><span class="nav-soon" data-text="navSoon"></span>
+            </button>
+          </li>
+        </ul>
+        <ul class="nav-list nav-footer">
+          <li class="nav-footer-row">
+            <button type="button" class="nav-item" data-section="settings">
+              <svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /><circle cx="12" cy="12" r="3" /></svg>
+              <span class="nav-label" data-text="navSettings"></span>
+            </button>
+            <!-- Theme toggle (FR-UI-39…41): Lucide 1.52.0 sun (light on screen) and moon (dark on screen),
+                 unmodified paths; the script shows one and sets the aria-label from strings.ts. -->
+            <button type="button" class="icon-button" id="theme-toggle">
+              <svg id="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>
+              <svg id="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" hidden><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></svg>
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <main class="content">
+        <!-- Início -->
+        <section class="section" data-panel="home" aria-labelledby="home-title" hidden>
+          <h1 class="section-title" id="home-title" data-text="navHome"></h1>
+          <div class="cards">
+            <!-- "Como ditar", compact, with the hotkey highlighted (Victor, 18/out/2026; FR-UI-11). -->
+            <article class="card card-wide card-compact" aria-labelledby="howto-title">
+              <div class="howto-compact">
+                <div class="howto-key">
+                  <h2 class="card-title" id="howto-title" data-text="homeHowTo"></h2>
+                  <p class="muted" id="home-hotkey-label" data-text="homeHotkey"></p>
+                  <kbd class="kbd" id="home-hotkey" aria-describedby="home-hotkey-label"></kbd>
+                </div>
+                <ul class="howto" id="home-howto"></ul>
+              </div>
+            </article>
+            <article class="card" id="home-state-card" aria-labelledby="state-title">
+              <h2 class="card-title" id="state-title" data-text="homeState"></h2>
+              <p class="state">
+                <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1z" /><rect x="7.25" y="5.5" width="1.5" height="4.5" rx=".75" /><circle cx="8" cy="12" r=".9" /></svg>
+                <span id="home-state"></span>
+              </p>
+              <p class="muted" id="home-mic"></p>
+            </article>
+            <article class="card" id="home-key-card" aria-labelledby="home-key-title">
+              <h2 class="card-title" id="home-key-title" data-text="homeKey"></h2>
+              <p class="state">
+                <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1z" /><rect x="7.25" y="5.5" width="1.5" height="4.5" rx=".75" /><circle cx="8" cy="12" r=".9" /></svg>
+                <span id="home-key"></span>
+              </p>
+              <button type="button" class="button button-primary" id="home-configure" data-text="keyConfigure" hidden></button>
+            </article>
+
+            <!-- Seu uso: history:stats, numbers only, never a text (spec historico FR-HIST-22…24, FR-HIST-26). -->
+            <article class="card card-wide" aria-labelledby="usage-title">
+              <h2 class="card-title" id="usage-title" data-text="home.usageTitle"></h2>
+              <p class="muted" id="usage-off" hidden></p>
+              <div class="stats" id="usage-stats">
+                <div class="stat">
+                  <p class="stat-label">
+                    <svg class="stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="7" cy="12" r="3" /><path d="M10 9v6" /><circle cx="17" cy="12" r="3" /><path d="M14 7v8" /><path d="M22 17v1c0 .5-.5 1-1 1H3c-.5 0-1-.5-1-1v-1" /></svg>
+                    <span data-text="home.words"></span>
+                  </p>
+                  <dl class="stat-values">
+                    <div><dt data-text="home.today"></dt><dd id="stat-words-today"></dd></div>
+                    <div><dt data-text="home.allTime"></dt><dd id="stat-words-all"></dd></div>
+                  </dl>
+                </div>
+                <div class="stat">
+                  <p class="stat-label">
+                    <svg class="stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 19v3" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><rect x="9" y="2" width="6" height="13" rx="3" /></svg>
+                    <span data-text="home.dictations"></span>
+                  </p>
+                  <dl class="stat-values">
+                    <div><dt data-text="home.today"></dt><dd id="stat-dictations-today"></dd></div>
+                    <div><dt data-text="home.allTime"></dt><dd id="stat-dictations-all"></dd></div>
+                  </dl>
+                </div>
+                <div class="stat">
+                  <p class="stat-label">
+                    <svg class="stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+                    <span data-text="home.spoken"></span>
+                  </p>
+                  <dl class="stat-values">
+                    <div><dt data-text="home.today"></dt><dd id="stat-spoken-today"></dd></div>
+                    <div><dt data-text="home.allTime"></dt><dd id="stat-spoken-all"></dd></div>
+                  </dl>
+                </div>
+                <div class="stat">
+                  <p class="stat-label">
+                    <svg class="stat-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m12 14 4-4" /><path d="M3.34 19a10 10 0 1 1 17.32 0" /></svg>
+                    <span data-text="home.wordsPerMinute"></span>
+                  </p>
+                  <p class="stat-big" id="stat-wpm"></p>
+                </div>
+              </div>
+              <p class="muted" id="usage-retention"></p>
+            </article>
+
+            <!-- Ditados recentes: the 3 newest entries, each with "Copiar" (FR-HIST-25). The only place outside
+                 Histórico that shows dictated text — Victor's request of 18/out/2026 (docs/DESIGN.md §18). -->
+            <article class="card card-wide" aria-labelledby="recent-title">
+              <div class="card-head">
+                <h2 class="card-title" id="recent-title" data-text="home.recentTitle"></h2>
+                <button type="button" class="button button-ghost button-sm" id="recent-see-all">
+                  <span data-text="home.seeAll"></span>
+                  <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                </button>
+              </div>
+              <p class="muted" id="recent-state" hidden></p>
+              <button type="button" class="button button-outline" id="recent-open-settings" data-text="history.openSettings" hidden></button>
+              <ul class="entries entries-compact" id="recent-list"></ul>
+            </article>
+          </div>
+        </section>
+
+        <!-- Histórico (spec historico §7, §7.1; FR-UI-16) -->
+        <section class="section" data-panel="history" aria-labelledby="history-title" hidden>
+          <h1 class="section-title" id="history-title" data-text="navHistory" tabindex="-1"></h1>
+          <div class="banner banner-notice" id="history-unsaved" hidden>
+            <svg class="glyph-inline" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1z" /><rect x="7.25" y="5.5" width="1.5" height="4.5" rx=".75" /><circle cx="8" cy="12" r=".9" /></svg>
+            <p id="history-unsaved-text"></p>
+          </div>
+          <div class="toolbar" id="history-toolbar" hidden>
+            <div class="search">
+              <!-- Lucide 1.52.0 search -->
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m21 21-4.34-4.34" /><circle cx="11" cy="11" r="8" /></svg>
+              <input id="history-search" type="search" autocomplete="off" spellcheck="false" maxlength="200" />
+            </div>
+            <button type="button" class="button button-outline" id="history-clear">
+              <svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 11v6" /><path d="M14 11v6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+              <span data-text="history.clear"></span>
+            </button>
+          </div>
+          <!-- "Apagar tudo" asks on the screen itself, in two steps, like "Remover chave" (D6). -->
+          <div class="banner banner-danger" id="history-confirm" role="group" aria-labelledby="history-confirm-text" hidden>
+            <p id="history-confirm-text" data-text="history.confirmClear"></p>
+            <div class="row">
+              <button type="button" class="button button-ghost" id="history-confirm-cancel" data-text="history.cancel"></button>
+              <button type="button" class="button button-destructive" id="history-confirm-ok" data-text="history.clear"></button>
+            </div>
+          </div>
+          <p class="state-text" id="history-state" hidden></p>
+          <button type="button" class="button button-outline" id="history-open-settings" data-text="history.openSettings" hidden></button>
+          <div class="history-days" id="history-list"></div>
+          <button type="button" class="button button-outline button-center" id="history-more" data-text="history.loadMore" hidden></button>
+          <p class="muted" id="history-retention"></p>
+        </section>
+
+        <!-- Icons the script clones into each entry: Lucide 1.52.0 copy, trash and check, unmodified paths. -->
+        <template id="icon-copy"><svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg></template>
+        <template id="icon-trash"><svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 11v6" /><path d="M14 11v6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg></template>
+        <template id="icon-check"><svg class="button-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5" /></svg></template>
+        <template id="icon-option-check"><svg class="option-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5" /></svg></template>
+        <template id="icon-alert"><svg class="glyph-inline" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1z" /><rect x="7.25" y="5.5" width="1.5" height="4.5" rx=".75" /><circle cx="8" cy="12" r=".9" /></svg></template>
+
+        <!-- Dicionário: "em breve", no action (FR-UI-17) -->
+        <section class="section" data-panel="dictionary" aria-labelledby="dictionary-title" hidden>
+          <h1 class="section-title" id="dictionary-title" data-text="navDictionary"></h1>
+          <p class="muted" data-text="dictionarySoon"></p>
+        </section>
+
+        <!-- Configurações -->
+        <section class="section" data-panel="settings" aria-labelledby="settings-title" hidden>
+          <h1 class="section-title" id="settings-title" data-text="navSettings"></h1>
+
+          <article class="card" aria-labelledby="settings-key-title">
+            <h2 class="card-title" id="settings-key-title" data-text="homeKey"></h2>
+            <dl class="facts">
+              <dt data-text="keyStateLabel"></dt>
+              <dd id="settings-key-state"></dd>
+            </dl>
+            <form class="stack" id="key-form" novalidate>
+              <label for="key-input" data-text="keyField"></label>
+              <div class="row">
+                <input
+                  id="key-input"
+                  class="key-input"
+                  type="password"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  aria-describedby="key-help"
+                />
+                <button type="submit" class="button button-primary" id="key-save" data-text="keySave"></button>
+              </div>
+            </form>
+            <p class="muted" id="key-help" data-text="keyHelp"></p>
+            <div class="row" id="key-remove-row" hidden>
+              <button type="button" class="button button-destructive" id="key-remove" data-text="keyRemove"></button>
+              <button type="button" class="button button-destructive" id="key-confirm" data-text="keyConfirmRemove" hidden></button>
+              <button type="button" class="button button-ghost" id="key-cancel" data-text="keyCancel" hidden></button>
+            </div>
+            <p class="message" id="key-status" role="status" aria-live="polite"></p>
+          </article>
+
+          <article class="card" aria-labelledby="prefs-title">
+            <h2 class="card-title" id="prefs-title" data-text="settingsPreferences"></h2>
+            <form class="stack" id="prefs-form" novalidate>
+              <div class="field">
+                <label for="f-hotkey" data-label="hotkey"></label>
+                <!-- Customizable select (appearance: base-select, Chromium 152 of Electron 44): native keyboard and
+                     screen reader; the trigger mirrors the chosen option and carries the Lucide 1.52.0 chevron-down. -->
+                <select id="f-hotkey" data-field="hotkey" aria-describedby="e-hotkey"><button type="button" class="select-trigger"><selectedcontent></selectedcontent><svg class="select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" /></svg></button></select>
+                <span class="field-error" id="e-hotkey" hidden></span>
+              </div>
+              <div class="field">
+                <label for="f-hold" data-label="holdThresholdMs"></label>
+                <input id="f-hold" data-field="holdThresholdMs" type="number" min="200" max="1500" step="1" aria-describedby="r-hold e-holdThresholdMs" />
+                <span class="hint" id="r-hold" data-text="holdThresholdRange"></span>
+                <span class="field-error" id="e-holdThresholdMs" hidden></span>
+              </div>
+              <div class="field">
+                <label for="f-max" data-label="maxRecordingMs"></label>
+                <input id="f-max" data-field="maxRecordingMs" type="number" min="10" max="300" step="1" aria-describedby="r-max e-maxRecordingMs" />
+                <span class="hint" id="r-max" data-text="maxRecordingRange"></span>
+                <span class="field-error" id="e-maxRecordingMs" hidden></span>
+              </div>
+              <div class="field">
+                <label for="f-language" data-label="language"></label>
+                <input id="f-language" data-field="language" type="text" maxlength="2" autocomplete="off" spellcheck="false" aria-describedby="e-language" />
+                <span class="field-error" id="e-language" hidden></span>
+              </div>
+              <div class="field">
+                <label for="f-model" data-label="model"></label>
+                <select id="f-model" data-field="model" aria-describedby="e-model"><button type="button" class="select-trigger"><selectedcontent></selectedcontent><svg class="select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" /></svg></button></select>
+                <span class="field-error" id="e-model" hidden></span>
+              </div>
+              <div class="field">
+                <label for="f-pill" data-label="pillPosition"></label>
+                <select id="f-pill" data-field="pillPosition" aria-describedby="e-pillPosition"><button type="button" class="select-trigger"><selectedcontent></selectedcontent><svg class="select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" /></svg></button></select>
+                <span class="field-error" id="e-pillPosition" hidden></span>
+              </div>
+              <div class="field field-check">
+                <input id="f-sounds" data-field="sounds" type="checkbox" aria-describedby="e-sounds" />
+                <label for="f-sounds" data-label="sounds"></label>
+                <span class="field-error" id="e-sounds" hidden></span>
+              </div>
+              <p class="muted" id="prefs-mic"></p>
+              <div class="banner" id="restart-banner" hidden>
+                <p data-text="settingsRestartPending"></p>
+                <button type="button" class="button button-outline" id="restart-now" data-text="settingsRestartNow"></button>
+              </div>
+              <div class="actions">
+                <button type="submit" class="button button-primary" id="prefs-save" data-text="settingsSave"></button>
+              </div>
+              <p class="message" id="prefs-status" role="status" aria-live="polite"></p>
+            </form>
+          </article>
+
+          <!-- "Guardar histórico" (FR-UI-38; spec historico FR-HIST-20, 21): its own save, valid at once, no
+               restart banner. -->
+          <article class="card" aria-labelledby="retention-title">
+            <h2 class="card-title" id="retention-title" data-text="retention.title"></h2>
+            <form class="stack" id="retention-form" novalidate>
+              <fieldset class="choices" aria-describedby="retention-hint">
+                <legend data-text="retention.label"></legend>
+                <div class="choice">
+                  <input type="radio" name="retention" value="never" id="retention-never" />
+                  <label for="retention-never" data-text="retention.never"></label>
+                </div>
+                <div class="choice">
+                  <input type="radio" name="retention" value="days" id="retention-days" />
+                  <label for="retention-days" data-text="retention.forDays"></label>
+                  <input
+                    id="retention-days-input"
+                    class="days-input"
+                    type="number"
+                    min="1"
+                    max="3650"
+                    step="1"
+                    aria-describedby="retention-range retention-error"
+                  />
+                  <span data-text="retention.daysUnit"></span>
+                  <span class="hint" id="retention-range" data-text="retention.range"></span>
+                </div>
+                <div class="choice">
+                  <input type="radio" name="retention" value="forever" id="retention-forever" />
+                  <label for="retention-forever" data-text="retention.forever"></label>
+                </div>
+              </fieldset>
+              <span class="field-error" id="retention-error" hidden></span>
+              <p class="muted" id="retention-hint" data-text="retention.hint"></p>
+              <div class="actions">
+                <button type="submit" class="button button-primary" id="retention-save" data-text="retention.save"></button>
+              </div>
+              <p class="message" id="retention-status" role="status" aria-live="polite"></p>
+            </form>
+          </article>
+
+          <!-- Aparência (FR-UI-42): the theme in use and "Seguir o sistema"; the toggle sits in the sidebar. -->
+          <article class="card" aria-labelledby="theme-title">
+            <h2 class="card-title" id="theme-title" data-text="theme.title"></h2>
+            <dl class="facts">
+              <dt data-text="theme.current"></dt>
+              <dd id="theme-current"></dd>
+            </dl>
+            <button type="button" class="button button-outline" id="theme-follow-system" data-text="theme.followSystem"></button>
+            <p class="message" id="theme-status" role="status" aria-live="polite"></p>
+          </article>
+
+          <article class="card" aria-labelledby="login-title">
+            <h2 class="card-title" id="login-title" data-text="loginTitle"></h2>
+            <div class="field field-check">
+              <input id="login-switch" type="checkbox" role="switch" aria-describedby="login-note" />
+              <label for="login-switch" data-text="loginItem"></label>
+            </div>
+            <p class="muted" id="login-note"></p>
+            <p class="message" id="login-status" role="status" aria-live="polite"></p>
+          </article>
+        </section>
+      </main>
+      <!-- One polite live region for the whole window: "Copiado", "Ditado apagado"… (spec historico §6). -->
+      <p class="sr-only" id="live" role="status" aria-live="polite"></p>
+    </div>
+  </body>
+</html>

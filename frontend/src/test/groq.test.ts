@@ -11,6 +11,7 @@ function json(status: number, body: unknown): Response {
 
 function transcriber(responses: Array<Response | Error>, apiKey: string | undefined = 'gsk_test') {
   const requests: { url: string; init: RequestInit | undefined }[] = [];
+  const key: { value: string | undefined } = { value: apiKey };
   const fetchImpl = (async (url: string | URL | Request, init?: RequestInit) => {
     requests.push({ url: String(url), init });
     const next = responses.shift();
@@ -18,8 +19,12 @@ function transcriber(responses: Array<Response | Error>, apiKey: string | undefi
     if (next instanceof Error) throw next;
     return next;
   }) as typeof fetch;
-  return { t: new GroqTranscriber({ apiKey, model: 'whisper-large-v3-turbo', fetchImpl, retryDelayMs: 1 }), requests };
+  const t = new GroqTranscriber({ getApiKey: () => key.value, model: 'whisper-large-v3-turbo', fetchImpl, retryDelayMs: 1 });
+  return { t, requests, key };
 }
+
+const authorization = (req: { init: RequestInit | undefined } | undefined) =>
+  (req?.init?.headers as Record<string, string> | undefined)?.Authorization;
 
 describe('GroqTranscriber (FR-DICT-04)', () => {
   it('returns trimmed text and sends the expected form', async () => {
@@ -51,6 +56,25 @@ describe('GroqTranscriber (FR-DICT-04)', () => {
     assert.equal(t.hasCredentials(), false);
     assert.deepEqual(await t.transcribe(audio, 'audio/webm', opts), { kind: 'error', code: 'no_api_key' });
     assert.equal(requests.length, 0);
+  });
+
+  it('reads the key at every call: a key saved on screen counts from the next dictation (FR-UI-18, ADR-08)', async () => {
+    const ok = () => json(200, { text: 'Oi.', duration: 1, segments: [{ no_speech_prob: 0.01 }] });
+    const { t, requests, key } = transcriber([ok(), ok()]);
+    key.value = undefined;
+    assert.equal(t.hasCredentials(), false);
+    assert.deepEqual(await t.transcribe(audio, 'audio/webm', opts), { kind: 'error', code: 'no_api_key' });
+    assert.equal(requests.length, 0);
+
+    key.value = 'gsk_first';
+    assert.equal(t.hasCredentials(), true);
+    await t.transcribe(audio, 'audio/webm', opts);
+    key.value = 'gsk_second';
+    await t.transcribe(audio, 'audio/webm', opts);
+    assert.deepEqual(requests.map(authorization), ['Bearer gsk_first', 'Bearer gsk_second']);
+
+    key.value = undefined;
+    assert.equal(t.hasCredentials(), false);
   });
 
   for (const [status, code] of [

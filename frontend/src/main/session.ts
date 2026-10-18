@@ -3,6 +3,7 @@
 import { randomUUID } from 'node:crypto';
 import {
   Channel,
+  type HistoryEntryStatus,
   type PillState,
   type RecorderErrorPayload,
   type RecorderResultPayload,
@@ -11,9 +12,10 @@ import {
 } from '../shared/ipc';
 import type { AppConfig } from './config';
 import type { ErrorCode } from './errors';
+import type { HistoryPort } from './history/service';
 import type { HotkeyHost, SessionPhase } from './hotkey';
 import type { InsertOutcome } from './insert/inserter';
-import type { Logger } from './logger';
+import type { LogPort } from './logger';
 import type { Refiner } from './refine';
 import { errorMessage, strings } from './strings';
 import { MIN_AUDIO_MS } from './transcribe/filters';
@@ -34,9 +36,15 @@ export interface SessionDeps {
   refiner: Refiner;
   inserter: InserterPort;
   pill: PillPort;
-  log: Logger;
+  log: LogPort;
   now?: () => number;
   onRecordingChange?: (recording: boolean) => void;
+  /**
+   * Spec historico (FR-HIST-01…04, 17): gets the text of a dictation once its insertion ended, after
+   * dictation_done (or session_exception) is logged, so the paste and total_ms never wait for the database.
+   * Never throws. Absent → nothing changes.
+   */
+  history?: HistoryPort;
 }
 
 type State = 'idle' | 'recording' | 'transcribing' | 'inserting';
@@ -175,6 +183,11 @@ export class SessionController implements HotkeyHost {
       return;
     }
 
+    const sessionId = this.sessionId;
+    const audioMs = Math.round(payload.durationMs);
+    // Set once the text exists (after the Refiner): an exception before it records nothing (FR-HIST-02).
+    let text = '';
+    let recorded = false;
     try {
       const uploadStarted = this.now();
       const result = await this.deps.transcriber.transcribe(payload.audio, payload.mimeType, {
@@ -192,11 +205,12 @@ export class SessionController implements HotkeyHost {
         return;
       }
 
-      const text = await this.deps.refiner.refine(result.text);
-      if (!text) {
+      const refined = await this.deps.refiner.refine(result.text);
+      if (!refined) {
         this.finishEmpty(session);
         return;
       }
+      text = refined;
 
       this.state = 'inserting';
       const outcome = await this.deps.inserter.insert(text);
@@ -204,18 +218,33 @@ export class SessionController implements HotkeyHost {
       this.deps.log.info('dictation_done', {
         session,
         mode: this.mode,
-        audio_ms: Math.round(payload.durationMs),
+        audio_ms: audioMs,
         audio_bytes: payload.audio.byteLength,
         transcribe_ms: transcribeMs,
         total_ms: this.now() - this.releasedAt,
         chars: text.length,
         outcome,
       });
+      recorded = true;
+      this.record(sessionId, text, audioMs, outcome);
       if (outcome === 'copied') this.showMessage('notice', 'paste_blocked');
       else this.hidePill();
     } catch (err) {
       this.deps.log.error('session_exception', { session, name: err instanceof Error ? err.name : 'unknown' });
       this.fail('provider_error');
+      // The insertion threw after the text existed: keep it, so it can be copied again (FR-HIST-02).
+      if (text && !recorded) this.record(sessionId, text, audioMs, 'failed');
+    }
+  }
+
+  /** Hands the dictation to the history, after the log line that closes it (FR-HIST-04). Never throws. */
+  private record(id: string, text: string, audioMs: number, status: HistoryEntryStatus): void {
+    const history = this.deps.history;
+    if (!history) return;
+    try {
+      history.save({ id, createdAt: new Date(this.now()).toISOString(), text, audioMs, status });
+    } catch {
+      // HistoryPort.save does not throw; this is only a second guard for the dictation (FR-HIST-17).
     }
   }
 

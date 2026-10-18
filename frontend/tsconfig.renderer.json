@@ -11,5 +11,6 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true
   },
-  "include": ["src/renderer/**/*.ts"]
+  "include": ["src/renderer/**/*.ts"],
+  "exclude": ["src/renderer/main-window"]
 }

@@ -1,0 +1,1177 @@
+/* The main window (spec janela-principal §7, docs/DESIGN.md §6.5). Every colour, font, radius, shadow and
+   duration comes from ../tokens.css; no literal colour here and no token of its own (FR-DS-01, FR-DS-18).
+   The theme is the system's by default, through prefers-color-scheme in tokens.css (FR-UI-34), or the one picked
+   with the toggle, through data-theme on <html> (FR-UI-39…42). Layout sizes are plain
+   values of this window. No id selectors: ids belong to the script.
+
+   Look: the shadcn/ui style rebuilt in plain CSS (Victor, 18/out/2026) — flat cards with a 1px border and no
+   shadow, 36px controls, a filled rounded row for the current nav item. Neutral hover fill is --ts-bg: every
+   control sits on --ts-surface (sidebar or card), and text, muted text and accent all pass on --ts-bg.
+   Filled buttons darken or lighten on hover by mixing in 15% of --ts-text, which only moves the fill away
+   from the text on it, so its contrast can only go up. */
+
+:root {
+  /* Native controls (scrollbars, select lists, checkboxes) follow the theme too. */
+  color-scheme: light dark;
+}
+
+/* A theme picked in the window (FR-UI-39) pins the native controls as well. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* The circular reveal of the theme toggle (FR-UI-41, Victor's snippet): the new snapshot is clipped by a growing
+   circle from the button, animated from the script; the default cross-fade is off. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2147483646;
+}
+
+/* While the theme swaps, no control animates its own colours: the reveal is the only animation (FR-UI-41). */
+:root[data-theme-switching] *,
+:root[data-theme-switching] *::before,
+:root[data-theme-switching] *::after {
+  transition: none !important;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--ts-bg);
+  color: var(--ts-text);
+  font-family: var(--ts-font-sans);
+  font-size: var(--ts-font-size-md);
+  font-weight: var(--ts-font-weight-regular);
+  line-height: 1.45;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  height: 100%;
+}
+
+/* ---- Sidebar ---- */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ts-space-1);
+  padding: var(--ts-space-4) var(--ts-space-3);
+  background: var(--ts-surface);
+  border-right: 1px solid var(--ts-border);
+  overflow-y: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--ts-space-2);
+  margin-bottom: var(--ts-space-4);
+  padding: var(--ts-space-1) var(--ts-space-2);
+}
+
+.brand-logo {
+  flex: none;
+  width: 28px;
+  height: 28px;
+}
+
+/* The logo mark in the theme's own colours: square in the accent fill, microphone in the text on it
+   (--ts-on-accent on --ts-accent-fill ≥ 4.5:1 in both themes, tokens.test.ts). */
+.logo-tile {
+  fill: var(--ts-accent-fill);
+}
+
+.logo-line {
+  stroke: var(--ts-on-accent);
+}
+
+.logo-ink {
+  fill: var(--ts-on-accent);
+}
+
+.brand-name {
+  margin: 0;
+  font-size: var(--ts-font-size-md);
+  font-weight: var(--ts-font-weight-semibold);
+  line-height: 1.2;
+}
+
+.nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ts-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-footer {
+  margin-top: auto;
+  padding-top: var(--ts-space-3);
+  border-top: 1px solid var(--ts-border);
+}
+
+/* Configurações and, beside it, the theme toggle (FR-UI-39). */
+.nav-footer-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ts-space-1);
+}
+
+.nav-footer-row .nav-item {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Square icon button, 36px, ghost: the icon is the boundary; the focus ring is the global :focus-visible. */
+.icon-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--ts-radius-sm);
+  background: transparent;
+  color: var(--ts-text-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--ts-duration-enter) ease-out,
+    color var(--ts-duration-enter) ease-out;
+}
+
+.icon-button:hover {
+  background: var(--ts-bg);
+  color: var(--ts-text);
+}
+
+.icon-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.nav-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ts-space-1) var(--ts-space-2);
+  width: 100%;
+  min-height: 36px;
+  padding: var(--ts-space-2);
+  border: 0;
+  border-radius: var(--ts-radius-sm);
+  background: transparent;
+  color: var(--ts-text-muted);
+  font: inherit;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--ts-duration-enter) ease-out,
+    color var(--ts-duration-enter) ease-out;
+}
+
+.nav-item:hover {
+  background: var(--ts-bg);
+  color: var(--ts-text);
+}
+
+/* Current item: filled row, text colour and weight — never colour alone (docs/DESIGN.md §13). */
+.nav-item[aria-current='page'] {
+  background: var(--ts-bg);
+  color: var(--ts-text);
+  font-weight: var(--ts-font-weight-medium);
+}
+
+.nav-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.nav-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* "em breve": an outline badge. */
+.nav-soon {
+  padding: 1px var(--ts-space-2);
+  border: 1px solid var(--ts-border);
+  border-radius: var(--ts-radius-sm);
+  color: var(--ts-text-muted);
+  font-size: var(--ts-font-size-xs);
+  font-weight: var(--ts-font-weight-regular);
+  line-height: 1.4;
+}
+
+/* ---- Content ---- */
+.content {
+  min-width: 0;
+  padding: var(--ts-space-6);
+  overflow-y: auto;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ts-space-4);
+  max-width: 880px;
+}
+
+.section-title {
+  margin: 0 0 var(--ts-space-2);
+  font-size: var(--ts-font-size-xl);
+  font-weight: var(--ts-font-weight-semibold);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--ts-space-4);
+}
+
+.card-wide {
+  grid-column: 1 / -1;
+}
+
+/* Flat card: 1px subtle border, 10px radius, no shadow. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ts-space-3);
+  min-width: 0;
+  padding: var(--ts-space-5);
+  background: var(--ts-surface);
+  border: 1px solid var(--ts-border);
+  border-radius: var(--ts-radius-md);
+}
+
+.card-title {
+  margin: 0;
+  font-size: var(--ts-font-size-md);
+  font-weight: var(--ts-font-weight-semibold);
+  line-height: 1.3;
+}
+
+/* Warning (no key) and error (hotkey down): border, glyph and text — never colour alone. */
+.card[data-tone='warning'] {
+  border-color: var(--ts-notice);
+}
+
+.card[data-tone='error'] {
+  border-color: var(--ts-error);
+}
+
+.state {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ts-space-2);
+  margin: 0;
+  font-weight: var(--ts-font-weight-medium);
+}
+
+.glyph {
+  display: none;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+}
+
+.card[data-tone='warning'] .state {
+  color: var(--ts-notice);
+}
+
+.card[data-tone='warning'] .glyph {
+  display: block;
+  fill: var(--ts-notice);
+}
+
+.card[data-tone='error'] .state {
+  color: var(--ts-error);
+}
+
+.card[data-tone='error'] .glyph {
+  display: block;
+  fill: var(--ts-error);
+}
+
+/* Muted description under a heading or a control. */
+.muted {
+  margin: 0;
+  color: var(--ts-text-muted);
+  font-size: var(--ts-font-size-sm);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--ts-space-1) var(--ts-space-3);
+  margin: 0;
+}
+
+.facts dt {
+  color: var(--ts-text-muted);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: var(--ts-font-weight-medium);
+}
+
+.howto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ts-space-1);
+  margin: 0;
+  padding-left: var(--ts-space-5);
+}
+
+/* ---- Controls ---- */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ts-space-3);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ts-space-2);
+}
+
+.key-input {
+  flex: 1 1 220px;
+}
+
+/* Buttons: 36px, 6px radius, four variants. The height is a minimum, so a big text scale grows them. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ts-space-2);
+  align-self: flex-start;
+  min-height: 36px;
+  padding: var(--ts-space-1) var(--ts-space-4);
+  border: 1px solid transparent;
+  border-radius: var(--ts-radius-sm);
+  background: transparent;
+  color: var(--ts-text);
+  font: inherit;
+  font-size: var(--ts-font-size-sm);
+  font-weight: var(--ts-font-weight-medium);
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color var(--ts-duration-enter) ease-out,
+    border-color var(--ts-duration-enter) ease-out;
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Primary: the main action of a card. */
+.button-primary {
+  border-color: var(--ts-accent-fill);
+  background: var(--ts-accent-fill);
+  color: var(--ts-on-accent);
+}
+
+.button-primary:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--ts-accent-fill) 85%, var(--ts-text));
+  background: color-mix(in srgb, var(--ts-accent-fill) 85%, var(--ts-text));
+}
+
+/* Secondary / outline: the control edge is --ts-border-strong (≥ 3:1), the hover fill is --ts-bg. */
+.button-outline {
+  border-color: var(--ts-border-strong);
+}
+
+.button-outline:hover:not(:disabled) {
+  background: var(--ts-bg);
+}
+
+/* Ghost: no edge until hover; the text is the boundary. */
+.button-ghost:hover:not(:disabled) {
+  background: var(--ts-bg);
+}
+
+/* Destructive: --ts-on-accent on --ts-error (≥ 4.5:1 in both themes, tokens.test.ts). */
+.button-destructive {
+  border-color: var(--ts-error);
+  background: var(--ts-error);
+  color: var(--ts-on-accent);
+}
+
+.button-destructive:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--ts-error) 85%, var(--ts-text));
+  background: color-mix(in srgb, var(--ts-error) 85%, var(--ts-text));
+}
+
+/* Inputs and selects: 36px, 1px control edge, focus ring and placeholder in the muted token. */
+input,
+select {
+  min-width: 0;
+  min-height: 36px;
+  padding: var(--ts-space-1) var(--ts-space-3);
+  border: 1px solid var(--ts-border-strong);
+  border-radius: var(--ts-radius-sm);
+  background: var(--ts-bg);
+  color: var(--ts-text);
+  font: inherit;
+  font-size: var(--ts-font-size-sm);
+  transition: border-color var(--ts-duration-enter) ease-out;
+}
+
+label {
+  font-size: var(--ts-font-size-sm);
+  font-weight: var(--ts-font-weight-medium);
+}
+
+input::placeholder {
+  color: var(--ts-text-muted);
+  opacity: 1;
+}
+
+input:focus-visible,
+select:focus-visible {
+  border-color: var(--ts-focus);
+}
+
+input:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ---- Dropdowns: the customizable select of Chromium 152 (appearance: base-select), shadcn-like (Victor,
+   18/out/2026). Native keyboard, typeahead and screen reader stay; the picker lives inside the window. ---- */
+select,
+::picker(select) {
+  appearance: base-select;
+}
+
+select {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    border-color var(--ts-duration-enter) ease-out,
+    background-color var(--ts-duration-enter) ease-out;
+}
+
+/* The trigger: the chosen option and the Lucide chevron-down. */
+.select-trigger {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ts-space-2);
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 var(--ts-space-2) 0 var(--ts-space-3);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: inherit;
+}
+
+.select-chevron {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ts-text-muted);
+  transition: transform var(--ts-duration-enter) ease-out;
+}
+
+select:open .select-chevron {
+  transform: rotate(180deg);
+}
+
+/* The default arrow and checkmark give way to the Lucide ones. */
+select::picker-icon,
+option::checkmark {
+  display: none;
+}
+
+select:hover:not(:disabled) {
+  border-color: var(--ts-text-muted);
+}
+
+select:open {
+  border-color: var(--ts-focus);
+}
+
+selectedcontent {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The trigger shows the label only, not the check of the option it mirrors. */
+selectedcontent .option-check {
+  display: none;
+}
+
+/* The popup: surface, 1px edge, 8px radius (the 6px step + 2), the float shadow, 4px padding, ~280px tall at most. */
+::picker(select) {
+  min-width: anchor-size(width);
+  max-height: 280px;
+  margin-block: var(--ts-space-1);
+  padding: var(--ts-space-1);
+  overflow-y: auto;
+  border: 1px solid var(--ts-border);
+  border-radius: calc(var(--ts-radius-sm) + 2px);
+  background: var(--ts-surface);
+  color: var(--ts-text);
+  box-shadow: var(--ts-shadow-float);
+}
+
+/* Options: 32px rows, 6px radius; hover and keyboard highlight on the muted fill; the chosen one has the check. */
+option {
+  display: flex;
+  align-items: center;
+  gap: var(--ts-space-2);
+  min-height: 32px;
+  padding: 0 var(--ts-space-3) 0 var(--ts-space-2);
+  border-radius: var(--ts-radius-sm);
+  background: transparent;
+  color: var(--ts-text);
+  font-size: var(--ts-font-size-sm);
+  cursor: pointer;
+}
+
+option:hover,
+option:focus,
+option:focus-visible {
+  background: var(--ts-bg);
+  outline: none;
+}
+
+option:checked {
+  font-weight: var(--ts-font-weight-medium);
+}
+
+.option-check {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ts-accent);
+  visibility: hidden;
+}
+
+option:checked .option-check {
+  visibility: visible;
+}
+
+/* ---- Number fields: the native spin buttons go; the arrow keys still step the value ---- */
+input[type='number'] {
+  appearance: textfield;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+input:hover:not(:disabled, :focus-visible) {
+  border-color: var(--ts-text-muted);
+}
+
+/* ---- Checkbox, switch and radio, drawn on the tokens (no native accent) ---- */
+input[type='checkbox'],
+input[type='radio'] {
+  display: inline-grid;
+  flex: none;
+  place-content: center;
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--ts-border-strong);
+  background: var(--ts-bg);
+  cursor: pointer;
+  appearance: none;
+  transition:
+    background-color var(--ts-duration-enter) ease-out,
+    border-color var(--ts-duration-enter) ease-out;
+}
+
+input[type='checkbox'] {
+  border-radius: calc(var(--ts-radius-sm) - 2px);
+}
+
+/* The check: two strokes in the text-on-accent colour (≥ 4.5:1 on the accent fill, tokens.test.ts). */
+input[type='checkbox']::before {
+  width: 10px;
+  height: 5px;
+  margin-top: -2px;
+  border-bottom: 2px solid var(--ts-on-accent);
+  border-left: 2px solid var(--ts-on-accent);
+  content: '';
+  transform: rotate(-45deg) scale(0);
+  transition: transform var(--ts-duration-enter) ease-out;
+}
+
+input[type='checkbox']:checked {
+  border-color: var(--ts-accent-fill);
+  background: var(--ts-accent-fill);
+}
+
+input[type='checkbox']:checked::before {
+  transform: rotate(-45deg) scale(1);
+}
+
+/* The switch ("Iniciar com o Windows"): a track with a knob that slides. */
+input[type='checkbox'][role='switch'] {
+  display: inline-flex;
+  align-items: center;
+  width: 36px;
+  height: 20px;
+  padding: 1px;
+  border-radius: var(--ts-radius-pill);
+}
+
+input[type='checkbox'][role='switch']::before {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ts-border-strong);
+  transform: none;
+  transition: transform var(--ts-duration-enter) ease-out;
+}
+
+input[type='checkbox'][role='switch']:checked::before {
+  background: var(--ts-on-accent);
+  transform: translateX(16px);
+}
+
+input[type='radio'] {
+  border-radius: 50%;
+}
+
+input[type='radio']::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ts-accent-fill);
+  content: '';
+  transform: scale(0);
+  transition: transform var(--ts-duration-enter) ease-out;
+}
+
+input[type='radio']:checked {
+  border-color: var(--ts-accent-fill);
+}
+
+input[type='radio']:checked::before {
+  transform: scale(1);
+}
+
+input[type='checkbox']:hover:not(:disabled):not(:checked),
+input[type='radio']:hover:not(:disabled):not(:checked) {
+  border-color: var(--ts-text-muted);
+}
+
+input[aria-invalid='true'],
+select[aria-invalid='true'] {
+  border-color: var(--ts-error);
+  box-shadow: inset 0 0 0 1px var(--ts-error);
+}
+
+:focus-visible {
+  outline: var(--ts-focus-ring);
+  outline-offset: var(--ts-focus-ring-offset);
+}
+
+.field {
+  display: grid;
+  grid-template-columns: minmax(160px, 260px) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ts-space-1) var(--ts-space-4);
+}
+
+.field .hint,
+.field .field-error {
+  grid-column: 2;
+  font-size: var(--ts-font-size-sm);
+}
+
+.field .hint {
+  color: var(--ts-text-muted);
+}
+
+.field-error {
+  color: var(--ts-error);
+}
+
+.field-check {
+  grid-template-columns: max-content minmax(0, 1fr);
+  justify-content: start;
+}
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ts-space-3);
+  padding: var(--ts-space-3) var(--ts-space-4);
+  border: 1px solid var(--ts-notice);
+  border-radius: var(--ts-radius-md);
+}
+
+.banner p {
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.message {
+  min-height: 1.45em;
+  margin: 0;
+  font-size: var(--ts-font-size-sm);
+}
+
+.message[data-tone='error'] {
+  color: var(--ts-error);
+}
+
+/* ---- Shared pieces of Início and Histórico (spec historico §7) ---- */
+
+/* Text only for assistive technology (the aria-live region of Histórico). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ts-space-2);
+}
+
+.button-sm {
+  min-height: 32px;
+  padding: var(--ts-space-1) var(--ts-space-3);
+}
+
+.button-center {
+  align-self: center;
+}
+
+.button-icon,
+.stat-icon,
+.search-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+/* The warning triangle inline with a sentence (banners, entry notices): shape and text, never colour alone. */
+.glyph-inline {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.banner-notice {
+  justify-content: flex-start;
+  color: var(--ts-notice);
+}
+
+.banner-danger {
+  border-color: var(--ts-error);
+}
+
+/* An empty, no-result, off or unavailable state: a sentence in the muted tone, never an empty list alone. */
+.state-text {
+  margin: 0;
+  padding: var(--ts-space-5) var(--ts-space-4);
+  border: 1px dashed var(--ts-border-strong);
+  border-radius: var(--ts-radius-md);
+  color: var(--ts-text-muted);
+  text-align: center;
+}
+
+/* ---- Início · "Como ditar", compact, the hotkey highlighted ---- */
+.card-compact {
+  padding: var(--ts-space-4) var(--ts-space-5);
+}
+
+.howto-compact {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ts-space-3) var(--ts-space-6);
+}
+
+.howto-key {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ts-space-1);
+}
+
+.howto-compact .howto {
+  color: var(--ts-text-muted);
+  font-size: var(--ts-font-size-sm);
+}
+
+/* A key cap: the text colour on the page background, a strong edge and a deeper bottom edge. */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  margin-top: var(--ts-space-1);
+  padding: var(--ts-space-1) var(--ts-space-3);
+  border: 1px solid var(--ts-border-strong);
+  border-bottom-width: 3px;
+  border-radius: var(--ts-radius-sm);
+  background: var(--ts-bg);
+  color: var(--ts-text);
+  font-family: var(--ts-font-sans);
+  font-size: var(--ts-font-size-md);
+  font-weight: var(--ts-font-weight-semibold);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* ---- Início · Seu uso ---- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--ts-space-3);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ts-space-2);
+  min-width: 0;
+  padding: var(--ts-space-3) var(--ts-space-4);
+  border: 1px solid var(--ts-border);
+  border-radius: var(--ts-radius-md);
+  background: var(--ts-bg);
+}
+
+.stat-label {
+  display: flex;
+  align-items: center;
+  gap: var(--ts-space-2);
+  margin: 0;
+  color: var(--ts-text-muted);
+  font-size: var(--ts-font-size-sm);
+  font-weight: var(--ts-font-weight-medium);
+}
+
+.stat-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ts-space-1) var(--ts-space-4);
+  margin: 0;
+}
+
+.stat-values div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.stat-values dt {
+  color: var(--ts-text-muted);
+  font-size: var(--ts-font-size-xs);
+}
+
+.stat-values dd,
+.stat-big {
+  margin: 0;
+  font-size: var(--ts-font-size-lg);
+  font-weight: var(--ts-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+}
+
+.stat-values div:first-child dd,
+.stat-big {
+  color: var(--ts-accent);
+}
+
+/* ---- Entries: Ditados recentes (Início) and Histórico ---- */
+.entries {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ts-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ts-space-2);
+  min-width: 0;
+  padding: var(--ts-space-3) var(--ts-space-4);
+  background: var(--ts-surface);
+  border: 1px solid var(--ts-border);
+  border-radius: var(--ts-radius-md);
+}
+
+.entries-compact .entry {
+  background: var(--ts-bg);
+}
+
+.entry-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ts-space-1) var(--ts-space-2);
+}
+
+.entry-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ts-space-1) var(--ts-space-2);
+  margin: 0;
+  color: var(--ts-text-muted);
+  font-size: var(--ts-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.entry-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ts-space-1);
+  color: var(--ts-notice);
+}
+
+.entry-status[data-status='failed'] {
+  color: var(--ts-error);
+}
+
+.entry-actions {
+  display: flex;
+  gap: var(--ts-space-1);
+}
+
+.entry-text {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* Início shows the beginning of each text; Histórico shows it whole. */
+.entries-compact .entry-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.button[data-copied='true'] {
+  color: var(--ts-accent);
+}
+
+/* ---- Histórico ---- */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ts-space-2);
+}
+
+.search {
+  position: relative;
+  display: flex;
+  flex: 1 1 260px;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: var(--ts-space-3);
+  color: var(--ts-text-muted);
+  pointer-events: none;
+}
+
+.search input {
+  flex: 1 1 auto;
+  padding-left: calc(var(--ts-space-3) + 16px + var(--ts-space-2));
+}
+
+.toolbar .button {
+  align-self: auto;
+}
+
+.history-days {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ts-space-4);
+}
+
+.history-day {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ts-space-2);
+}
+
+.history-day-title {
+  margin: 0;
+  color: var(--ts-text-muted);
+  font-size: var(--ts-font-size-sm);
+  font-weight: var(--ts-font-weight-semibold);
+}
+
+/* ---- Configurações · Guardar histórico ---- */
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ts-space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choices legend {
+  margin-bottom: var(--ts-space-2);
+  padding: 0;
+  font-size: var(--ts-font-size-sm);
+  font-weight: var(--ts-font-weight-medium);
+}
+
+.choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ts-space-2);
+}
+
+.choice label {
+  font-weight: var(--ts-font-weight-regular);
+}
+
+.days-input {
+  width: 96px;
+}
+
+.choice .hint {
+  color: var(--ts-text-muted);
+  font-size: var(--ts-font-size-sm);
+}
+
+/* Narrow window or large text scale: labels above their fields, no horizontal scroll (spec §6). */
+@media (max-width: 860px) {
+  .content {
+    padding: var(--ts-space-5);
+  }
+
+  .field {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .field .hint,
+  .field .field-error {
+    grid-column: 1;
+  }
+
+  .field-check {
+    grid-template-columns: max-content minmax(0, 1fr);
+  }
+
+  .field-check .field-error {
+    grid-column: 1 / -1;
+  }
+
+  .howto-compact {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-item,
+  .icon-button,
+  .button,
+  input,
+  input::before,
+  select,
+  .select-chevron {
+    transition: none;
+  }
+
+  /* The script skips the View Transition with reduced motion; this is the second guard (FR-UI-41). */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+
+  .button:active:not(:disabled) {
+    transform: none;
+  }
+}

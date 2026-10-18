@@ -7,7 +7,11 @@ const ENDPOINT = 'https://api.groq.com/openai/v1/audio/transcriptions';
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
 export interface GroqOptions {
-  apiKey: string | undefined;
+  /**
+   * The key in use, read at every call: a key saved or removed on screen counts from the next dictation,
+   * without restarting (spec janela-principal FR-UI-18, ADR-08).
+   */
+  getApiKey: () => string | undefined;
   model: string;
   timeoutMs?: number;
   retryDelayMs?: number;
@@ -39,11 +43,12 @@ export class GroqTranscriber implements Transcriber {
   }
 
   hasCredentials(): boolean {
-    return Boolean(this.opts.apiKey);
+    return Boolean(this.opts.getApiKey());
   }
 
   async transcribe(audio: ArrayBuffer, mimeType: string, { language }: { language: string }): Promise<TranscriptionResult> {
-    if (!this.opts.apiKey) return { kind: 'error', code: 'no_api_key' };
+    const apiKey = this.opts.getApiKey();
+    if (!apiKey) return { kind: 'error', code: 'no_api_key' };
     if (audio.byteLength > MAX_UPLOAD_BYTES) return { kind: 'error', code: 'audio_too_large' };
 
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -58,7 +63,7 @@ export class GroqTranscriber implements Transcriber {
       try {
         response = await this.fetchImpl(ENDPOINT, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${this.opts.apiKey}` },
+          headers: { Authorization: `Bearer ${apiKey}` },
           body: form,
           signal: AbortSignal.timeout(this.timeoutMs),
         });

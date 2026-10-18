@@ -9,10 +9,10 @@
   "author": "Victor Alves",
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc -p tsconfig.main.json && tsc -p tsconfig.renderer.json && node scripts/copy-static.mjs",
+    "build": "tsc -p tsconfig.main.json && tsc -p tsconfig.renderer.json && tsc -p tsconfig.main-window.json && node scripts/copy-static.mjs",
     "dev": "npm run build && node scripts/start.mjs",
     "start": "node scripts/start.mjs",
-    "typecheck": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
+    "typecheck": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit && tsc -p tsconfig.main-window.json --noEmit",
     "test": "npm run build && node --test \"dist/test/**/*.test.js\""
   },
   "dependencies": {

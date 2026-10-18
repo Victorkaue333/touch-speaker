@@ -6,6 +6,9 @@ import * as path from 'node:path';
 type FieldValue = string | number | boolean | null;
 export type LogFields = Record<string, FieldValue>;
 
+/** What the modules that only write to the log need (the tests pass a fake that records the calls). */
+export type LogPort = Pick<Logger, 'info' | 'warn' | 'error'>;
+
 const MAX_BYTES = 5 * 1024 * 1024;
 const KEEP_FILES = 3;
 

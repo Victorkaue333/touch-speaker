@@ -1,5 +1,6 @@
-// The floating status pill (docs/DESIGN.md §6). It never takes focus or mouse input, and it is the
-// only renderer: it records audio because getUserMedia only exists in a renderer.
+// The floating status pill (docs/DESIGN.md §6). It never takes focus or mouse input, and it is the only
+// renderer allowed to record: getUserMedia only exists in a renderer, and the microphone permission goes to
+// the pill alone (the main window of spec janela-principal never gets it).
 import { BrowserWindow, screen } from 'electron';
 import * as path from 'node:path';
 import { Channel, type PillState } from '../shared/ipc';
