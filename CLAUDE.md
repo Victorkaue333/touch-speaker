@@ -8,7 +8,7 @@ O **SDD** (`docs/spec/spec-driven-development.md`) é o **contrato de engenharia
 
 ## Identidade do projeto
 
-- **O que é:** Touch Speaker é um app de bandeja para **Windows** que transforma fala em texto digitado no app em foco: segura uma tecla, fala, solta, o texto aparece no cursor. Dono: Victor Alves. Idioma do produto e da documentação: **pt-BR**.
+- **O que é:** Touch Speaker é um app de bandeja para **Windows e macOS** que transforma fala em texto digitado no app em foco: segura uma tecla, fala, solta, o texto aparece no cursor. Hoje roda no Windows; o suporte a macOS está especificado e aprovado (spec `distribuicao-windows-macos`, ADR-11), mas ainda em implementação na M2. Linux vem depois, sem data; mobile fica fora. Dono: Victor Alves. Idioma do produto e da documentação: **pt-BR**.
 - **Problema que resolve:** escrever no computador é lento (~40 palavras por minuto digitando, ~150 falando) e o ditado do Windows (`Win + H`) não dá conta de pt-BR com termos técnicos — resumo em [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md).
 - **Relação com outros sistemas:** uma só integração externa — o processo main envia o áudio à API de transcrição da Groq (`whisper-large-v3-turbo`) com a chave do próprio usuário, digitada em Configurações e guardada cifrada pelo `safeStorage` (ADR-08). Não há backend próprio, banco, telemetria nem outro serviço na Fase 1 — contrato em [`docs/INTEGRATION.md`](docs/INTEGRATION.md) e [`docs/API.md`](docs/API.md#transcrição-groq).
 - **Estágio:** Fase 1 (MVP — ditado básico) com T1–T8 implementadas em `frontend/` em 17/out/2026; **funcionando de ponta a ponta no PC do Victor**, com 0,66–0,88 s do fim da fala ao texto. Faltam T9 (resto do roteiro V1–V13) e T10 (fechar a spec). Da M2, as specs `design-system`, `janela-principal` e `historico` estão implementadas no código desde 18/out/2026 (não commitadas; roteiros manuais pendentes); 326/326 testes. Sem instalador: roda em modo de desenvolvimento.
@@ -44,7 +44,7 @@ O **SDD** (`docs/spec/spec-driven-development.md`) é o **contrato de engenharia
   - **`design-system`** — implementada no código em 18/out/2026 (não commitada); falta o roteiro manual V-DS-1…6 (PEND-006).
   - **`janela-principal`** — implementada no código em 18/out/2026 (não commitada): janela pela bandeja, chave da Groq em Configurações com `safeStorage` (ADR-08), `.env` só em desenvolvimento; falta o roteiro manual VJ1–VJ24 (PEND-007). No mesmo dia, a pedido do Victor: tema claro/escuro escolhido na janela (FR-UI-39…42, `config.json` `theme`, `theme:set`), "Como ditar" compacto e listas suspensas/caixas no estilo da janela; roteiro VJ25–VJ27 pendente (PEND-010).
   - **`historico`** — **implementada no código em 18/out/2026** (não commitada): banco SQLite em `%LOCALAPPDATA%\Touch Speaker\` pelo `node:sqlite` (ADR-09 aceita, spike T1), só texto e nunca áudio, tela Histórico (busca, copiar, apagar, apagar tudo), retenção em Configurações (30 dias por padrão), e — pedido do Victor — os cards "Seu uso" (`history:stats`) e "Ditados recentes" no Início. Spec de migração companheira [`historico-dados-v1`](docs/spec/features/historico-dados-v1.md) em `proposta` (implementação autorizada pelo Victor; a aprovação vem com a validação dele). Falta o roteiro VH1–VH13 (PEND-009).
-  - **`distribuicao-windows-macos`** — aprovada, ainda não implementada.
+  - **`distribuicao-windows-macos`** — aprovada, ainda não implementada; a ADR-11 (Windows e macOS, distribuição restrita antes da Fase 4) foi aceita pelo Victor em 18/out/2026. Linux fica planejado para depois, sem data.
 - **Revisão de código da M2** (18/out/2026): o ícone do botão de tema nunca trocava (o código usava a propriedade `.hidden` num `<svg>`, que não existe nele) — corrigido com o atributo `hidden`; mais cinco correções menores (recarga do Histórico que encolhia a lista, foco depois de "Apagar", busca em qualquer escrita e termo vazio, troca de fuso com o app aberto, transições na volta a "Seguir o sistema"). Os ícones Lucide ganharam a ADR-13 (**proposta**, aguardando o aval do Victor). Detalhe no [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
 - **Testes:** 326/326 em 18/out/2026 (`npm test`; 30 na Fase 1, +83 da `design-system`, +71 da `janela-principal`, +117 da `historico`, do tema e dos controles, +25 das correções da revisão de código); `npm run typecheck` limpo nos três programas do `tsc`.
 - **Pendências que mais pesam:** PEND-001 (T9 — roteiro manual V1 e V3–V13 e medição de latência; só o V2 foi feito), PEND-002 (T10 — a spec passa a `implementada` depois do T9), PEND-006 (roteiro V-DS-1…6), PEND-007 (roteiro VJ1–VJ24), PEND-009 (roteiro VH1–VH13 do histórico) e PEND-010 (roteiro VJ25–VJ27 do tema e dos controles) — registro no [SDD, Apêndice B](docs/spec/spec-driven-development.md#apêndice-b--pendências).
@@ -103,7 +103,7 @@ O app fica em `frontend/`. Nas citações `arquivo.ts:linha` dos docs, os caminh
 
 ## Decisões fixas (não rediscutir sem aval do Victor)
 
-- Windows primeiro; nada de macOS/Linux/mobile antes da Fase 4.
+- Windows e macOS ([ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)); Linux planejado para depois; mobile fora. O macOS ainda está em implementação (spec `distribuicao-windows-macos`, M2).
 - Electron + TypeScript ([ADR-01](docs/DECISIONS.md#adr-01--electron--typescript)).
 - Hook global com `uiohook-napi`, não `globalShortcut` ([ADR-02](docs/DECISIONS.md#adr-02--hook-global-com-uiohook-napi-não-globalshortcut)).
 - Inserção por clipboard + Ctrl+V via `SendInput` ([ADR-03](docs/DECISIONS.md#adr-03--inserção-por-clipboard--ctrlv-via-sendinput)).
@@ -113,7 +113,7 @@ O app fica em `frontend/`. Nas citações `arquivo.ts:linha` dos docs, os caminh
 - Sala limpa em relação ao Typeless ([ADR-07](docs/DECISIONS.md#adr-07--sala-limpa-em-relação-ao-typeless)).
 - Chave da Groq no `safeStorage` do Electron, digitada em Configurações; `.env` só como reserva de desenvolvimento, nunca lido no app empacotado; a chave nunca volta ao renderer, nunca vai para log nem para o `config.json` e nunca é gravada em texto puro ([ADR-08](docs/DECISIONS.md#adr-08--chave-da-groq-no-safestorage-do-electron-com-o-env-só-como-reserva-de-desenvolvimento)).
 - Fonte Inter embutida, arquivo oficial sem modificação, com a licença OFL ao lado — a única exceção ao guardrail de binários de terceiros ([ADR-12](docs/DECISIONS.md#adr-12--fonte-inter-embutida-no-app)).
-- **ADRs propostas:** [ADR-13 — ícones Lucide embutidos](docs/DECISIONS.md#adr-13--ícones-lucide-embutidos), aguardando o aval do Victor (SDD §27). ADR-10 e ADR-11 seguem reservadas para a spec `distribuicao-windows-macos`.
+- **ADRs propostas:** [ADR-13 — ícones Lucide embutidos](docs/DECISIONS.md#adr-13--ícones-lucide-embutidos), aguardando o aval do Victor (SDD §27). A ADR-10 segue reservada para a spec `distribuicao-windows-macos`; a ADR-11 foi aceita pelo Victor em 18/out/2026.
 
 Detalhe (contexto, decisão, consequências, implementação) em [`docs/DECISIONS.md`](docs/DECISIONS.md).
 

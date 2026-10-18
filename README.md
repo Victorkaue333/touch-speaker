@@ -1,4 +1,4 @@
-# 🎙️ Touch Speaker — ditado por voz para Windows: fale e o texto aparece onde está o cursor
+# 🎙️ Touch Speaker — ditado por voz para Windows e macOS: fale e o texto aparece onde está o cursor
 
 <p align="center">
   <img src="docs/assets/logo.svg" alt="Logo do Touch Speaker" width="360">
@@ -8,16 +8,17 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Node.js](<https://img.shields.io/badge/Node.js-24%20LTS-5FA04E?style=flat&logo=nodedotjs&logoColor=white>)
 ![Windows](<https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-0078D4?style=flat>)
+![macOS](<https://img.shields.io/badge/macOS-13%2B%20%C2%B7%20em%20implementa%C3%A7%C3%A3o-lightgrey?style=flat>)
 ![Groq](<https://img.shields.io/badge/Groq-Whisper%20large--v3--turbo-F55036?style=flat>)
 ![Testes](<https://img.shields.io/badge/testes-326%20passando-brightgreen?style=flat>)
 ![Status](<https://img.shields.io/badge/status-fase%201%20%C2%B7%20em%20verifica%C3%A7%C3%A3o-orange?style=flat>)
 ![License](https://img.shields.io/badge/license-propriet%C3%A1ria-lightgrey?style=flat)
 
-> 🗣️ O **Touch Speaker** é um app de bandeja para Windows que transforma fala em texto digitado no app em foco. Você **segura o Ctrl direito**, fala e solta — em menos de um segundo o texto aparece no cursor do VS Code, do navegador, do WhatsApp ou de qualquer outro app, como se tivesse sido digitado. A transcrição em português é feita pelo Whisper (via Groq, plano gratuito) e o que você tinha copiado no clipboard volta ao lugar depois.
+> 🗣️ O **Touch Speaker** é um app de bandeja para Windows e macOS que transforma fala em texto digitado no app em foco. Você **segura o Ctrl direito**, fala e solta — em menos de um segundo o texto aparece no cursor do VS Code, do navegador, do WhatsApp ou de qualquer outro app, como se tivesse sido digitado. A transcrição em português é feita pelo Whisper (via Groq, plano gratuito) e o que você tinha copiado no clipboard volta ao lugar depois.
 
 Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) · Requisitos: [`docs/PRD.md`](docs/PRD.md) · Contrato de engenharia: [`docs/spec/spec-driven-development.md`](docs/spec/spec-driven-development.md) · Decisões: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**📅 Estágio:** **Fase 1 (MVP) implementada e funcionando de ponta a ponta** no Windows do mantenedor desde 17/out/2026 (commit `bae6eba`). Medido nos primeiros ditados reais: **0,66–0,88 s** do fim da fala até o texto inserido e microfone aberto em 75–270 ms. Falta concluir o roteiro de verificação manual V1–V13 da [spec da feature](docs/spec/features/ditado-por-voz.md) (segurar, `Esc`, clipboard, outros apps, janela de administrador). Em 18/out/2026 entraram no código, da milestone M2, o design system "Sálvia", a **janela principal**, onde a chave Groq do próprio usuário é digitada e guardada cifrada, o **histórico local** dos ditados (só texto, neste computador) e o tema claro/escuro escolhido na janela (roteiros manuais pendentes). Não há instalador: roda em modo de desenvolvimento.
+**📅 Estágio:** **Fase 1 (MVP) implementada e funcionando de ponta a ponta** no Windows do mantenedor desde 17/out/2026 (commit `bae6eba`). Medido nos primeiros ditados reais: **0,66–0,88 s** do fim da fala até o texto inserido e microfone aberto em 75–270 ms. Falta concluir o roteiro de verificação manual V1–V13 da [spec da feature](docs/spec/features/ditado-por-voz.md) (segurar, `Esc`, clipboard, outros apps, janela de administrador). Em 18/out/2026 entraram no código, da milestone M2, o design system "Sálvia", a **janela principal**, onde a chave Groq do próprio usuário é digitada e guardada cifrada, o **histórico local** dos ditados (só texto, neste computador) e o tema claro/escuro escolhido na janela (roteiros manuais pendentes). Não há instalador: roda em modo de desenvolvimento, **hoje só no Windows**. O suporte a macOS (13 ou mais novo, Apple Silicon) está especificado e aprovado — spec [`distribuicao-windows-macos`](docs/spec/features/distribuicao-windows-macos.md), [ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4) — e em implementação na M2; Linux vem depois, ainda sem data.
 
 ---
 
@@ -47,7 +48,8 @@ Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) �
 
 | Ferramenta                 | Versão                                    | Para quê                             | Verificar                                               |
 | -------------------------- | ------------------------------------------ | ------------------------------------- | ------------------------------------------------------- |
-| 🪟 **Windows**       | 10 ou 11, 64 bits                          | Único sistema suportado na Fase 1    | `winver`                                              |
+| 🪟 **Windows**       | 10 ou 11, 64 bits                          | O sistema em que o app roda hoje     | `winver`                                              |
+| 🍎 **macOS**         | 13 (Ventura) ou mais novo, Apple Silicon   | Suporte em implementação na M2 — ainda não roda ([ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)) | Menu Apple → Sobre este Mac |
 | 🟩 **Node.js**       | **24 LTS** (conferido com 24.20.0)   | Build e execução em desenvolvimento | `node --version`                                      |
 | 📦 **npm**           | o que vem com o Node (conferido com 11.21) | Dependências                         | `npm --version`                                       |
 | 🔧 **Git**           | atual                                      | Versionamento                         | `git --version`                                       |
@@ -427,6 +429,8 @@ Códigos de erro e mensagens da pílula: [`docs/API.md` — Códigos de erro](do
 | **2** | Limpeza do texto com IA (Claude Haiku), dicionário pessoal, histórico local, tela de configurações | 🟡 Tela de configurações, chave no `safeStorage` e **histórico local** adiantados pela M2 — no código desde 18/out/2026, verificação manual pendente; limpeza por IA e dicionário ⏳ |
 | **3** | Contexto do app em foco (UI Automation), Ask Anything, tradução, aprendizado com as correções      | ⏳                                |
 | **4** | Backend próprio, contas, streaming de áudio, instalador assinado e atualização automática         | ⏳                                |
+
+**Plataformas:** Windows 10/11 x64 (hoje) e macOS 13+ em Apple Silicon (planejado na M2 — spec [`distribuicao-windows-macos`](docs/spec/features/distribuicao-windows-macos.md) aprovada, em implementação); Linux depois, sem data; mobile fora ([ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)).
 
 Detalhes no [PRD](docs/PRD.md#roadmap). Feature nova começa sempre por uma spec ([os três estágios](docs/templates/README.md#os-três-estágios)).
 

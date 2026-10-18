@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT — Touch Speaker
 
-> Última atualização: 17/out/2026 · Mantenedor: Victor Alves
+> Última atualização: 18/out/2026 · Mantenedor: Victor Alves
 > **Dono:** Victor Alves · **Criado em:** 17/out/2026 · **Status:** Fase 1 (MVP) implementada (T1–T8), em verificação (T9)
 > **Idioma do produto:** pt-BR primeiro
 
@@ -28,7 +28,10 @@ trabalhar. Mas são produtos fechados, pagos por assinatura e com dados passando
 
 ## Proposta de valor
 
-**Segure uma tecla, fale e o texto aparece onde o cursor está, em qualquer app do Windows.**
+**Segure uma tecla, fale e o texto aparece onde o cursor está, em qualquer app do Windows — e do macOS.**
+Hoje o app roda no Windows; o suporte a macOS está aprovado ([ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4))
+e planejado na M2 (spec [`distribuicao-windows-macos`](docs/spec/features/distribuicao-windows-macos.md), ainda não
+implementada); Linux vem depois, sem data.
 Sem trocar de janela, sem copiar e colar, sem configurar nada por app.
 
 ## Objetivos de negócio
@@ -74,7 +77,10 @@ Nenhuma das quatro está validada ainda (PEND-003).
 - Limpeza de texto por IA, dicionário pessoal, histórico (Fase 2)
 - Tradução, comandos por voz ("Ask Anything"), contexto do app (Fase 3)
 - Contas, backend (Fase 4)
-- macOS/Linux/mobile
+- Linux (planejado para depois, sem data) e mobile (fora)
+
+**Plataformas:** Windows 10/11 x64 hoje; macOS 13+ em Apple Silicon planejado na M2 (spec aprovada, em
+implementação — [ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)).
 
 A ordem de entrada está no roadmap do [PRD](docs/PRD.md#roadmap).
 
@@ -96,7 +102,7 @@ A ordem de entrada está no roadmap do [PRD](docs/PRD.md#roadmap).
 
 O registro completo (RISK-001…014) está no [SDD §26](docs/spec/spec-driven-development.md#26-riscos-e-mitigações).
 
-**Dependências externas:** Groq Cloud (transcrição), Windows 10+ x64, microfone.
+**Dependências externas:** Groq Cloud (transcrição), Windows 10+ x64 (e macOS 13+ quando o porte da M2 entrar), microfone.
 
 ---
 

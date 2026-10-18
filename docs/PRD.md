@@ -7,9 +7,13 @@
 
 ## Visão
 
-Um app de bandeja para Windows que transforma fala em texto digitado no app em foco. A pessoa segura
+Um app de bandeja para Windows e macOS que transforma fala em texto digitado no app em foco. A pessoa segura
 uma tecla, fala, solta, e o texto aparece onde está o cursor (VS Code, navegador, WhatsApp, Slack,
 Word, Claude Code), como se tivesse sido digitado.
+
+Hoje o app roda no Windows. O macOS entra na M2 ([ADR-11](DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4),
+aceita em 18/out/2026; spec [`distribuicao-windows-macos`](spec/features/distribuicao-windows-macos.md) aprovada,
+ainda não implementada). Linux vem depois, sem data; mobile fica fora.
 
 O que fica de fora em cada fase está em [Fora de escopo](#fora-de-escopo) e no SDD
 ([`spec/spec-driven-development.md`](spec/spec-driven-development.md)).
@@ -120,7 +124,7 @@ As regras e os critérios desses itens estão no SDD: BR-017 e BR-018 (históric
 | NFR-03 | Consumo em repouso | ≤ 220 MB de memória privada (somando os processos do Electron) e ~0% de CPU com o app parado na bandeja. Medido em 17/out/2026: 205 MB com aceleração de hardware desligada. A meta original de 150 MB fica abaixo do piso do Electron com uma janela; se virar problema, o caminho é Tauri ([ADR-01](DECISIONS.md#adr-01--electron--typescript)) |
 | NFR-04 | Privacidade | Microfone só aberto durante a gravação; áudio não é salvo em disco; texto ditado nunca vai para log |
 | NFR-05 | Segurança Electron | `contextIsolation`, `sandbox`, sem `nodeIntegration`, preload com API mínima, CSP restrita ([Security Guide](Security-Guide.md)) |
-| NFR-06 | Plataforma | Windows 10/11 x64. Outras plataformas fora do escopo |
+| NFR-06 | Plataforma | Windows 10/11 x64 (Fase 1, implementado) e macOS 13+ em Apple Silicon (M2, ADR-11 — especificado e aprovado, em implementação). Linux planejado para depois, sem data; mobile, Mac Intel e Windows arm64 fora do escopo |
 | NFR-07 | Qualidade de código | TypeScript estrito, sem `any` sem justificativa |
 
 Verificação e status de cada NFR: [SDD §5](spec/spec-driven-development.md#5-requisitos-não-funcionais).
@@ -211,7 +215,8 @@ A Fase 1 está pronta quando **todos** os FR-DICT passam e a colagem funciona ne
 
 Fase 1 não tem: limpeza por IA, dicionário, histórico, tela de configurações, tradução, comandos por
 voz, contexto do app, contas, backend, instalador assinado, auto-update, macOS/Linux/mobile,
-streaming de áudio durante a fala.
+streaming de áudio durante a fala. (O macOS deixou de esperar a Fase 4: entra na M2 pela ADR-11; Linux fica
+para depois, sem data; mobile continua fora.)
 
 Nada disso entra na Fase 1 "porque era fácil" (C8): cada item volta pela spec da fase em que está no
 roadmap abaixo.
@@ -224,6 +229,15 @@ roadmap abaixo.
 | 2 | Limpeza por IA, dicionário, histórico local, tela de configurações | Chave Anthropic; `database/` local | Planejada; o histórico local e a tela de configurações foram adiantados pela M2 — no código desde 18/out/2026, em verificação ([Adiantado pela M2](#adiantado-pela-m2-18out2026)) |
 | 3 | Contexto do app (UI Automation), Ask Anything, tradução, aprendizado por edição | Fase 2 | Planejada |
 | 4 | Backend próprio, contas, cotas, instalador assinado, auto-update | Decisão de produto [PRECISA ESCLARECER: qual decisão de produto abre a Fase 4 — quando e com que critério o app passa a ser distribuído para outras pessoas?] | Planejada |
+
+**Plataformas** (fora da tabela de fases — [ADR-11](DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)):
+
+| Plataforma | Estado |
+| --- | --- |
+| Windows 10/11 x64 | Suportado — o app roda hoje (modo de desenvolvimento) |
+| macOS 13+ (Apple Silicon) | Planejado na M2 — spec `distribuicao-windows-macos` aprovada, ainda não implementada |
+| Linux | Planejado para depois, sem data; entra por spec própria |
+| Mobile | Fora |
 
 Fases com o que cada uma fecha (pendências e riscos): [SDD §29](spec/spec-driven-development.md#29-roadmap-e-fases).
 

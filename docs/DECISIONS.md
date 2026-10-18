@@ -19,10 +19,11 @@ Os caminhos citados em **Implementação** são relativos a `frontend/`, e as li
 | ADR-07 | 17/out/2026 | [Sala limpa em relação ao Typeless](#adr-07--sala-limpa-em-relação-ao-typeless) | Aceita — Victor Alves |
 | ADR-08 | 18/out/2026 | [Chave da Groq no `safeStorage` do Electron, com o `.env` só como reserva de desenvolvimento](#adr-08--chave-da-groq-no-safestorage-do-electron-com-o-env-só-como-reserva-de-desenvolvimento) | Aceita — Victor Alves |
 | ADR-09 | 18/out/2026 | [SQLite local pelo `node:sqlite` embutido para o histórico de ditados](#adr-09--sqlite-local-pelo-nodesqlite-embutido-para-o-histórico-de-ditados) | Aceita — Victor Alves |
+| ADR-11 | 18/out/2026 | [macOS como plataforma suportada e distribuição restrita antes da Fase 4](#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4) | Aceita — Victor Alves (implementação pendente) |
 | ADR-12 | 18/out/2026 | [Fonte Inter embutida no app](#adr-12--fonte-inter-embutida-no-app) | Aceita — Victor Alves |
 | ADR-13 | 18/out/2026 | [Ícones Lucide embutidos](#adr-13--ícones-lucide-embutidos) | **Proposta** — aguardando aval do Victor |
 
-Uma ADR em proposta: a ADR-13, que registra os ícones Lucide já no código (SDD [§27](spec/spec-driven-development.md#27-adrs--decisões-arquiteturais)). Os números ADR-08 a ADR-11 foram reservados em 18/out/2026 pelas outras specs da M2 (`janela-principal`, `historico` e `distribuicao-windows-macos` — [doc-pai](milestones/M2-app-com-interface.md)) e entram aqui com a implementação de cada uma: a ADR-12 veio primeiro, com a spec `design-system`, a ADR-08 com a `janela-principal` e a ADR-09 com a `historico`; as ADR-10 e ADR-11 seguem reservadas (`distribuicao-windows-macos`).
+Uma ADR em proposta: a ADR-13, que registra os ícones Lucide já no código (SDD [§27](spec/spec-driven-development.md#27-adrs--decisões-arquiteturais)). Os números ADR-08 a ADR-11 foram reservados em 18/out/2026 pelas outras specs da M2 (`janela-principal`, `historico` e `distribuicao-windows-macos` — [doc-pai](milestones/M2-app-com-interface.md)) e entram aqui com a implementação de cada uma: a ADR-12 veio primeiro, com a spec `design-system`, a ADR-08 com a `janela-principal` e a ADR-09 com a `historico`. A ADR-11 (`distribuicao-windows-macos`) foi aceita pelo Victor em 18/out/2026, antes da implementação, porque muda uma decisão fixa de produto (as plataformas); a ADR-10, da mesma spec, segue reservada.
 
 ---
 
@@ -228,7 +229,7 @@ A arquitetura foi estudada por engenharia reversa do Typeless 2.8.2 ([`referenci
   - a DPAPI protege por usuário do Windows, não por app: outro processo da mesma conta consegue decifrar (RISK-021). Aceito — é o mesmo modelo de qualquer app pessoal, e a chave é revogável no console da Groq;
   - o arquivo cifrado não sobrevive a troca de máquina, de perfil ou à perda do dado de cifra do Chromium na pasta de dados: a pessoa salva a chave de novo (RISK-022);
   - um segundo renderer passa a tocar um segredo (RISK-026), mitigado pelas regras do [Security Guide](Security-Guide.md) §7 e §9;
-  - no macOS o `safeStorage` usa o Keychain; isso só importa se a spec `distribuicao-windows-macos` tiver o aval do Victor para levar o app ao macOS, porque "Windows primeiro" é decisão fixa;
+  - no macOS o `safeStorage` usa o Keychain; vale quando o porte da spec `distribuicao-windows-macos` for implementado ([ADR-11](#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4), aceita em 18/out/2026);
   - não substitui a ADR-06: distribuir para outras pessoas com chave do produto continua exigindo o backend da Fase 4.
 
 **Implementação** (código da spec `janela-principal`, não commitado, 18/out/2026)
@@ -291,6 +292,37 @@ A arquitetura foi estudada por engenharia reversa do Typeless 2.8.2 ([`referenci
 - `src/main/history/service.ts` — `openHistory` (abre, migra, purga, `history_ready`/`history_unavailable`).
 - `scripts/copy-static.mjs` — copia `database/local/*.sql` para `dist/database/local/`.
 - `docs/DATABASE.md`, `docs/ENVIRONMENT.md`, `docs/Security-Guide.md` §15.1.
+
+## ADR-11 — macOS como plataforma suportada e distribuição restrita antes da Fase 4
+
+18/out/2026 (spec [`distribuicao-windows-macos`](spec/features/distribuicao-windows-macos.md), §17.2) · Aceita — Victor Alves (spec aprovada e ADR confirmada em 18/out/2026) · **implementação pendente**
+
+Substitui a decisão fixa "Windows primeiro; nada de macOS/Linux/mobile antes da Fase 4" do `CLAUDE.md` e, em parte, a frase de consequência da [ADR-06](#adr-06--sem-backend-na-fase-1) "Distribuição exige o backend da Fase 4"; o resto da ADR-06 continua aceito.
+
+**Contexto**
+
+- Decisão fixa do `CLAUDE.md`, NFR-06 e SDD §2.2/§2.4: só Windows até a Fase 4.
+- ADR-06: o app não é distribuído com chave; "Distribuição exige o backend da Fase 4".
+- Victor, 18/out/2026: app baixável sem terminal, Windows e macOS; "um amigo meu usa Mac, a gente tem que enfatizar isso".
+- A [ADR-08](#adr-08--chave-da-groq-no-safestorage-do-electron-com-o-env-só-como-reserva-de-desenvolvimento) guarda a chave de cada pessoa no `safeStorage` do próprio computador — o "uso pessoal" do C6.
+
+**Decisão**
+
+1. A partir da M2, o macOS 13 (Ventura) ou mais novo — o mínimo do Electron 44 — é plataforma suportada, ao lado do Windows 10/11 x64, em Mac com Apple Silicon (arm64 — D4 da spec). Mac Intel, mobile e Windows arm64 continuam fora até a Fase 4.
+2. **Linux:** planejado para depois, sem data (Victor, 18/out/2026). Entra por spec própria; até lá nada no código ou nos docs promete Linux.
+3. Antes da Fase 4, a distribuição é **restrita a pessoas convidadas pelo Victor**, sob o `LICENSE.md`, sem termo extra (D7), entregue por Release do GitHub (D6; ver D19), e **sem chave**: cada pessoa usa a própria chave da Groq, digitada no app e guardada no `safeStorage` (BYOK). Chave embutida continua proibida (ADR-06). Distribuição como produto (pública, com contas) continua exigindo o backend da Fase 4.
+4. As diferenças de sistema ficam atrás de interface (`PasteDriver`, `PermissionsPort`), escolhidas na inicialização:
+   - hook: `uiohook-napi` nos dois sistemas (a ADR-02 vale); no macOS, só inicia com a permissão de Acessibilidade, conferida antes;
+   - colagem: no Windows, a ADR-03; no macOS, clipboard + Cmd+V por `CGEventPost` (CoreGraphics via `koffi`), com o mesmo backup e a mesma restauração;
+   - elevação/UIPI: só no Windows; no macOS, o análogo é a falta de Acessibilidade e a entrada segura, que caem no mesmo fallback "texto copiado".
+5. As regras de negócio BR-001…015 valem nos dois sistemas; muda só o texto que cita atalho ou sistema.
+
+**Consequências**
+
+- Positivas: o amigo do Victor usa o app; o código ganha uma fronteira de plataforma testável; o próprio Victor deixa o modo de desenvolvimento.
+- Negativas: roteiro manual em dois sistemas a cada versão; o Victor não tem Mac (teste depende do amigo ou do CI — RISK-novo-7 da spec); sem assinatura paga por ora (D1, D2), o que deixa avisos do SmartScreen e do Gatekeeper e permissões do macOS possivelmente pedidas de novo a cada versão; NFR-06, o SDD (§2.2, §2.4, §29), o PRD e o `CLAUDE.md` mudam.
+
+**Implementação** — pendente: a spec está aprovada, mas o porte para macOS ainda não está no código (18/out/2026); hoje o app roda só no Windows. Previsto: `frontend/src/main/platform.ts`, `insert/darwin.ts`, o `PasteDriver` no `TextInserter`, `PermissionsPort`, `stringsFor`, `defaultConfig`, `keys.ts` (`RightMeta`), menu e Dock no `index.ts`, ícone modelo no `icon.ts`. Esta seção passa a citar arquivo e linha quando o código entrar.
 
 ## ADR-12 — Fonte Inter embutida no app
 
