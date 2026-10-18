@@ -9,7 +9,7 @@
 ![Node.js](<https://img.shields.io/badge/Node.js-24%20LTS-5FA04E?style=flat&logo=nodedotjs&logoColor=white>)
 ![Windows](<https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-0078D4?style=flat>)
 ![Groq](<https://img.shields.io/badge/Groq-Whisper%20large--v3--turbo-F55036?style=flat>)
-![Testes](<https://img.shields.io/badge/testes-30%20passando-brightgreen?style=flat>)
+![Testes](<https://img.shields.io/badge/testes-326%20passando-brightgreen?style=flat>)
 ![Status](<https://img.shields.io/badge/status-fase%201%20%C2%B7%20em%20verifica%C3%A7%C3%A3o-orange?style=flat>)
 ![License](https://img.shields.io/badge/license-propriet%C3%A1ria-lightgrey?style=flat)
 
@@ -17,7 +17,7 @@
 
 Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) · Requisitos: [`docs/PRD.md`](docs/PRD.md) · Contrato de engenharia: [`docs/spec/spec-driven-development.md`](docs/spec/spec-driven-development.md) · Decisões: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**📅 Estágio:** **Fase 1 (MVP) implementada e funcionando de ponta a ponta** no Windows do mantenedor desde 17/out/2026 (commit `bae6eba`). Medido nos primeiros ditados reais: **0,66–0,88 s** do fim da fala até o texto inserido e microfone aberto em 75–270 ms. Falta concluir o roteiro de verificação manual V1–V13 da [spec da feature](docs/spec/features/ditado-por-voz.md) (segurar, `Esc`, clipboard, outros apps, janela de administrador). Não há instalador: roda em modo de desenvolvimento, com a chave Groq do próprio usuário.
+**📅 Estágio:** **Fase 1 (MVP) implementada e funcionando de ponta a ponta** no Windows do mantenedor desde 17/out/2026 (commit `bae6eba`). Medido nos primeiros ditados reais: **0,66–0,88 s** do fim da fala até o texto inserido e microfone aberto em 75–270 ms. Falta concluir o roteiro de verificação manual V1–V13 da [spec da feature](docs/spec/features/ditado-por-voz.md) (segurar, `Esc`, clipboard, outros apps, janela de administrador). Em 18/out/2026 entraram no código, da milestone M2, o design system "Sálvia", a **janela principal**, onde a chave Groq do próprio usuário é digitada e guardada cifrada, o **histórico local** dos ditados (só texto, neste computador) e o tema claro/escuro escolhido na janela (roteiros manuais pendentes). Não há instalador: roda em modo de desenvolvimento.
 
 ---
 
@@ -31,8 +31,9 @@ Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) �
 | **Inserção** (`insert/`)                       | Clipboard + Ctrl+V via `SendInput` (`koffi`), restaura o clipboard, fallback para janelas de administrador       | ✅ Colagem comprovada; fallback de admin ainda não verificado manualmente |
 | **Sessão** (`session.ts`)                       | Máquina de estados, dono único do estado do ditado                                                                 | ✅ Funciona                                                                |
 | **Bandeja, config e log**                          | Ícone, `config.json`, log só com metadados                                                                       | ✅ Funciona                                                                |
+| **Janela principal** (`main-window.ts`, `renderer/main-window/`) | Aberta pela bandeja: Início (tecla, como ditar, estado, ditados recentes e seu uso), Histórico (busca, copiar de novo, apagar), Configurações (chave da Groq cifrada, preferências, guardar histórico, aparência, iniciar com o Windows); Dicionário "em breve"; botão de tema claro/escuro | 🟡 Implementada no código em 18/out/2026 (M2); roteiros VJ1–VJ27 pendentes |
 | **Limpeza por IA** (`refine.ts`)                 | Interface `Refiner` — hoje devolve o texto como veio                                                              | 🟡 Encaixe pronto; implementação na Fase 2                               |
-| **`database/`**                                  | Histórico e dicionário em SQLite local                                                                             | ⏳ Fase 2                                                                  |
+| **Histórico** (`history/`, `database/local/`)   | Texto dos ditados em SQLite local (`node:sqlite`, em `%LOCALAPPDATA%`), sem áudio, com retenção; o dicionário vem na Fase 2 | 🟡 Implementado no código em 18/out/2026 (M2); roteiro VH1–VH13 pendente |
 | **`backend/`**                                   | API própria, contas, streaming                                                                                      | ⏳ Fase 4                                                                  |
 
 **Fluxo do produto:** segura Ctrl direito → a pílula aparece "Ouvindo…" e o microfone abre → você fala → solta → "Transcrevendo…" → o áudio vai à Groq → o texto passa pelos filtros anti-lixo → é colado no cursor do app em foco → o clipboard volta ao que era → a pílula some. Em mãos livres, um toque começa e outro termina.
@@ -53,7 +54,7 @@ Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) �
 | 🎤 **Microfone**     | qualquer                                   | Captura da voz                        | Configurações → Sistema → Som                       |
 | 🔑 **Chave da Groq** | gratuita                                   | Transcrição                         | [Passo a passo logo abaixo](#-como-obter-sua-chave-da-groq-gratuita) |
 
-> Não há banco, fila nem servidor para subir na Fase 1.
+> Não há banco, fila nem servidor para subir: o banco do histórico é um arquivo local que o próprio app cria na primeira abertura.
 
 ---
 
@@ -89,28 +90,27 @@ A chave aparece na tela (ela começa com `gsk_`). **Copie agora**: o console pod
 
 ![Chave recém-criada no console da Groq, com o valor borrado e o botão de copiar em destaque](docs/assets/groq/04-copiar-chave.png)
 
-### Passo 5 — Coloque a chave no Touch Speaker
+### Passo 5 — Coloque a chave no Touch Speaker (em Configurações)
 
-Se ainda não baixou o projeto, faça antes os passos 1️⃣ (clone) e 2️⃣ (dependências) do **Setup local detalhado**, mais abaixo. Depois, dentro da pasta `frontend/`:
-
-```powershell
-copy .env.example .env
-notepad .env
-```
-
-No Bloco de Notas, cole a chave logo depois do `=` na linha `GROQ_API_KEY=`, sem espaços e sem aspas, e salve. A linha fica `GROQ_API_KEY=` seguida da sua chave.
-
-![Arquivo frontend/.env aberto no Bloco de Notas, com a linha GROQ_API_KEY preenchida e a chave borrada](docs/assets/groq/05-env.png)
-
-### Passo 6 — Abra o app e confira
+Se ainda não baixou o projeto, faça antes os passos 1️⃣ (clone) e 2️⃣ (dependências) do **Setup local detalhado**, mais abaixo. Depois, dentro da pasta `frontend/`, abra o app:
 
 ```powershell
 npm run dev
 ```
 
-Passe o mouse sobre o ícone do Touch Speaker na bandeja (talvez escondido na setinha `^`) ou clique nele com o botão direito. Deve aparecer **"Touch Speaker — pronto"**. Se aparecer **"Touch Speaker — falta a chave da Groq"**, o app não achou a chave: confira se o arquivo é `frontend/.env` e se a linha `GROQ_API_KEY=` está preenchida.
+Na primeira vez (sem `config.json` e sem chave salva), a janela do Touch Speaker abre sozinha em **Configurações**. Nas outras vezes, clique com o botão direito no ícone do Touch Speaker na bandeja (talvez escondido na setinha `^`) e escolha **Abrir Touch Speaker** — ou dê duplo clique no ícone — e vá em **Configurações**.
 
-O app só lê o `.env` quando abre. Se trocar a chave com o app aberto, clique em **Sair** no menu da bandeja e rode `npm run dev` de novo.
+Cole a chave no campo **Chave da Groq** e clique em **Salvar chave**. O campo se esvazia e aparece **"Chave salva"**. A chave fica **cifrada neste computador** pelo `safeStorage` do Electron (a proteção de dados do Windows, por usuário), em `%APPDATA%\Touch Speaker\groq-key.bin`, e vale a partir do próximo ditado, sem reiniciar. Ela nunca volta para a tela nem vai para o log ([ADR-08](docs/DECISIONS.md#adr-08--chave-da-groq-no-safestorage-do-electron-com-o-env-só-como-reserva-de-desenvolvimento)).
+
+> 🛠️ **Só em desenvolvimento, alternativa:** a chave também pode ficar em `frontend/.env` (`copy .env.example .env`, depois `notepad .env` e cole a chave logo depois do `=` na linha `GROQ_API_KEY=`, sem espaços e sem aspas). O `.env` só é lido com o app rodando por `npm run dev`/`npm start`, só quando o app abre e só quando **não** há chave salva em Configurações; o app instalado nunca o lê. Detalhes em [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md#o-arquivo-env).
+>
+> ![Arquivo frontend/.env aberto no Bloco de Notas, com a linha GROQ_API_KEY preenchida e a chave borrada](docs/assets/groq/05-env.png)
+
+### Passo 6 — Confira
+
+Passe o mouse sobre o ícone do Touch Speaker na bandeja ou clique nele com o botão direito. Deve aparecer **"Touch Speaker — pronto"**; o **Início** da janela mostra o mesmo estado e de onde vem a chave ("Salva no app" ou "Vinda do .env de desenvolvimento"). Se aparecer **"Touch Speaker — falta a chave da Groq"**, abra o Touch Speaker pela bandeja e salve a chave em Configurações.
+
+Para trocar a chave, salve a nova em Configurações (vale no próximo ditado). Para apagá-la, **Remover chave** → **Confirmar remoção**; em desenvolvimento, o app volta a usar o `.env`, se houver.
 
 ![Menu do ícone do Touch Speaker na bandeja do Windows mostrando "Touch Speaker — pronto"](docs/assets/groq/06-app-na-bandeja.png)
 
@@ -119,8 +119,8 @@ O app só lê o `.env` quando abre. Se trocar a chave com o app aberto, clique e
 - A chave é pessoal, como uma senha: quem tiver a sua usa a sua cota.
 - **Nunca** faça commit do `.env`. Ele já está no `.gitignore` (`.env` e `.env.*`; só o `.env.example`, sem chave, é versionado).
 - Não cole a chave em issue, chat, e-mail ou print. Num print, borre a chave antes.
-- **Vazou?** Na mesma página [API Keys](https://console.groq.com/keys), apague (revogue) a chave, crie outra e troque no `.env`.
-- O app usa a chave só no processo principal e nunca a escreve no log. Detalhes em [`docs/Security-Guide.md` §10](docs/Security-Guide.md#10-segredos-e-configuração).
+- **Vazou?** Na mesma página [API Keys](https://console.groq.com/keys), apague (revogue) a chave, crie outra e salve a nova em Configurações (ou no `.env`, se é ele que você usa em desenvolvimento).
+- O app usa a chave só no processo principal, guarda cifrada a que você salva e nunca a escreve no log nem no `config.json`. A proteção é por usuário do Windows: outro programa rodando na sua conta conseguiria decifrá-la, como acontece com qualquer app pessoal (RISK-021). Detalhes em [`docs/Security-Guide.md` §10](docs/Security-Guide.md#10-segredos-e-configuração).
 
 ### Limites do plano gratuito
 
@@ -148,7 +148,7 @@ O uso pago do `whisper-large-v3-turbo` custa **US$ 0,04 por hora de áudio**, co
 
 ## 🏗️ Arquitetura
 
-Componentes, fluxo e fronteiras em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); as decisões (ADR-01…07) em [`docs/DECISIONS.md`](docs/DECISIONS.md). O resumo visual:
+Componentes, fluxo e fronteiras em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); as decisões (ADR-01…09 e ADR-12) em [`docs/DECISIONS.md`](docs/DECISIONS.md). O resumo visual:
 
 ```text
 Teclado ──► uiohook-napi (hook global, thread própria)
@@ -160,10 +160,14 @@ Processo main (Electron 44 · Node)
 ├── GroqTranscriber    POST multipart → Whisper large-v3-turbo (pt) + filtros anti-lixo
 ├── Refiner            identidade na Fase 1 (LLM na Fase 2)
 ├── TextInserter       backup do clipboard → texto → Ctrl+V (SendInput via koffi) → restaura
-└── Tray · Config · Logger
-                │ IPC mínimo via contextBridge (sandbox)
+├── CredentialStore    chave da Groq: groq-key.bin (safeStorage) → .env só em dev → nenhuma
+├── SettingsStore      preferências da tela → config.json (fila única, gravação atômica)
+├── HistoryService     texto de cada ditado → SQLite local (node:sqlite) em %LOCALAPPDATA%, com retenção
+└── Tray · MainWindow · ThemeSetting · Config · Logger
+                │ IPC mínimo via contextBridge (sandbox), uma ponte por janela
                 ▼
 Renderer "pílula" — getUserMedia + MediaRecorder (WebM/Opus 32 kbps) · medidor de nível · sons
+Renderer "janela principal" — Início · Histórico · Dicionário · Configurações (aberta pela bandeja)
 ```
 
 **Um ditado, ponta a ponta:**
@@ -200,10 +204,12 @@ flowchart TD
     K["Teclado"] -->|"eventos globais"| HK["uiohook-napi"]
     HK --> MAIN["Processo main<br/>sessão · transcrição · inserção"]
     MAIN <-->|"IPC via contextBridge"| PILL["Pílula<br/>gravação + status"]
+    MAIN <-->|"IPC via contextBridge"| WIN["Janela principal<br/>início · histórico · configurações"]
     MIC["Microfone"] --> PILL
     MAIN -->|"HTTPS + chave do usuário"| GROQ[("Groq<br/>Whisper large-v3-turbo")]
     MAIN -->|"clipboard + SendInput (koffi → user32)"| APP["App em foco"]
-    MAIN --> FILES[("%APPDATA%\Touch Speaker<br/>config.json · logs/")]
+    MAIN --> FILES[("%APPDATA%\Touch Speaker<br/>config.json · groq-key.bin · logs/")]
+    MAIN --> DB[("%LOCALAPPDATA%\Touch Speaker<br/>touch-speaker.db (histórico, só texto)")]
 ```
 
 A única integração externa é a Groq: visão da integração (fluxo, nova tentativa, limites, riscos) em [`docs/INTEGRATION.md`](docs/INTEGRATION.md) e contrato campo a campo em [`docs/API.md` — Transcrição (Groq)](docs/API.md#transcrição-groq).
@@ -217,8 +223,10 @@ A única integração externa é a Groq: visão da integração (fluxo, nova ten
 - 🧩 **Win32:** `koffi` 3.3.3 chamando `user32`/`kernel32`/`advapi32` — `SendInput`, detecção de janela elevada (ADR-03)
 - 🎙️ **Áudio:** `getUserMedia` + `MediaRecorder` em WebM/Opus 32 kbps mono, com cancelamento de eco, supressão de ruído e ganho automático
 - 🧠 **Transcrição:** Groq · `whisper-large-v3-turbo`, `language=pt`, `temperature=0`, `verbose_json` (ADR-04)
-- 🔐 **Segurança:** `contextIsolation` + `sandbox`, CSP restrita, permissão de mídia só de áudio e só para a pílula, IPC validado no main
-- 🧪 **Qualidade:** `node:test` (30 testes) · TypeScript com `strict` e `noUncheckedIndexedAccess`
+- 🔐 **Segurança:** `contextIsolation` + `sandbox` nas duas janelas, CSP restrita, permissão de mídia só de áudio e só para a pílula, IPC validado no main (com o remetente conferido), chave da Groq cifrada pelo `safeStorage` (ADR-08)
+- 🗃️ **Histórico:** SQLite pelo `node:sqlite` que já vem no Electron (SQLite 3.53.4) — nenhuma dependência nova (ADR-09)
+- 🔤 **Fonte:** Inter 4.1 embutida (ADR-12), sobre os tokens do design system "Sálvia" (tema claro ou escuro: segue o sistema ou a escolha feita no botão da janela)
+- 🧪 **Qualidade:** `node:test` (326 testes) · TypeScript com `strict` e `noUncheckedIndexedAccess`
 
 `koffi` e `uiohook-napi` trazem binários prontos para win32-x64; os scripts de instalação deles ficam negados no `allowScripts` do `package.json`.
 
@@ -231,17 +239,21 @@ touch-speaker/
 ├── frontend/                       # o app desktop (Electron) — rode os comandos daqui
 │   ├── package.json · package-lock.json
 │   ├── tsconfig.main.json          # main + preload + shared + testes
-│   ├── tsconfig.renderer.json      # renderer (script clássico, DOM)
-│   ├── .env.example                # GROQ_API_KEY= (copie para .env)
+│   ├── tsconfig.renderer.json      # renderer da pílula (script clássico, DOM)
+│   ├── tsconfig.main-window.json   # renderer da janela principal (script clássico, DOM)
+│   ├── .env.example                # GROQ_API_KEY= (só para desenvolvimento; copie para .env)
 │   ├── scripts/                    # start.mjs (abre o Electron) · copy-static.mjs
 │   └── src/
-│       ├── main/                   # sessão, atalho, transcrição, inserção, bandeja, config, log
-│       ├── preload/pill.ts         # API mínima exposta à pílula
-│       ├── renderer/               # pill.html · pill.css · pill.ts
-│       ├── shared/ipc.ts           # contrato de IPC
-│       └── test/                   # hotkey · filters · groq · config
+│       ├── main/                   # sessão, atalho, transcrição, inserção, bandeja, janela principal,
+│       │                           # chave (credentials), preferências (settings), tema (theme-setting),
+│       │                           # histórico (history/), config, log
+│       ├── preload/                # pill.ts e main-window.ts — a API mínima de cada janela
+│       ├── renderer/               # pílula (pill.*), tokens.css, fonts/ e main-window/ (a janela principal)
+│       ├── shared/                 # ipc.ts (contratos de IPC) · palette.ts · contrast.ts · theme.ts
+│       └── test/                   # hotkey · filters · groq · config · tokens · icon · credentials ·
+│                                   # settings · main-window-ipc · history-* · session-history · theme · controls
 ├── backend/                        # API própria — Fase 4
-├── database/                       # migrations SQLite — Fase 2
+├── database/                       # migrations SQLite: local/0001_init.sql (histórico)
 ├── docs/                           # PRD, arquitetura, decisões, API, integração, dados, ambiente, design,
 │                                   # segurança, estilo de código, changelog, specs, templates, referência
 └── README.md · PROJECT_CONTEXT.md · CLAUDE.md · AGENTS.md · SECURITY.md · LICENSE.md
@@ -268,24 +280,19 @@ npm install
 
 O npm avisa que os scripts de instalação de `koffi` e `uiohook-napi` não rodaram — **é esperado**: os dois já trazem o binário pronto.
 
-### 3️⃣ Chave da Groq
-
-Ainda não tem a chave? Siga [Como obter sua chave da Groq](#-como-obter-sua-chave-da-groq-gratuita) (é gratuita). Com ela copiada:
-
-```powershell
-copy .env.example .env
-notepad .env        # cole a chave logo depois de GROQ_API_KEY= e salve
-```
-
-O `.env` está no `.gitignore`. **Nunca** faça commit dele. Variáveis e o arquivo `.env` em detalhe: [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md#variáveis).
-
-### 4️⃣ Abrir o app
+### 3️⃣ Abrir o app
 
 ```powershell
 npm run dev
 ```
 
-Compila e abre o app. Na primeira vez baixa o binário do Electron (~100 MB, verificado por checksum). O ícone de microfone verde-azulado aparece na bandeja (talvez escondido na setinha `^`).
+Compila e abre o app. Na primeira vez baixa o binário do Electron (~100 MB, verificado por checksum). O ícone de microfone aparece na bandeja — verde musgo com a barra de tarefas escura, verde ardósia com a clara — (talvez escondido na setinha `^`). Para abrir a janela do Touch Speaker: botão direito no ícone → **Abrir Touch Speaker**, ou duplo clique no ícone. Fechar a janela (X) não encerra o app; ele continua na bandeja ("Sair" fica no menu do ícone).
+
+### 4️⃣ Chave da Groq
+
+Ainda não tem a chave? Siga [Como obter sua chave da Groq](#-como-obter-sua-chave-da-groq-gratuita) (é gratuita). Com ela copiada, abra a janela do Touch Speaker (na primeira execução ela abre sozinha), vá em **Configurações**, cole a chave em **Chave da Groq** e clique em **Salvar chave**. Ela fica cifrada neste computador e vale no próximo ditado, sem reiniciar.
+
+Só em desenvolvimento, a alternativa é o `frontend/.env` (`copy .env.example .env` e `notepad .env`, colando a chave logo depois de `GROQ_API_KEY=`): ele só vale quando não há chave salva no app e o app instalado nunca o lê. O `.env` está no `.gitignore` — **nunca** faça commit dele. Variáveis e o `.env` em detalhe: [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md#variáveis).
 
 ### 5️⃣ Primeiro ditado
 
@@ -300,13 +307,24 @@ Abra o Bloco de Notas, clique dentro, **segure o Ctrl direito**, fale "teste de 
 
 ### 6️⃣ Configuração (opcional)
 
-`%APPDATA%\Touch Speaker\config.json`, criado na primeira execução. Dá para trocar a tecla (`RightCtrl`, `RightAlt`, `RightShift`, `CapsLock`, `F13`–`F24`), o microfone, o idioma, a posição da pílula e os sons. Campos e limites em [`docs/DATABASE.md`](docs/DATABASE.md#configjson). Reinicie o app depois de editar.
+Em **Configurações**, na janela do Touch Speaker: a tecla de ditado (`RightCtrl`, `RightAlt`, `RightShift`, `CapsLock`, `F13`–`F24`), o tempo para segurar, a duração máxima da gravação, o idioma, o modelo, a posição da pílula e os sons. **Salvar preferências** grava em `%APPDATA%\Touch Speaker\config.json` (criado na primeira execução) e as mudanças valem depois de reiniciar — o botão **Reiniciar agora** faz isso. O microfone aparece só para leitura; para escolher outro, ainda é editando o `microphoneDeviceId` do `config.json` à mão. "Iniciar com o Windows" só funciona no app instalado. Campos e limites em [`docs/DATABASE.md`](docs/DATABASE.md#configjson).
 
-### 7️⃣ Verificação
+### 7️⃣ Histórico, Início e tema
+
+Todo ditado que termina com texto fica guardado **só como texto, neste computador** (`%LOCALAPPDATA%\Touch Speaker\touch-speaker.db`) — nunca o áudio, nunca o app em que você ditou. Se a colagem foi para a janela errada ou o texto sumiu do clipboard, abra a janela do Touch Speaker:
+
+- **Histórico:** os ditados por dia, do mais novo para o mais antigo. **Buscar no histórico** acha pelo texto, sem ligar para maiúsculas, acentos e pontuação; **Copiar** põe o texto de novo no clipboard (cole com Ctrl+V); **Apagar** tira um; **Apagar tudo** tira todos, com confirmação.
+- **Configurações → Guardar histórico:** **Nunca guardar**, **Por N dias** (1 a 3650; 30 por padrão) ou **Para sempre**, e **Salvar**. Vale na hora, sem reiniciar; reduzir os dias apaga na hora os ditados mais antigos.
+- **Início:** além de como ditar, os 3 ditados mais recentes (com **Copiar** e **Ver todos**) e **Seu uso** — palavras, ditados e tempo falando, hoje e em todo o histórico, e a média de palavras por minuto.
+- **Tema:** o botão de sol/lua na barra lateral troca entre claro e escuro, e a pílula acompanha; em **Configurações → Aparência**, **Seguir o sistema** volta ao tema do Windows.
+
+O texto do histórico nunca vai para o log nem sai do computador. Para apagar tudo à mão, feche o app e apague `touch-speaker.db`, `touch-speaker.db-wal` e `touch-speaker.db-shm` dessa pasta ([Security Guide §11](docs/Security-Guide.md#11-dados-em-disco)).
+
+### 8️⃣ Verificação
 
 ```powershell
-npm test            # compila e roda os 30 testes
-npm run typecheck   # TypeScript estrito, sem emitir
+npm test            # compila e roda os 326 testes
+npm run typecheck   # TypeScript estrito, sem emitir (três programas do tsc)
 ```
 
 ---
@@ -315,11 +333,12 @@ npm run typecheck   # TypeScript estrito, sem emitir
 
 | Item                      | Estado                                                                                                                                         |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm test`              | ✅ 30/30 — `HotkeyController` (10), filtros anti-lixo (8), `GroqTranscriber` (9, com `fetch` simulado), config (3)                      |
+| `npm test`              | ✅ 326/326 — `HotkeyController`, filtros anti-lixo, `GroqTranscriber` (com `fetch` simulado), config, tokens e contraste do design system e da janela, ícone da bandeja, chave da Groq, preferências, IPC da janela principal, histórico (retenção, formatos, busca, IPC, sessão, banco SQLite real em pasta temporária, pasta, serviço, script da tela), tema e controles de Configurações |
 | `npm run typecheck`     | ✅ Sem erros                                                                                                                                   |
 | App sobe no Electron 44   | ✅ Hook de teclado e `koffi` carregados (`app_ready` no log)                                                                               |
 | Colagem via `SendInput` | ✅ Comprovada isoladamente e em ditado real                                                                                                    |
 | Roteiro manual V1–V13    | 🟡 Em andamento — V2 (mãos livres) aprovado; lista completa na [§12 da spec](docs/spec/features/ditado-por-voz.md#12-plano-de-verificação) |
+| Roteiros V-DS-1…6, VJ1–VJ27 e VH1–VH13 | ⏳ Pendentes — design system, janela principal (com o tema) e histórico (M2), implementados no código em 18/out/2026 |
 
 Não há testes de interface automatizados: gravação, colagem e pílula são verificadas à mão pelo roteiro da spec.
 
@@ -344,12 +363,13 @@ Todos de dentro de `frontend/`.
 | Sintoma                                    | Causa e solução                                                                                                   |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | O app abre e fecha na hora, sem erro       | Variável `ELECTRON_RUN_AS_NODE` herdada do VS Code. Abra sempre por `npm run dev`/`npm start`, que a removem |
-| Pílula "Falta a chave da Groq — veja o README" | `frontend/.env` ausente ou vazio — [Como obter sua chave da Groq](#-como-obter-sua-chave-da-groq-gratuita) e passo 3️⃣ |
-| Pílula "Chave da Groq inválida"           | Chave incompleta, errada ou revogada — crie outra em [API Keys](https://console.groq.com/keys), troque no `.env` e reabra o app |
+| Pílula "Falta a chave da Groq — abra o Touch Speaker pela bandeja" | Nenhuma chave salva no app (nem `.env` de desenvolvimento) — abra a janela pela bandeja e salve a chave em Configurações ([Como obter sua chave da Groq](#-como-obter-sua-chave-da-groq-gratuita) e passo 4️⃣) |
+| Início ou Configurações: "A chave salva não pôde ser lida — salve de novo" | O arquivo cifrado não abre mais (troca de máquina ou de usuário do Windows, pasta de dados apagada) — salve a chave de novo em Configurações |
+| Pílula "Chave da Groq inválida"           | Chave incompleta, errada ou revogada — crie outra em [API Keys](https://console.groq.com/keys) e salve a nova em Configurações (ou troque no `.env` e reabra o app, em desenvolvimento) |
 | Pílula "Limite gratuito da Groq atingido — tente em instantes" | Passou de um [limite do plano gratuito](#limites-do-plano-gratuito) — espere um pouco e dite de novo |
 | Pílula "Texto copiado — cole com Ctrl+V" | O app em foco roda como administrador e o Windows bloqueia colagem simulada; o texto ficou no clipboard             |
 | Dois apps reagem ao atalho                 | Feche o Typeless ou outro app de ditado com atalho parecido                                                         |
-| Nada acontece ao segurar a tecla           | Veja `%APPDATA%\Touch Speaker\logs\main.log` — `keyboard_hook` deve estar `true` no `app_ready`            |
+| Nada acontece ao segurar a tecla           | O Início da janela diz "A tecla de ditado não está funcionando — reinicie o app" quando o hook não carregou; no `%APPDATA%\Touch Speaker\logs\main.log`, `keyboard_hook` deve estar `true` no `app_ready` |
 
 O log guarda só tempos, tamanhos e códigos de erro — nunca o que você ditou. Mais casos e o formato do log em [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md#problemas-comuns).
 
@@ -364,6 +384,7 @@ O Touch Speaker não expõe API própria na Fase 1. Contratos completos em [`doc
 | `POST https://api.groq.com/openai/v1/audio/transcriptions`                     | main → Groq    | Multipart com `file`, `model`, `language=pt`, `temperature=0`, `response_format=verbose_json`; timeout 20 s; 401/403 → chave inválida, 413 → gravação longa demais, 429 → limite (sem nova tentativa), 5xx → 1 nova tentativa após 500 ms |
 | `recorder:start` · `recorder:stop` · `recorder:cancel` · `pill:state` | main → pílula | Comandos de gravação e estado visual, sempre com `sessionId`                                                                                                        |
 | `recorder:started` · `recorder:result` · `recorder:error`                | pílula → main | Confirmação, áudio (≤ 25 MB) e erros de microfone — validados no main                                                                                              |
+| `app:*` · `settings:*` · `groq-key:*` · `login-item:set` · `theme:set` · `history:*` | janela principal ⇄ main | Textos, estado, preferências, chave (só de ida, nunca volta), início automático, tema e histórico (lista, busca, copiar, apagar, retenção, uso) — remetente e payload validados no main ([`docs/API.md`](docs/API.md)) |
 
 Códigos de erro e mensagens da pílula: [`docs/API.md` — Códigos de erro](docs/API.md#códigos-de-erro). Visão da integração com a Groq: [`docs/INTEGRATION.md`](docs/INTEGRATION.md).
 
@@ -378,15 +399,15 @@ Códigos de erro e mensagens da pílula: [`docs/API.md` — Códigos de erro](do
 | [`AGENTS.md`](AGENTS.md)                                                            | Ponto de entrada para agentes de IA: projeto, docs canônicos e fonte normativa |
 | [`docs/PRD.md`](docs/PRD.md)                                                        | Requisitos (FR-DICT-01…13, NFR-01…07) e roadmap        |
 | [`docs/spec/spec-driven-development.md`](docs/spec/spec-driven-development.md)      | SDD — contrato de engenharia: princípios (C1–C8), requisitos, regras, riscos, pendências e roadmap |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md)                                            | ADR-01…07: contexto, decisão, consequências e implementação |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md)                                            | ADR-01…09 e ADR-12: contexto, decisão, consequências e implementação |
 | [`docs/spec/features/ditado-por-voz.md`](docs/spec/features/ditado-por-voz.md)      | Spec da Fase 1, tarefas e roteiro de verificação (formato anterior ao template) |
 | [`docs/templates/`](docs/templates/README.md)                                       | Como nasce uma feature (Spec → Gate → Execução) e os templates de spec, milestone e migração |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                                      | Componentes, fluxo, fronteiras e evolução por fase      |
 | [`docs/API.md`](docs/API.md)                                                        | Contratos com a Groq, IPC e códigos de erro             |
 | [`docs/INTEGRATION.md`](docs/INTEGRATION.md)                                        | Integração com a Groq: fluxo, nova tentativa, garantias, limites e riscos |
-| [`docs/DATABASE.md`](docs/DATABASE.md)                                              | `config.json` e o SQLite planejado para a Fase 2       |
+| [`docs/DATABASE.md`](docs/DATABASE.md)                                              | `config.json` e o SQLite local do histórico            |
 | [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md)                                        | Node.js e Electron, variáveis (`GROQ_API_KEY`), `.env`, log e problemas comuns |
-| [`docs/DESIGN.md`](docs/DESIGN.md)                                                  | Pílula, cores, sons e bandeja                           |
+| [`docs/DESIGN.md`](docs/DESIGN.md)                                                  | Pílula, janela principal, cores, sons e bandeja         |
 | [`docs/Code-Style.md`](docs/Code-Style.md)                                          | Estilo de código TypeScript, testes e commits            |
 | [`SECURITY.md`](SECURITY.md) · [`docs/Security-Guide.md`](docs/Security-Guide.md) | Política e guia de segurança                           |
 | [`docs/CHANGELOG.md`](docs/CHANGELOG.md)                                            | O que mudou e por quê                                    |
@@ -403,7 +424,7 @@ Códigos de erro e mensagens da pílula: [`docs/API.md` — Códigos de erro](do
 | Fase        | Entrega                                                                                                | Status                            |
 | ----------- | ------------------------------------------------------------------------------------------------------ | --------------------------------- |
 | **1** | Ditado básico: atalho, gravação, Groq, colagem no app em foco                                       | 🟡 Implementada, em verificação |
-| **2** | Limpeza do texto com IA (Claude Haiku), dicionário pessoal, histórico local, tela de configurações | ⏳ Próxima                       |
+| **2** | Limpeza do texto com IA (Claude Haiku), dicionário pessoal, histórico local, tela de configurações | 🟡 Tela de configurações, chave no `safeStorage` e **histórico local** adiantados pela M2 — no código desde 18/out/2026, verificação manual pendente; limpeza por IA e dicionário ⏳ |
 | **3** | Contexto do app em foco (UI Automation), Ask Anything, tradução, aprendizado com as correções      | ⏳                                |
 | **4** | Backend próprio, contas, streaming de áudio, instalador assinado e atualização automática         | ⏳                                |
 
@@ -417,4 +438,4 @@ Detalhes no [PRD](docs/PRD.md#roadmap). Feature nova começa sempre por uma spec
 
 Software **proprietário** — todos os direitos reservados. Veja [`LICENSE.md`](LICENSE.md). © 2026 Victor Alves.
 
-<small>Última atualização: 17/out/2026 · Mantenedor: Victor Alves</small>
+<small>Última atualização: 18/out/2026 · Mantenedor: Victor Alves</small>

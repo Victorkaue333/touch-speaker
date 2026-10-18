@@ -1,6 +1,6 @@
 # PRD — Touch Speaker
 
-> Última atualização: 17/out/2026 · Mantenedor: Victor Alves
+> Última atualização: 18/out/2026 · Mantenedor: Victor Alves
 > **Versão:** 0.1 · **Data:** 17/out/2026 · **Fase coberta em detalhe:** 1 (MVP — ditado básico)
 > Contexto de negócio em [PROJECT_CONTEXT.md](../PROJECT_CONTEXT.md). Spec executável da Fase 1 em
 > [spec/features/ditado-por-voz.md](spec/features/ditado-por-voz.md).
@@ -26,6 +26,12 @@ Falta fechar a Fase 1: o resto do roteiro manual (V1 e V3–V13) e a medição d
 são a PEND-001 (T9); a spec passar a `implementada` é a PEND-002 (T10). Até lá, só o FR-DICT-02 tem
 verificação manual feita; os demais estão implementados com a verificação manual pendente.
 
+Em paralelo, a milestone M2 ([doc-pai](milestones/M2-app-com-interface.md), aberta pelo Victor em 18/out/2026)
+adiantou itens das fases seguintes. No código desde 18/out/2026, ainda não commitado e com os roteiros manuais
+pendentes: a janela principal com a chave da Groq em Configurações, o **histórico local** (FR-HIST-01, agora
+implementado no código), o Início com os dados do histórico e o tema claro/escuro escolhido na janela — ver
+[Adiantado pela M2](#adiantado-pela-m2-18out2026).
+
 ### Jornada do usuário
 
 **Segurar para falar (caminho feliz)**
@@ -44,7 +50,7 @@ verificação manual feita; os demais estão implementados com a verificação m
 **Erro**
 
 1. Algo falha (sem rede, limite, chave inválida).
-2. Pílula fica vermelha com a mensagem por ~4 s.
+2. Pílula mostra o glifo de alerta e a mensagem na cor de erro por ~4 s.
 3. Nada é inserido. Se a transcrição já existia e só a colagem falhou, o texto fica no clipboard (FR-DICT-10).
 
 ## Personas
@@ -76,8 +82,8 @@ resumo e viram spec própria quando entrarem.
 | FR-DICT-13 | **Config em arquivo** (`config.json`): tecla, idioma, microfone | Deve | Implementado (TEST-004); verificação manual pendente (PEND-001) | 1 |
 | FR-CLEAN-01 | Limpeza por IA (Claude Haiku): remove "é…", "tipo", repetições; aplica autocorreção falada ("não, quer dizer…") | — | Planejado (Fase 2) | 2 |
 | FR-VOCAB-01 | Dicionário pessoal: termos enviados no `prompt` do Whisper e na limpeza | — | Planejado (Fase 2) | 2 |
-| FR-HIST-01 | Histórico local dos ditados (texto, app, duração), com "copiar de novo" | — | Planejado (Fase 2) | 2 |
-| FR-SET-01 | Tela de configurações (tecla, microfone, idioma, iniciar com o Windows) | — | Planejado (Fase 2) | 2 |
+| FR-HIST-01 | Histórico local dos ditados (texto, duração), com "copiar de novo" — sem o app em foco, por decisão do Victor de 18/out/2026 | — | Implementado no código (18/out/2026, adiantado pela M2; TEST-010…017); verificação manual pendente (PEND-009) | 2 |
+| FR-SET-01 | Tela de configurações (tecla, microfone, idioma, iniciar com o Windows) | — | Implementado no código, em parte (18/out/2026, adiantado pela M2 — spec [`janela-principal`](spec/features/janela-principal.md) FR-UI-26…38): tecla, idioma, modelo, limiares, posição da pílula, sons, retenção do histórico, tema e a chave da Groq editáveis na janela principal; o microfone só aparece para leitura (FR-UI-27 — a escolha do dispositivo fica para depois); "Iniciar com o Windows" só funciona com o app empacotado (FR-UI-36, 37 — spec `distribuicao-windows-macos`); verificação manual pendente (PEND-007) | 2 |
 | FR-CTX-01 | Contexto do app em foco (nome, título, texto ao redor do cursor) para ajustar o tom | — | Planejado (Fase 3) | 3 |
 | FR-ASK-01 | "Ask Anything": comando por voz sobre texto selecionado (reescrever, resumir, responder) | — | Planejado (Fase 3) | 3 |
 | FR-TRANS-01 | Ditado com tradução para outro idioma | — | Planejado (Fase 3) | 3 |
@@ -89,6 +95,21 @@ critérios DADO/QUANDO/ENTÃO (AC-001…013) estão no SDD
 [§6](spec/spec-driven-development.md#6-regras-de-negócio) e
 [Apêndice C](spec/spec-driven-development.md#apêndice-c--critérios-de-aceite)). A prioridade das fases 2–4
 é definida na spec de cada fase.
+
+### Adiantado pela M2 (18/out/2026)
+
+A M2 ([doc-pai](milestones/M2-app-com-interface.md)) traz para agora itens que o roadmap abaixo põe na Fase 2.
+Registrar essa troca de ordem no roadmap e no SDD §29 é a PEND-novo-1 do doc-pai, para aval do Victor; até lá a
+tabela de fases não muda. O que já está no código (18/out/2026, não commitado):
+
+| Item | Requisitos | Origem | Estado |
+| --- | --- | --- | --- |
+| **Histórico local** — cada ditado que termina com texto fica guardado, só como texto, num SQLite na pasta local do Windows; tela Histórico com busca, "Copiar" de novo, apagar um e apagar tudo; retenção em Configurações (padrão 30 dias, "Nunca guardar", "Para sempre") | FR-HIST-01, decomposto em FR-HIST-01…26 na spec [`historico`](spec/features/historico.md) e FR-HIST-27…31 na spec de migração [`historico-dados-v1`](spec/features/historico-dados-v1.md) (banco `0001` e `history.retentionDays`) | este PRD (FR-HIST-01). O "app" saiu do requisito por decisão do Victor de 18/out/2026: nada do app em foco é guardado (FR-HIST-05); contexto do app continua sendo o FR-CTX-01, da Fase 3 | implementado no código; roteiro VH1–VH13 e ensaio da migração pendentes (PEND-009) |
+| **Início com os dados do histórico** — os 3 ditados mais recentes, com "Copiar" e "Ver todos", e o card "Seu uso": palavras, ditados e tempo falando, hoje e em todo o histórico, e a média de palavras por minuto | FR-HIST-22…26 (spec `historico`), na tela da [`janela-principal`](spec/features/janela-principal.md) (FR-UI-15) | pedido do Victor de 18/out/2026 | implementado no código; roteiro VH13 pendente (PEND-009) |
+| **Tema claro/escuro escolhido na janela** — botão de sol/lua na barra lateral, card "Aparência" em Configurações com "Seguir o sistema"; campo `theme` no `config.json` (padrão `"system"`) | FR-UI-39…42 (spec `janela-principal`) | pedido do Victor de 18/out/2026 — não consta deste PRD | implementado no código; roteiro VJ25–VJ27 pendente (PEND-010) |
+
+As regras e os critérios desses itens estão no SDD: BR-017 e BR-018 (histórico) e BR-019 (tema); AC-076…AC-111
+(histórico e migração) e AC-112…AC-115 (tema).
 
 ## Requisitos não-funcionais
 
@@ -200,7 +221,7 @@ roadmap abaixo.
 | Fase | Entrega | Depende de | Estado |
 | --- | --- | --- | --- |
 | 1 | Ditado básico (este documento) | Chave Groq gratuita | Implementada (T1–T8); em verificação (PEND-001, PEND-002) |
-| 2 | Limpeza por IA, dicionário, histórico local, tela de configurações | Chave Anthropic; `database/` local | Planejada |
+| 2 | Limpeza por IA, dicionário, histórico local, tela de configurações | Chave Anthropic; `database/` local | Planejada; o histórico local e a tela de configurações foram adiantados pela M2 — no código desde 18/out/2026, em verificação ([Adiantado pela M2](#adiantado-pela-m2-18out2026)) |
 | 3 | Contexto do app (UI Automation), Ask Anything, tradução, aprendizado por edição | Fase 2 | Planejada |
 | 4 | Backend próprio, contas, cotas, instalador assinado, auto-update | Decisão de produto [PRECISA ESCLARECER: qual decisão de produto abre a Fase 4 — quando e com que critério o app passa a ser distribuído para outras pessoas?] | Planejada |
 

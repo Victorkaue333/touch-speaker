@@ -162,7 +162,7 @@ SDD no mesmo PR.
 
 Formato **EARS** — `QUANDO <evento/condição> O SISTEMA DEVE <comportamento observável>`. Um
 comportamento por linha, sem "e" escondendo dois requisitos. Numere `FR-<ÁREA>-NN` (área do PRD: `DICT`,
-`CLEAN`, `VOCAB`, `HIST`, `SET`, `CTX`, `ASK`, `TRANS`, `ACC`) e aponte a origem (FR do PRD, BR ou PEND do
+`CLEAN`, `VOCAB`, `HIST`, `SET`, `CTX`, `ASK`, `TRANS`, `ACC`; do SDD §0.2: `DS`) e aponte a origem (FR do PRD, BR ou PEND do
 SDD).
 
 | # | Requisito | Origem | Prioridade |

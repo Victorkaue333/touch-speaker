@@ -4,14 +4,14 @@ Instruções para ferramentas de IA (Claude Code, Cursor, Codex, ChatGPT) que tr
 
 O **SDD** (`docs/spec/spec-driven-development.md`) é o **contrato de engenharia** — em conflito, vale a ordem do SDD §0.1: `docs/DECISIONS.md` → SDD → este `CLAUDE.md` (e o `AGENTS.md`) → docs específicos → spec aprovada da feature → READMEs. O código em `frontend/` é a fonte de fato sobre **o que existe**; a spec aprovada e o SDD são o contrato sobre **o que deve existir**. Divergência é defeito: código errado → corrige-se o código; spec errada → **corrige-se a spec primeiro** e só depois o código, com aval do Victor sempre que o comportamento muda. `docs/referencia/estudo-typeless.md` é estudo de referência, **não normativo** e **fonte proibida de código** (ADR-07). Decisões fixas só mudam com aval do **Victor**.
 
-> Última atualização: 17/out/2026 · Mantenedor: Victor Alves
+> Última atualização: 18/out/2026 · Mantenedor: Victor Alves
 
 ## Identidade do projeto
 
 - **O que é:** Touch Speaker é um app de bandeja para **Windows** que transforma fala em texto digitado no app em foco: segura uma tecla, fala, solta, o texto aparece no cursor. Dono: Victor Alves. Idioma do produto e da documentação: **pt-BR**.
 - **Problema que resolve:** escrever no computador é lento (~40 palavras por minuto digitando, ~150 falando) e o ditado do Windows (`Win + H`) não dá conta de pt-BR com termos técnicos — resumo em [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md).
-- **Relação com outros sistemas:** uma só integração externa — o processo main envia o áudio à API de transcrição da Groq (`whisper-large-v3-turbo`) com a chave do próprio usuário. Não há backend próprio, banco, telemetria nem outro serviço na Fase 1 — contrato em [`docs/INTEGRATION.md`](docs/INTEGRATION.md) e [`docs/API.md`](docs/API.md#transcrição-groq).
-- **Estágio:** Fase 1 (MVP — ditado básico) com T1–T8 implementadas em `frontend/` em 17/out/2026; 30/30 testes passando; **funcionando de ponta a ponta no PC do Victor**, com 0,66–0,88 s do fim da fala ao texto. Faltam T9 (resto do roteiro V1–V13) e T10 (fechar a spec). Sem instalador: roda em modo de desenvolvimento.
+- **Relação com outros sistemas:** uma só integração externa — o processo main envia o áudio à API de transcrição da Groq (`whisper-large-v3-turbo`) com a chave do próprio usuário, digitada em Configurações e guardada cifrada pelo `safeStorage` (ADR-08). Não há backend próprio, banco, telemetria nem outro serviço na Fase 1 — contrato em [`docs/INTEGRATION.md`](docs/INTEGRATION.md) e [`docs/API.md`](docs/API.md#transcrição-groq).
+- **Estágio:** Fase 1 (MVP — ditado básico) com T1–T8 implementadas em `frontend/` em 17/out/2026; **funcionando de ponta a ponta no PC do Victor**, com 0,66–0,88 s do fim da fala ao texto. Faltam T9 (resto do roteiro V1–V13) e T10 (fechar a spec). Da M2, as specs `design-system`, `janela-principal` e `historico` estão implementadas no código desde 18/out/2026 (não commitadas; roteiros manuais pendentes); 326/326 testes. Sem instalador: roda em modo de desenvolvimento.
 
 | Componente | O que é | Status |
 | --- | --- | --- |
@@ -20,9 +20,12 @@ O **SDD** (`docs/spec/spec-driven-development.md`) é o **contrato de engenharia
 | **Transcrição** (`transcribe/`) | `GroqTranscriber` com filtros contra alucinações do Whisper em silêncio | Funciona — TEST-002 e TEST-003 |
 | **Inserção** (`insert/`) | Clipboard + Ctrl+V via `SendInput` (`koffi`), restaura o clipboard, fallback para janelas de administrador | Colagem comprovada (V2); fallback de administrador ainda não verificado manualmente (V10, PEND-001) |
 | **Sessão** (`session.ts`) | Máquina de estados, dono único do estado do ditado | Funciona |
-| **Bandeja, config e log** (`tray.ts`, `config.ts`, `logger.ts`) | Ícone, `config.json`, log só com metadados | Funciona — validação da config coberta por TEST-004 |
+| **Bandeja, config e log** (`tray.ts`, `config.ts`, `logger.ts`) | Ícone (por tema da barra), "Abrir Touch Speaker", `config.json` (agora escrito também pela tela, por fila única), log só com metadados | Funciona — TEST-004 e TEST-006; gravação do `config.json` em TEST-008 |
+| **Janela principal** (`main-window.ts`, `renderer/main-window/`, `preload/main-window.ts`) | Aberta pela bandeja (ou sozinha na primeira execução sem chave salva): Início (tecla, como ditar, estado ao vivo, uso e ditados recentes), Histórico, Configurações (chave da Groq, sete preferências, retenção do histórico, aparência, "Iniciar com o Windows"), botão de tema claro/escuro; Dicionário "em breve" | No código desde 18/out/2026 — TEST-009, TEST-018, TEST-019; roteiros VJ1–VJ27 pendentes (PEND-007, PEND-010) |
+| **Chave da Groq** (`credentials.ts`) | `CredentialStore`: `groq-key.bin` cifrado pelo `safeStorage` → `.env` só em dev → nenhuma; a chave só no main (ADR-08) | No código desde 18/out/2026 — TEST-007 |
+| **Design system** (`renderer/tokens.css`, `shared/palette.ts`) | Paleta "Sálvia" em tokens, tema claro/escuro (do sistema por padrão ou escolhido na janela), Inter embutida (ADR-12) | No código desde 18/out/2026 — TEST-005 e TEST-006; roteiro V-DS-1…6 pendente (PEND-006) |
 | **Limpeza por IA** (`refine.ts`) | Interface `Refiner` — hoje devolve o texto como veio | Encaixe pronto; implementação na Fase 2 |
-| **`database/`** | Histórico e dicionário em SQLite local | Planejado (Fase 2) |
+| **Histórico** (`history/`, `database/local/0001_init.sql`) | Texto dos ditados em SQLite local (`%LOCALAPPDATA%\Touch Speaker\`, `node:sqlite`, ADR-09), tela Histórico, retenção, cards do Início | No código em 18/out/2026 (não commitado) — testes TEST-010…017; roteiro VH pendente (PEND-009). Dicionário: planejado |
 | **`backend/`** | API própria, contas, streaming | Planejado (Fase 4) |
 
 ## Estado atual
@@ -36,8 +39,15 @@ O **SDD** (`docs/spec/spec-driven-development.md`) é o **contrato de engenharia
   ([docs/referencia/estudo-typeless.md](docs/referencia/estudo-typeless.md)). Isso é **referência**,
   não fonte de código. O material bruto do estudo fica fora do repositório.
 - **Histórico (git):** três commits em 17/out/2026 — `331de81` (Initial commit), `bae6eba` (Fase 1, T1–T8, e a primeira documentação) e `ed0a1f5` (este arquivo: commits sem `Co-Authored-By` e orquestração de agentes).
-- **Documentação reestruturada em 17/out/2026** (ainda não commitada): docs canônicos no padrão comum aos projetos do Victor, ADRs em [`docs/DECISIONS.md`](docs/DECISIONS.md) e o SDD como documento mestre, com os registros `BR-`, `RISK-`, `PEND-`, `TEST-`, `FLOW-`, `SCREEN-` e `AC-` — o porquê está em [`docs/CHANGELOG.md`](docs/CHANGELOG.md). Não há milestone aberta: `docs/milestones/` é criada quando a primeira abrir (M1 = Fase 1).
-- **Pendências que mais pesam:** PEND-001 (T9 — roteiro manual V1 e V3–V13 e medição de latência; só o V2 foi feito) e PEND-002 (T10 — a spec passa a `implementada` depois do T9) — registro no [SDD, Apêndice B](docs/spec/spec-driven-development.md#apêndice-b--pendências).
+- **Documentação reestruturada em 17/out/2026** (commitada no mesmo dia, commits `1ac8ee8`…`0c0aa5b`): docs canônicos no padrão comum aos projetos do Victor, ADRs em [`docs/DECISIONS.md`](docs/DECISIONS.md) e o SDD como documento mestre, com os registros `BR-`, `RISK-`, `PEND-`, `TEST-`, `FLOW-`, `SCREEN-` e `AC-` — o porquê está em [`docs/CHANGELOG.md`](docs/CHANGELOG.md). A primeira milestone aberta é a M2 (abaixo); a M1 (Fase 1) ganha doc em `docs/milestones/` quando a T9 e a T10 fecharem.
+- **M2 (app com interface) em execução** desde 18/out/2026: [docs/milestones/M2-app-com-interface.md](docs/milestones/M2-app-com-interface.md) — quatro specs aprovadas pelo Victor em 18/out/2026 (design-system, janela-principal, historico, distribuicao-windows-macos), com a T9 e a T10 da Fase 1 abertas em paralelo; a reprioritização do roadmap do PRD aguarda o aval do Victor.
+  - **`design-system`** — implementada no código em 18/out/2026 (não commitada); falta o roteiro manual V-DS-1…6 (PEND-006).
+  - **`janela-principal`** — implementada no código em 18/out/2026 (não commitada): janela pela bandeja, chave da Groq em Configurações com `safeStorage` (ADR-08), `.env` só em desenvolvimento; falta o roteiro manual VJ1–VJ24 (PEND-007). No mesmo dia, a pedido do Victor: tema claro/escuro escolhido na janela (FR-UI-39…42, `config.json` `theme`, `theme:set`), "Como ditar" compacto e listas suspensas/caixas no estilo da janela; roteiro VJ25–VJ27 pendente (PEND-010).
+  - **`historico`** — **implementada no código em 18/out/2026** (não commitada): banco SQLite em `%LOCALAPPDATA%\Touch Speaker\` pelo `node:sqlite` (ADR-09 aceita, spike T1), só texto e nunca áudio, tela Histórico (busca, copiar, apagar, apagar tudo), retenção em Configurações (30 dias por padrão), e — pedido do Victor — os cards "Seu uso" (`history:stats`) e "Ditados recentes" no Início. Spec de migração companheira [`historico-dados-v1`](docs/spec/features/historico-dados-v1.md) em `proposta` (implementação autorizada pelo Victor; a aprovação vem com a validação dele). Falta o roteiro VH1–VH13 (PEND-009).
+  - **`distribuicao-windows-macos`** — aprovada, ainda não implementada.
+- **Revisão de código da M2** (18/out/2026): o ícone do botão de tema nunca trocava (o código usava a propriedade `.hidden` num `<svg>`, que não existe nele) — corrigido com o atributo `hidden`; mais cinco correções menores (recarga do Histórico que encolhia a lista, foco depois de "Apagar", busca em qualquer escrita e termo vazio, troca de fuso com o app aberto, transições na volta a "Seguir o sistema"). Os ícones Lucide ganharam a ADR-13 (**proposta**, aguardando o aval do Victor). Detalhe no [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
+- **Testes:** 326/326 em 18/out/2026 (`npm test`; 30 na Fase 1, +83 da `design-system`, +71 da `janela-principal`, +117 da `historico`, do tema e dos controles, +25 das correções da revisão de código); `npm run typecheck` limpo nos três programas do `tsc`.
+- **Pendências que mais pesam:** PEND-001 (T9 — roteiro manual V1 e V3–V13 e medição de latência; só o V2 foi feito), PEND-002 (T10 — a spec passa a `implementada` depois do T9), PEND-006 (roteiro V-DS-1…6), PEND-007 (roteiro VJ1–VJ24), PEND-009 (roteiro VH1–VH13 do histórico) e PEND-010 (roteiro VJ25–VJ27 do tema e dos controles) — registro no [SDD, Apêndice B](docs/spec/spec-driven-development.md#apêndice-b--pendências).
 - **Riscos que mais pesam:** RISK-005 (copiar código ou assets do Typeless por engano — sala limpa, permanente) e RISK-011 (primeiras sílabas cortadas: a captura começa até 300 ms depois da tecla) — registro no [SDD §26](docs/spec/spec-driven-development.md#26-riscos-e-mitigações).
 
 ## Stack
@@ -47,9 +57,14 @@ O **SDD** (`docs/spec/spec-driven-development.md`) é o **contrato de engenharia
 - **Win32 (SendInput, elevação):** `koffi` (3.3.3) chamando `user32` / `kernel32` / `advapi32` (ADR-03).
 - **Gravação:** `getUserMedia` + `MediaRecorder` (`audio/webm;codecs=opus`) no renderer da pílula.
 - **Transcrição:** Groq `whisper-large-v3-turbo` (plano gratuito), `language=pt` (ADR-04).
+- **Chave da Groq:** `safeStorage` do Electron (DPAPI) em `%APPDATA%\Touch Speaker\groq-key.bin`; `frontend/.env` só como reserva de desenvolvimento (ADR-08).
+- **Fonte:** Inter 4.1 embutida (ADR-12).
+- **Interface:** HTML + CSS + TypeScript sem framework nem bundler; duas janelas (pílula e janela principal), cada uma com seu preload e seu programa do `tsc` (script clássico); cores, fonte e medidas só dos tokens de `renderer/tokens.css`.
 - **Testes:** `node:test`.
 - **Runtime de dev:** Node.js 24 LTS.
-- **Qualidade:** `npm run typecheck` e `npm test` (30/30 em 17/out/2026). Não há linter, formatador nem CI (`.github/` não existe) — detalhe em [`docs/Code-Style.md`](docs/Code-Style.md).
+- **Banco local (M2):** SQLite pelo `node:sqlite` embutido no Electron 44 — sem dependência npm (ADR-09).
+- **Ícones da janela principal:** Lucide 1.52.0 (ISC), SVG inline vendorizado, sem pacote npm (ADR-13, proposta).
+- **Qualidade:** `npm run typecheck` e `npm test` (326/326 em 18/out/2026). Não há linter, formatador nem CI (`.github/` não existe) — detalhe em [`docs/Code-Style.md`](docs/Code-Style.md).
 
 ## Comandos essenciais
 
@@ -58,17 +73,20 @@ Da raiz do repositório (o app e o `package.json` ficam em `frontend/`):
 ```powershell
 cd frontend
 npm install
-copy .env.example .env   # e preencher GROQ_API_KEY
-npm run dev              # compila e abre o app na bandeja
+npm run dev              # compila e abre o app na bandeja; a chave da Groq vai em Configurações
 npm start                # abre sem recompilar
 npm test                 # compila e roda os testes (node:test)
-npm run typecheck
+npm run typecheck        # os três programas do tsc
+copy .env.example .env   # opcional, só em desenvolvimento: GROQ_API_KEY como reserva
 ```
 
 - Sempre abrir o app por `npm run dev`/`npm start` (passam por `scripts/start.mjs`, que remove o `ELECTRON_RUN_AS_NODE` herdado do VS Code).
+- **Chave da Groq pela interface:** bandeja → "Abrir Touch Speaker" (ou duplo clique no ícone) → Configurações → colar a chave → "Salvar chave". Fica cifrada em `%APPDATA%\Touch Speaker\groq-key.bin` (`safeStorage`) e vale no próximo ditado, sem reiniciar. Na primeira execução sem chave salva, a janela abre sozinha em Configurações.
+- O `frontend/.env` (`GROQ_API_KEY`) é só reserva de desenvolvimento: lido só com o app não empacotado e só quando não há chave salva no app (ADR-08).
 - Log em `%APPDATA%\Touch Speaker\logs\main.log` (só metadados; rotação em 5 MB, até `main.2.log`).
 - Para encerrar um app aberto por agente: `Stop-Process` nos `electron.exe` cujo caminho contém `touch-speaker`.
-- Sem `GROQ_API_KEY` o app abre normalmente; ao tentar ditar, a pílula avisa `no_api_key` (BR-013).
+- Sem chave (nem salva nem no `.env`) o app abre normalmente; ao tentar ditar, a pílula avisa `no_api_key` — "Falta a chave da Groq — abra o Touch Speaker pela bandeja" (BR-013).
+- Em `npm run dev`, F12 com a janela principal em foco abre o DevTools dela; "Iniciar com o Windows" fica desabilitado (só funciona no app instalado).
 - `koffi` e `uiohook-napi` trazem binários prontos para win32-x64; os scripts de instalação deles ficam negados no `allowScripts` do `package.json`, e o aviso do npm sobre isso é esperado.
 
 Setup completo em [`README.md`](README.md); variáveis em [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md).
@@ -77,7 +95,7 @@ Setup completo em [`README.md`](README.md); variáveis em [`docs/ENVIRONMENT.md`
 
 O app fica em `frontend/`. Nas citações `arquivo.ts:linha` dos docs, os caminhos partem da raiz do repositório (`frontend/src/main/session.ts`) ou, quando o contexto já é o app, de `frontend/` (`src/main/session.ts`).
 
-- `frontend/` — app desktop Electron (main, preload, renderer) — Fase 1: `src/main/` (processo main: hook, sessão, transcrição, inserção, bandeja, config, log e os textos de interface em `strings.ts`), `src/preload/` (ponte mínima `window.touchSpeaker`), `src/renderer/` (pílula: gravação e interface), `src/shared/` (tipos do IPC), `src/test/` (testes `node:test`) e `scripts/` (`start.mjs`, `copy-static.mjs`).
+- `frontend/` — app desktop Electron (main, preload, renderer): `src/main/` (processo main: hook, sessão, transcrição, inserção, bandeja, janela principal, chave da Groq em `credentials.ts`, preferências em `settings.ts`, item de login, config, log e os textos de interface em `strings.ts`), `src/preload/` (`pill.ts` → `window.touchSpeaker`; `main-window.ts` → `window.touchSpeakerApp`), `src/renderer/` (pílula, `tokens.css`, `fonts/` e `main-window/`, a janela principal), `src/shared/` (tipos do IPC, paleta e contraste), `src/test/` (testes `node:test`) e `scripts/` (`start.mjs`, `copy-static.mjs`). Três programas do `tsc`: `tsconfig.main.json`, `tsconfig.renderer.json` (pílula) e `tsconfig.main-window.json` (janela principal).
 - `backend/` — API própria — vazio até a Fase 4.
 - `database/` — migrations: `local/` (SQLite, Fase 2) e `server/` (Fase 4).
 - `docs/` — PRD, ARCHITECTURE, API, INTEGRATION, DATABASE, DESIGN, DECISIONS, ENVIRONMENT, CHANGELOG, Code-Style, Security-Guide · `spec/` (SDD e specs de feature) · `templates/` (processo e templates de feature, milestone e migração) · `referencia/` (estudo do Typeless, não normativo) · `assets/` (logo).
@@ -93,7 +111,9 @@ O app fica em `frontend/`. Nas citações `arquivo.ts:linha` dos docs, os caminh
 - Sem limpeza por IA na Fase 1; `Refiner` identidade como encaixe ([ADR-05](docs/DECISIONS.md#adr-05--sem-limpeza-por-ia-na-fase-1-mas-com-o-encaixe-pronto)).
 - Sem backend na Fase 1; app não é distribuído com chave ([ADR-06](docs/DECISIONS.md#adr-06--sem-backend-na-fase-1)).
 - Sala limpa em relação ao Typeless ([ADR-07](docs/DECISIONS.md#adr-07--sala-limpa-em-relação-ao-typeless)).
-- **ADRs propostas:** nenhuma em aberto (SDD §27).
+- Chave da Groq no `safeStorage` do Electron, digitada em Configurações; `.env` só como reserva de desenvolvimento, nunca lido no app empacotado; a chave nunca volta ao renderer, nunca vai para log nem para o `config.json` e nunca é gravada em texto puro ([ADR-08](docs/DECISIONS.md#adr-08--chave-da-groq-no-safestorage-do-electron-com-o-env-só-como-reserva-de-desenvolvimento)).
+- Fonte Inter embutida, arquivo oficial sem modificação, com a licença OFL ao lado — a única exceção ao guardrail de binários de terceiros ([ADR-12](docs/DECISIONS.md#adr-12--fonte-inter-embutida-no-app)).
+- **ADRs propostas:** [ADR-13 — ícones Lucide embutidos](docs/DECISIONS.md#adr-13--ícones-lucide-embutidos), aguardando o aval do Victor (SDD §27). ADR-10 e ADR-11 seguem reservadas para a spec `distribuicao-windows-macos`.
 
 Detalhe (contexto, decisão, consequências, implementação) em [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
@@ -155,8 +175,8 @@ Contrato, planejamento e apoio (aprofundamento):
 2. `docs/CHANGELOG.md` — o que de fato entrou, com o porquê.
 3. **`docs/templates/`** — processo e templates de feature, milestone e migração. **Ponto de partida obrigatório** de qualquer feature.
 4. [`SECURITY.md`](SECURITY.md) e [`docs/Security-Guide.md`](docs/Security-Guide.md) — política e guia de segurança (inclui a sala limpa, §15.3).
-5. [`docs/Code-Style.md`](docs/Code-Style.md) e [`docs/DESIGN.md`](docs/DESIGN.md) — estilo de código e design da pílula e da bandeja.
-6. [`docs/spec/features/ditado-por-voz.md`](docs/spec/features/ditado-por-voz.md) — spec ativa da Fase 1 (T1–T10, V1–V13).
+5. [`docs/Code-Style.md`](docs/Code-Style.md) e [`docs/DESIGN.md`](docs/DESIGN.md) — estilo de código e design da pílula, da janela principal e da bandeja.
+6. [`docs/spec/features/ditado-por-voz.md`](docs/spec/features/ditado-por-voz.md) — spec ativa da Fase 1 (T1–T10, V1–V13); as specs da M2 em `docs/spec/features/` (`design-system`, `janela-principal`, `historico`, `distribuicao-windows-macos`) e o doc-pai em [`docs/milestones/M2-app-com-interface.md`](docs/milestones/M2-app-com-interface.md).
 7. [`docs/referencia/estudo-typeless.md`](docs/referencia/estudo-typeless.md) — estudo de referência, **não normativo** e **fonte proibida de código** (ADR-07): dele saem ideias e comportamentos descritos com palavras próprias, nunca código, strings, constantes, nomes de canal, ícones, sons ou cores.
 
 | Assunto | Documento |
@@ -165,12 +185,12 @@ Contrato, planejamento e apoio (aprofundamento):
 | Requisitos (FR/NFR) e roadmap | [docs/PRD.md](docs/PRD.md) |
 | Regras, pendências, riscos, roadmap (contrato) | [docs/spec/spec-driven-development.md](docs/spec/spec-driven-development.md) |
 | Componentes, fluxo, estrutura | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
-| ADR-01…07 | [docs/DECISIONS.md](docs/DECISIONS.md) |
+| ADR-01…09, ADR-12 e ADR-13 (proposta) | [docs/DECISIONS.md](docs/DECISIONS.md) |
 | Groq, IPC, códigos de erro | [docs/API.md](docs/API.md) |
 | Integração com a Groq: papéis, garantias, limites | [docs/INTEGRATION.md](docs/INTEGRATION.md) |
 | `config.json`, log, SQLite (Fase 2) | [docs/DATABASE.md](docs/DATABASE.md) |
 | Node, Electron, variáveis, `.env`, problemas comuns | [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) |
-| Pílula, cores, sons | [docs/DESIGN.md](docs/DESIGN.md) |
+| Pílula, janela principal, cores, sons | [docs/DESIGN.md](docs/DESIGN.md) |
 | Estilo de código | [docs/Code-Style.md](docs/Code-Style.md) |
 | Segurança e sala limpa | [docs/Security-Guide.md](docs/Security-Guide.md) · [SECURITY.md](SECURITY.md) |
 | Processo e templates de feature | [docs/templates/README.md](docs/templates/README.md) |

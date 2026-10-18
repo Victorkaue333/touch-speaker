@@ -1,6 +1,6 @@
 # Como nasce uma feature no Touch Speaker
 
-> Última atualização: 17/out/2026 · Mantenedor: Victor Alves · Status: **vigente**
+> Última atualização: 18/out/2026 · Mantenedor: Victor Alves · Status: **vigente**
 > Contrato: [SDD](../spec/spec-driven-development.md) · Guardrails: [CLAUDE.md](../../CLAUDE.md) ·
 > Decisões: [DECISIONS.md](../DECISIONS.md)
 
@@ -70,9 +70,11 @@ ideia ─► spec (proposta) ─► revisão ─► spec (aprovada) ─► taref
 7. **Pronto:** status `implementada`, data e o que ficou de fora.
 
 A pasta `docs/spec/features/` já existe, com a spec da Fase 1
-([`ditado-por-voz.md`](../spec/features/ditado-por-voz.md), anterior a este template); a
-`docs/milestones/` ainda não, e é criada quando a primeira milestone abrir (`M<N>` = Fase N; a primeira
-candidata é `M1-ditado-basico.md`, ao fechar T9/T10).
+([`ditado-por-voz.md`](../spec/features/ditado-por-voz.md), anterior a este template) e as da M2 (índice no
+fim desta página). A `docs/milestones/` existe desde 18/out/2026, com o doc-pai da M2
+([`M2-app-com-interface.md`](../milestones/M2-app-com-interface.md)), aberto por decisão do Victor antes do gate;
+a M1 (`M1-ditado-basico.md`) é criada ao fechar T9/T10. A regra `M<N>` = Fase N não vale para a M2, e
+ajustá-la é a PEND-novo-1 do doc-pai.
 
 A spec do estágio 1 **não morre** quando a milestone abre: ela continua sendo a resposta para *"por
 que isso é assim?"*. O doc de milestone responde *"o que de fato entrou"*. Gêneros diferentes, os
@@ -95,10 +97,11 @@ Regras que não são estilo:
 - **IDs estáveis.** Requisito funcional `FR-<ÁREA>-NN`, não-funcional `NFR-NN`, decisão `ADR-NN`, princípio
   `C1`–`C8`. Áreas em uso: `DICT` (ditado), `CLEAN` (limpeza por IA), `VOCAB` (dicionário), `HIST`
   (histórico), `SET` (configurações), `CTX` (contexto do app), `ASK` (comandos por voz), `TRANS`
-  (tradução), `ACC` (contas). Regras, riscos e pendências citam os registros do SDD (`BR-`, `RISK-`, `PEND-`).
+  (tradução), `ACC` (contas), `DS` (design system: tokens, tema, fonte e cores da pílula e da bandeja), `UI`
+  (janela principal: abrir e fechar, navegação, Início, Configurações, chave da Groq na tela). Regras, riscos e pendências citam os registros do SDD (`BR-`, `RISK-`, `PEND-`).
 - **Evidência com `frontend/src/<caminho>.ts:linha`.** Afirmação sobre o código atual sem âncora é
   opinião. Exemplo do formato: "só a tecla configurada e o `Esc` são identificados; qualquer outra vira
-  `other` antes de sair do hook (`frontend/src/main/keyboard.ts:8-9`)". Sem a linha conferida, cite o
+  `other` antes de sair do hook (`frontend/src/main/keyboard.ts:14-15`)". Sem a linha conferida, cite o
   arquivo e o símbolo (`SessionController.start`), nunca uma linha inventada.
 - **Objetivos E não-objetivos.** O "fora de escopo" é o que impede a feature de crescer no meio do PR.
 - **Os quatro diagramas** (§0.1 do template), quando a feature tem tela ou fluxo: **wireframe**
@@ -200,8 +203,10 @@ comparada a descobrir o buraco no meio da implementação.
 | Formato de dado persistido — `version` do `config.json`; migrations SQL de `database/local/` (Fase 2); banco do servidor (Fase 4) | [`TEMPLATE-spec-migracao.md`](TEMPLATE-spec-migracao.md) | os do apêndice do template de migração |
 | Entrega de uma fase (o que de fato entrou) | [`TEMPLATE-milestone.md`](TEMPLATE-milestone.md) | o estágio 3 desta página |
 
-**Onde ficam:** `docs/spec/features/<slug>.md`, para os dois tipos de spec. Hoje não há nenhuma spec de
-migração: a Fase 1 não tem banco e o `config.json` está na `version: 1`.
+**Onde ficam:** `docs/spec/features/<slug>.md`, para os dois tipos de spec. A primeira spec de migração é a
+[`historico-dados-v1`](../spec/features/historico-dados-v1.md) (18/out/2026): o primeiro banco do app (migration
+`database/local/0001_init.sql`) e o campo `history.retentionDays` do `config.json`, que continua na
+`version: 1` porque o campo é aditivo.
 
 ### Gate em dois níveis
 
@@ -225,6 +230,11 @@ Os itens dos dois gates e a *Definition of Done* da migração não se repetem a
 | Spec | Fase | Status |
 | --- | --- | --- |
 | [Ditado por voz](../spec/features/ditado-por-voz.md) | 1 | aprovada · em implementação |
+| [Design system "Sálvia"](../spec/features/design-system.md) | M2 | aprovada (18/out/2026) · implementada no código, roteiro V-DS pendente (PEND-006) |
+| [Janela principal](../spec/features/janela-principal.md) | M2 | aprovada (18/out/2026) · implementada no código (18/out/2026), roteiro VJ1–VJ24 pendente (PEND-007); tema e controles (FR-UI-39…42, pedido do Victor de 18/out/2026) no código, roteiro VJ25–VJ27 pendente (PEND-010) |
+| [Histórico de ditados](../spec/features/historico.md) | M2 | aprovada (18/out/2026) · implementada no código (18/out/2026), roteiro VH1–VH13 pendente (PEND-009) |
+| [Histórico local — migração `0001` e `history.retentionDays`](../spec/features/historico-dados-v1.md) (spec de migração) | M2 | proposta · implementação autorizada pelo Victor antes da aprovação (18/out/2026), já no código; aprova junto com o roteiro VH, com o ensaio da migração (PEND-009) |
+| [Distribuição para Windows e macOS](../spec/features/distribuicao-windows-macos.md) | M2 | aprovada (18/out/2026) |
 
 ### Specs anteriores a este template
 
