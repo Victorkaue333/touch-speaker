@@ -72,7 +72,7 @@ administrativo do modelo destes guias não se aplica a um app de bandeja.
 | Quando cada estado aparece | `src/main/session.ts` (`SessionController`, dono único do estado do ditado); o estado do Início é montado no main (`AppStatus`, `src/main/index.ts:207-220`) |
 | Preferências que mudam a interface | `config.json`: `pill.position`, `sounds` ([`DATABASE.md`](DATABASE.md#configjson)), editáveis também em Configurações. O tema **não** é configurável: vem sempre do sistema (§12) |
 | Ícones da janela principal | Lucide 1.52.0, inline em `src/renderer/main-window/index.html`, com a licença ISC em `src/renderer/main-window/LICENSE-lucide.txt` (§11) |
-| Marca | `docs/assets/logo.svg` (§14); na janela principal, a marca redesenhada inline nas cores do tema (§6.5) |
+| Marca | `docs/assets/logo.svg` (§14); na janela principal, a marca inline nas cores do README (`#13A89E` e branco), iguais nos dois temas (§6.5) |
 
 Tocam a interface a ADR-07 (sala limpa), a ADR-12 (fonte Inter embutida) e os princípios C1 (privacidade por
 padrão), C2 (nunca roubar o foco) e C3 (nunca digitar lixo) da Constituição
@@ -90,41 +90,46 @@ pelo `tokens.test.ts`, para o `pill.css` e o `main-window.css`). O ícone da ban
 pelo main, e o fundo da janela principal antes de a página pintar (`backgroundColor`) tiram as cores de
 `src/shared/palette.ts`, que repete os mesmos hex.
 
-### 3.1 Primitivos — a paleta (`tokens.css:22-29`)
+### 3.1 Primitivos — a paleta (`tokens.css:24-31`)
 
 | Primitivo | Token | Hex | Papel |
 | --- | --- | --- | --- |
-| Alabaster | `--ts-palette-alabaster` | `#F4F1EB` | fundo claro; texto no escuro |
-| Candle | `--ts-palette-candle` | `#EFE9D7` | superfície clara; "transcrevendo" no escuro |
+| Alabaster | `--ts-palette-alabaster` | `#F4F1EB` | texto no escuro (desde 18/out/2026, não pinta mais o tema claro) |
+| Candle | `--ts-palette-candle` | `#EFE9D7` | "transcrevendo" no escuro (desde 18/out/2026, não pinta mais o tema claro) |
 | Black Hole | `--ts-palette-black-hole` | `#222222` | texto no claro; fundo escuro |
 | Slate Green | `--ts-palette-slate-green` | `#2D5A4A` | acento no claro |
 | Moss Green | `--ts-palette-moss-green` | `#7AA05A` | acento e aviso no escuro; destaque secundário no claro |
 | Apricot | `--ts-palette-apricot` | `#D78B30` | gravando (no escuro) |
 
-### 3.2 Tokens semânticos por tema (`tokens.css:63-82` claro, `:85-106` escuro)
+### 3.2 Tokens semânticos por tema (`tokens.css:67-88` claro, `:91-114` escuro; `:122-166` repetem os dois para o tema escolhido na janela)
 
 **P** = valor da paleta. **D** = derivado, aprovado pelo Victor em 18/out/2026 (spec `design-system`, D6–D8):
-mantém o matiz do primitivo de origem ou mistura Black Hole com Alabaster.
+no escuro, mantém o matiz do primitivo de origem ou mistura Black Hole com Alabaster. **Tema claro branco
+neutro** (Victor, 18/out/2026, depois de ver o tema claro creme): página e cards brancos, barra lateral cinza
+neutro bem claro, cinzas neutros no texto secundário e nas bordas, sem o tom de Alabaster/Candle; o Slate Green
+continua como cor da marca, do item ativo e do botão principal. O tema escuro não mudou.
 
 | Token | Papel | Tema claro | Tema escuro |
 | --- | --- | --- | --- |
-| `--ts-bg` | fundo da janela | Alabaster `#F4F1EB` (P) | Black Hole `#222222` (P) |
-| `--ts-surface` | superfície (cartão, painel) | Candle `#EFE9D7` (P) | `#2D2C2C` (D) |
-| `--ts-text` | texto principal | Black Hole (P) | Alabaster (P) |
-| `--ts-text-muted` | texto secundário, dica, cronômetro | `#61605E` (D) | `#ABA9A5` (D) |
+| `--ts-bg` | fundo da janela (página); hover dos itens da barra lateral | `#FFFFFF` (D: branco) | Black Hole `#222222` (P) |
+| `--ts-surface` | barra lateral, superfície da pílula ao lado | `#F7F7F8` (D: cinza neutro) | `#2D2C2C` (D) |
+| `--ts-card` | card, entrada do Histórico, popup das listas (desde 18/out/2026) | `#FFFFFF` (D: branco, com borda `--ts-border`) | `= --ts-surface` `#2D2C2C` (D) |
+| `--ts-hover` | hover de botão e de opção sobre card (desde 18/out/2026) | `#F4F4F5` (D: cinza neutro) | `= --ts-bg` `#222222` (P) |
+| `--ts-text` | texto principal | Black Hole `#222222` (P) | Alabaster (P) |
+| `--ts-text-muted` | texto secundário, dica, cronômetro | `#65656D` (D: cinza neutro) | `#ABA9A5` (D) |
 | `--ts-accent` | texto, ícone e link no tom da marca | Slate Green (P) | Moss Green (P) |
 | `--ts-accent-fill` | fundo da ação principal | Slate Green (P) | Moss Green (P) |
-| `--ts-on-accent` | texto sobre `--ts-accent-fill` | Alabaster (P) | Black Hole (P) |
+| `--ts-on-accent` | texto sobre `--ts-accent-fill` | `#FFFFFF` (D: branco) | Black Hole (P) |
 | `--ts-secondary-fill` | fundo de destaque secundário | Moss Green (P) | Slate Green (P) |
 | `--ts-on-secondary` | texto sobre `--ts-secondary-fill` | Black Hole (P) | Alabaster (P) |
-| `--ts-border` | divisória decorativa (sem limiar de contraste) | `#DBD8D3` (D) | `#424140` (D) |
+| `--ts-border` | divisória e borda de card (sem limiar de contraste) | `#E4E4E7` (D: cinza neutro) | `#424140` (D) |
 | `--ts-border-strong` | limite de campo e de controle | `#817F7C` (D) | `#817F7C` (D) |
 | `--ts-focus` | anel de foco | Slate Green (P) | Moss Green (P) |
 | `--ts-recording` | gravando: ponto, barras, ponto da bandeja | `#BB7624` (D: Apricot escurecido — só gráfico, nunca texto) | Apricot `#D78B30` (P) |
-| `--ts-working` | transcrevendo (neutro de propósito, para não competir com a gravação) | `#61605E` (D) | Candle (P) |
+| `--ts-working` | transcrevendo (neutro de propósito, para não competir com a gravação) | `#65656D` (D: = muted) | Candle (P) |
 | `--ts-notice` | aviso e cronômetro nos últimos 30 s | `#567140` (D: Moss escurecido) | Moss Green (P) |
 | `--ts-error` | erro | `#A84A3A` (D: terracota) | `#E08A7A` (D: terracota clara) |
-| `--ts-pill-surface` | fundo da pílula, **opaco** | `= --ts-bg` (Alabaster) | `= --ts-bg` (Black Hole) |
+| `--ts-pill-surface` | fundo da pílula, **opaco** | `= --ts-bg` (branco) | `= --ts-bg` (Black Hole) |
 | `--ts-pill-border` | borda de 1 px da pílula | `= --ts-border` | `= --ts-border` |
 
 Regras de uso, que evitam derivado novo: Moss Green e Apricot **nunca como texto sobre fundo claro** (ficam
@@ -223,7 +228,7 @@ estilo em `pill.css` ou `main-window.css` sobre os tokens de `tokens.css`, ou ob
   redimensionar nem mover, `skipTaskbar`, `focusable: false`, `alwaysOnTop` nível `screen-saver`,
   `setIgnoreMouseEvents(true)`, exibida com `showInactive()` (`src/main/pill-window.ts:8-9`, `:22-52`,
   `:79-82`). A pílula fica centralizada dentro da janela; a janela é transparente, mas a **superfície da pílula
-  é opaca**, na cor `--ts-bg` do tema (Black Hole no escuro, Alabaster no claro).
+  é opaca**, na cor `--ts-bg` do tema (Black Hole no escuro, branco no claro).
 - Tema: o do sistema (no Windows, o modo de aplicativo), pela media query de `tokens.css`; a pílula troca
   sozinha se o tema muda, inclusive visível, sem reiniciar o app (§12).
 - Posição: centralizada horizontalmente na tela onde está o cursor do mouse, 24 px acima da borda inferior
@@ -330,7 +335,7 @@ Spec [`janela-principal`](spec/features/janela-principal.md) (SCREEN-003), imple
   mouse — a mesma regra da pílula (`src/main/main-window.ts:18-21`, `:79-100`, `:139-145`). `pill.position` não
   a afeta.
 - Fica escondida até `ready-to-show` e então aparece com foco (`src/main/main-window.ts:104-109`). O `backgroundColor`
-  é o `--ts-bg` do tema em vigor — Black Hole no escuro, Alabaster no claro, de `src/shared/palette.ts` —, para
+  é o `--ts-bg` do tema em vigor — Black Hole no escuro, branco (`DERIVED.bgLight`) no claro, de `src/shared/palette.ts` —, para
   a janela não piscar branco; quando o tema muda, ele é trocado (`src/main/main-window.ts:86`, `:147-154`).
 - Aparece na barra de tarefas enquanto aberta, com o ícone do microfone (§6.2). Minimizar vai para a barra de
   tarefas; fechar (X ou Alt+F4) **destrói** a janela, e o app, o hook e uma gravação em andamento seguem na
@@ -347,23 +352,31 @@ Spec [`janela-principal`](spec/features/janela-principal.md) (SCREEN-003), imple
 
 **Layout e estilo** (`src/renderer/main-window/main-window.css`). Desde 18/out/2026 a janela segue o estilo do
 **shadcn/ui**, refeito em CSS puro sobre os tokens da Sálvia — sem React, sem biblioteca, sem dependência npm e
-sem token novo. Foi pedido do Victor depois de ver a janela pela primeira vez: logo no topo da barra lateral,
+sem biblioteca de componentes. Foi pedido do Victor depois de ver a janela pela primeira vez: logo no topo da barra lateral,
 item atual sem a barra verde, ícone em todo item e cards, botões e campos no estilo shadcn. Ficou assim: cards
 planos com borda de 1 px e sem sombra, controles de 36 px e o item atual da barra lateral como um retângulo
-preenchido. O **fundo neutro de hover e de item atual é `--ts-bg`**: todo controle fica sobre `--ts-surface`
-(barra lateral ou card), e texto, texto secundário e acento passam de 4,5:1 sobre `--ts-bg` nos dois temas
-(pares travados no `tokens.test.ts`).
+preenchido. **Fundos** (desde 18/out/2026, com o tema claro branco neutro): a página é `--ts-bg`, a barra
+lateral é `--ts-surface` e os cards, as entradas e o popup das listas são `--ts-card`. **Hover:** na barra
+lateral, o item e o botão de tema enchem com `--ts-bg`; sobre card, botão de contorno, botão fantasma e opção de
+lista enchem com `--ts-hover`. No claro isso dá página e cards brancos, barra lateral `#F7F7F8` e hover
+`#F4F4F5`; no escuro, `--ts-card` = `--ts-surface` e `--ts-hover` = `--ts-bg`, e nada mudou na tela. Texto, texto
+secundário e acento passam de 4,5:1 sobre todos esses fundos nos dois temas (pares travados no
+`tokens.test.ts`).
 
 - Duas colunas: **barra lateral de 232 px** e conteúdo flexível (`main-window.css:42-46`). Eram 216 px; os
   16 px a mais fazem caber ícone, "Dicionário" e o selo "em breve" numa linha.
 - **Barra lateral** (`nav`, rotulada pelo nome do app): fundo `--ts-surface`, borda direita `--ts-border`
   (`main-window.css:49-57`).
   - **Topo — logo:** a marca do logo (§14) em 28 px ao lado de "Touch Speaker" em 15 px / 600
-    (`src/renderer/main-window/index.html:18-35`, `main-window.css:59-92`). A marca é o quadrado do
-    `docs/assets/logo.svg`, sem os textos, redesenhado em SVG inline com `aria-hidden="true"` e pintado pelos
-    tokens: o quadrado em `--ts-accent-fill` e o microfone e as barras em `--ts-on-accent`. Fica Slate Green
-    com Alabaster no claro (6,97:1) e Moss Green com Black Hole no escuro (5,31:1). Por isso a marca acerta
-    nos dois temas, e o arquivo do logo não muda (D10, §19). O nome vem de `strings.ts`, por `data-text`.
+    (`src/renderer/main-window/index.html:18-35`, `main-window.css:92-104`). A marca é o quadrado do
+    `docs/assets/logo.svg`, sem os textos, em SVG inline com `aria-hidden="true"` e **nas cores do README**
+    (Victor, 18/out/2026): quadrado `#13A89E`, microfone e barras brancos (as barras a 55%), iguais nos dois
+    temas. As cores ficam como atributos `fill`/`stroke` do SVG, sem mexer na CSP nem no `main-window.css`. O
+    quadrado passa de 3:1 contra o fundo escuro (5,40:1 sobre `#222222`, 4,72:1 sobre `#2D2C2C`), mas não contra
+    o claro (2,95:1 sobre branco, 2,75:1 sobre `#F7F7F8`), e o branco sobre o verde-azulado fica em 2,95:1 —
+    abaixo dos 3:1 de gráfico. Aceito: a marca é decorativa (`aria-hidden`), o nome ao lado é o rótulo, e as cores
+    são as do README por decisão do Victor. Antes (até 18/out/2026) a marca era repintada pelos tokens, em Slate
+    Green/Moss Green. O nome vem de `strings.ts`, por `data-text`.
   - **Botão de tema** (18/out/2026, FR-UI-39…41): ao lado de Configurações, no rodapé da barra lateral, um botão
     quadrado de 36 px, fantasma (sem fundo nem borda; hover `--ts-bg`), com o **sol** da Lucide no tema claro e a
     **lua** no escuro, em `--ts-text-muted` (`--ts-text` no hover); o nome acessível e a dica dizem o que o clique
@@ -378,13 +391,13 @@ preenchido. O **fundo neutro de hover e de item atual é `--ts-bg`**: todo contr
     texto `--ts-text`. O **item atual** (`aria-current="page"`) tem fundo `--ts-bg` e texto `--ts-text` em
     500, num retângulo de raio `--ts-radius-sm` com 36 px de altura mínima (`main-window.css:109-140`). A
     **barra verde de 3 px à esquerda saiu** (pedido do Victor, 18/out/2026). O fundo é sutil de propósito,
-    como no shadcn: contra a barra lateral fica em 1,08:1 no claro e 1,14:1 no escuro. Por isso o item atual
+    como no shadcn: contra a barra lateral fica em 1,07:1 no claro (branco sobre `#F7F7F8`) e 1,14:1 no escuro. Por isso o item atual
     também muda a cor do texto (de secundário para principal) e o peso — cor nunca é o único sinal (§13). Foco
     pelo teclado: o anel `--ts-focus-ring`.
 - **Conteúdo:** padding `--ts-space-6`, seção com até 880 px de largura e título da seção em 24 px / 600, com
   `letter-spacing: -0.01em`. As descrições (`.muted`) ficam em 13 px, em `--ts-text-muted`
   (`main-window.css:165-184`, `:259-263`).
-- **Cards:** fundo `--ts-surface`, borda de 1 px `--ts-border`, raio `--ts-radius-md` (10 px), **sem sombra**,
+- **Cards:** fundo `--ts-card` (branco no claro), borda de 1 px `--ts-border`, raio `--ts-radius-md` (10 px), **sem sombra**,
   padding `--ts-space-5`, título em 15 px / 600. No Início, uma grade de cards com no mínimo 240 px, e "Como
   ditar" ocupa a linha inteira (`main-window.css:186-213`). Desde 18/out/2026 (pedido do Victor), o Início tem
   nesta ordem: **"Como ditar" compacto** (padding menor; à esquerda o título, "Tecla de ditado" e a tecla num
@@ -396,10 +409,10 @@ preenchido. O **fundo neutro de hover e de item atual é `--ts-bg`**: todo contr
 
   | Variante | Em repouso | Ao passar o mouse | Onde |
   | --- | --- | --- | --- |
-  | Primário (`.button-primary`) | fundo `--ts-accent-fill`, texto `--ts-on-accent` | o fundo recebe 15% de `--ts-text` (`color-mix`, só com tokens): escurece no claro, clareia no escuro. O fundo se afasta do texto, então o contraste só sobe — 7,82:1 no claro, 6,26:1 no escuro (calculado; o teste trava o par em repouso) | "Salvar chave", "Salvar preferências", "Configurar chave" |
-  | Secundário / contorno (`.button-outline`) | sem fundo, borda `--ts-border-strong` (≥ 3:1) | fundo `--ts-bg` | "Reiniciar agora" |
-  | Fantasma (`.button-ghost`) | sem fundo nem borda: o texto é o limite | fundo `--ts-bg` | "Cancelar" (na confirmação de remover a chave) |
-  | Destrutivo (`.button-destructive`) | fundo `--ts-error`, texto `--ts-on-accent` — 5,03:1 no claro, 6,13:1 no escuro, par travado no `tokens.test.ts` | 15% de `--ts-text`, como o primário (5,94:1 / 6,99:1) | "Remover chave", "Confirmar remoção" |
+  | Primário (`.button-primary`) | fundo `--ts-accent-fill`, texto `--ts-on-accent` | o fundo recebe 15% de `--ts-text` (`color-mix`, só com tokens): escurece no claro, clareia no escuro. O fundo se afasta do texto, então o contraste só sobe — 8,78:1 no claro, 6,26:1 no escuro (calculado; o teste trava o par em repouso) | "Salvar chave", "Salvar preferências", "Configurar chave" |
+  | Secundário / contorno (`.button-outline`) | sem fundo, borda `--ts-border-strong` (≥ 3:1) | fundo `--ts-hover` | "Reiniciar agora" |
+  | Fantasma (`.button-ghost`) | sem fundo nem borda: o texto é o limite | fundo `--ts-hover` | "Cancelar" (na confirmação de remover a chave) |
+  | Destrutivo (`.button-destructive`) | fundo `--ts-error`, texto `--ts-on-accent` — 5,67:1 no claro (branco), 6,13:1 no escuro, par travado no `tokens.test.ts` | 15% de `--ts-text`, como o primário (6,69:1 / 6,99:1) | "Remover chave", "Confirmar remoção" |
 
   Pressionado (`:active`), o botão desce 1 px. Desabilitado: opacidade 0,5, cursor `not-allowed` e sem hover
   (o WCAG isenta controle desabilitado de contraste). Foco pelo teclado: o anel `--ts-focus-ring`.
@@ -416,9 +429,9 @@ preenchido. O **fundo neutro de hover e de item atual é `--ts-bg`**: todo contr
     abre o popup dentro da janela. **Gatilho:** 36 px, borda 1 px `--ts-border-strong`, raio `--ts-radius-sm`,
     fundo `--ts-bg`, o texto da opção escolhida (`<selectedcontent>`) e o `chevron-down` da Lucide em
     `--ts-text-muted`, que gira 180° com a lista aberta; aberta, a borda fica `--ts-focus`. **Popup:** fundo
-    `--ts-surface`, borda 1 px `--ts-border`, raio 8 px (`--ts-radius-sm` + 2), a sombra `--ts-shadow-float`,
+    `--ts-card`, borda 1 px `--ts-border`, raio 8 px (`--ts-radius-sm` + 2), a sombra `--ts-shadow-float`,
     padding 4 px, no mínimo a largura do gatilho e no máximo 280 px de altura, com rolagem. **Opções:** linhas de
-    32 px, raio `--ts-radius-sm`, 13 px; sob o mouse ou o teclado, fundo `--ts-bg`; a escolhida em 500, com o
+    32 px, raio `--ts-radius-sm`, 13 px; sob o mouse ou o teclado, fundo `--ts-hover`; a escolhida em 500, com o
     `check` da Lucide em `--ts-accent` (as outras guardam o espaço dele). A seta e o visto padrão do sistema ficam
     escondidos.
   - **Caixa de seleção** ("Sons"): 18 px, borda `--ts-border-strong`, raio 4 px, fundo `--ts-bg`; marcada, fundo e
@@ -443,7 +456,7 @@ preenchido. O **fundo neutro de hover e de item atual é `--ts-bg`**: todo contr
 **Histórico e Início** (spec [`historico`](spec/features/historico.md) §7, FR-HIST-22…26; 18/out/2026). O texto
 ditado entra sempre por `textContent`, nunca `innerHTML` (ele pode conter qualquer coisa).
 
-- **Entrada** (`.entry`): bloco de fundo `--ts-surface` (no Início, `--ts-bg`, dentro do card), borda 1 px
+- **Entrada** (`.entry`): bloco de fundo `--ts-card` (no Início, `--ts-bg`, dentro do card), borda 1 px
   `--ts-border`, raio `--ts-radius-md`. Em cima, a linha de metadados em 13 px `--ts-text-muted` com algarismos
   tabulares — no Histórico, hora e duração ("14:32", "0:12"); no Início, dia e hora ("Hoje", "14:32") — e, quando
   a colagem não aconteceu, o aviso com o triângulo de alerta e o texto: "Não colado — o texto ficou no clipboard"
@@ -554,8 +567,8 @@ Valores de cada estado por tema:
 
 | Estado | Tema escuro | Tema claro |
 | --- | --- | --- |
-| `listening` | ponto e barras em Apricot `#D78B30`; "Ouvindo…" em Alabaster; cronômetro e dica em `#ABA9A5`; últimos 30 s: cronômetro em Moss Green `#7AA05A` | ponto e barras em `#BB7624`; "Ouvindo…" em Black Hole; cronômetro e dica em `#61605E`; últimos 30 s: cronômetro em `#567140` |
-| `transcribing` | três pontos em Candle `#EFE9D7` | três pontos em `#61605E` |
+| `listening` | ponto e barras em Apricot `#D78B30`; "Ouvindo…" em Alabaster; cronômetro e dica em `#ABA9A5`; últimos 30 s: cronômetro em Moss Green `#7AA05A` | ponto e barras em `#BB7624`; "Ouvindo…" em Black Hole; cronômetro e dica em `#65656D`; últimos 30 s: cronômetro em `#567140` |
+| `transcribing` | três pontos em Candle `#EFE9D7` | três pontos em `#65656D` |
 | `notice` | glifo em Moss Green, texto em Alabaster | glifo em `#567140`, texto em Black Hole |
 | `error` | glifo e texto em `#E08A7A` | glifo e texto em `#A84A3A` |
 
@@ -642,7 +655,7 @@ configuração", "Sair". A janela principal não tem menu (`setMenu(null)`, `src
 | --- | --- | --- |
 | SVG inline próprio | Dois glifos de 16 px escritos em `src/renderer/pill.html:22-23` (triângulo de alerta; prancheta) | Pílula, estados `error` e `notice` |
 | SVG inline próprio | O triângulo de alerta de 16 px, escrito em `src/renderer/main-window/index.html:84` e `:92` | Janela principal, cards "Estado" e "Chave da Groq" em aviso ou erro |
-| SVG inline próprio | A marca do logo (quadrado com microfone), redesenhada de `docs/assets/logo.svg` nas cores do tema (`src/renderer/main-window/index.html:21-33`) | Topo da barra lateral da janela principal (§6.5, §14) |
+| SVG inline próprio | A marca do logo (quadrado com microfone), de `docs/assets/logo.svg`, nas cores do README (`src/renderer/main-window/index.html:21-33`) | Topo da barra lateral da janela principal (§6.5, §14) |
 | **Lucide 1.52.0** (licença ISC), SVG inline | Dezesseis ícones de 16 px em `src/renderer/main-window/index.html` — quatro na barra lateral e, desde 18/out/2026, os do botão de tema, do Histórico, do Início e das listas (tabela abaixo); os que o script clona ficam em `<template>` no mesmo arquivo | Barra lateral, Histórico, Início e Configurações da janela principal |
 | Desenho em código | Glifo de microfone calculado pixel a pixel (`src/main/icon-bitmap.ts`) | Ícone da bandeja (16 px) e da janela principal (32 px) |
 
@@ -729,7 +742,7 @@ foi **revista pelo Victor no mesmo dia**: há um botão claro/escuro na janela p
   `shouldUseDarkColorsForSystemIntegratedUI` lê o sistema e ignora o `themeSource` (no macOS ele é igual ao
   `shouldUseDarkColors`; nota para a spec `distribuicao-windows-macos`, onde o ícone é *template image*). O ícone da janela principal (`windowIcon`) é desenhado, ao criar a
   janela, na variante desse mesmo modo (`src/main/main-window.ts:87`).
-- A pílula segue o tema do sistema como as janelas (D2) e é opaca (D3). No tema claro, a pílula Alabaster pode
+- A pílula segue o tema do sistema como as janelas (D2) e é opaca (D3). No tema claro, a pílula branca pode
   encostar em janelas claras: o contorno vem da borda `--ts-pill-border` e da sombra (RISK-novo-6 da spec; se
   não bastar no roteiro, a borda passa a `--ts-border-strong`, valor já aprovado).
 - Alto contraste do Windows (`forced-colors`): o Chromium troca as cores do CSS pelas do sistema; a pílula
@@ -744,10 +757,10 @@ pílula, e cor nunca como único sinal. Estado conferido no código em 18/out/20
 | Tema | Estado | Evidência |
 | --- | --- | --- |
 | Cor não é o único sinal | Todo estado da pílula tem ícone + texto. Na janela principal, aviso e erro têm **borda + glifo + texto**, e o item atual da barra lateral tem fundo, peso 500 e o texto que passa de secundário a principal, além do `aria-current` | `src/renderer/pill.html:16-27`; `main-window.css:136-140`, `:216-256` |
-| Contraste | **Medido e travado por teste**: o `npm test` falha se um par texto/fundo cair abaixo de 4,5:1 ou um par gráfico/fundo (ponto, barras, pontos, anel de foco, limite de campo) abaixo de 3:1, nos dois temas e contra a superfície da pílula. Desde 18/out/2026, também o texto do botão destrutivo da janela principal (`--ts-on-accent` sobre `--ts-error`: 5,03:1 no claro, 6,13:1 no escuro). Menores margens: `--ts-recording` sobre `--ts-surface` no claro (3,02:1), `--ts-notice` sobre `--ts-surface` no claro (4,52:1) | `src/test/tokens.test.ts`, `src/shared/contrast.ts`; pares na spec `design-system` §9.4 B |
+| Contraste | **Medido e travado por teste**: o `npm test` falha se um par texto/fundo cair abaixo de 4,5:1 ou um par gráfico/fundo (ponto, barras, pontos, anel de foco, limite de campo) abaixo de 3:1, nos dois temas e contra a superfície da pílula. Desde 18/out/2026, também o texto do botão destrutivo da janela principal (`--ts-on-accent` sobre `--ts-error`: 5,67:1 no claro, 6,13:1 no escuro) e, também desde 18/out/2026, os pares sobre `--ts-card` e `--ts-hover`. Menores margens no claro, depois do tema branco neutro: `--ts-recording` sobre `--ts-surface` (3,42:1) e `--ts-notice` sobre `--ts-hover` (4,99:1). Os blocos `:root[data-theme]` também são conferidos: o teste falha se divergirem dos dois temas | `src/test/tokens.test.ts`, `src/shared/contrast.ts`; pares na spec `design-system` §9.4 B |
 | Contraste da bandeja | Glifo e ponto ≥ 3:1 contra a barra da variante (preto ou branco); a reserva neutra passa nos dois | `src/test/icon.test.ts`; §6.2 |
 | Confirmação não visual | Sons de início, fim e erro (desligáveis) | §6.4 |
-| Contraste da janela principal | O `main-window.css` só usa tokens (o `tokens.test.ts` falha com cor literal ou token próprio). Hover e item atual usam `--ts-bg` como fundo, cujos pares com texto, texto secundário e acento estão travados. O hover dos botões cheios mistura 15% de `--ts-text` no fundo (`color-mix`), o que só aumenta o contraste do texto — calculado (≥ 5,94:1), não travado por teste. A medição na tela, nos dois temas, é do roteiro da spec `janela-principal` (VJ17, VJ21) | `main-window.css`; `src/test/tokens.test.ts` |
+| Contraste da janela principal | O `main-window.css` só usa tokens (o `tokens.test.ts` falha com cor literal ou token próprio). Hover e item atual usam `--ts-bg` na barra lateral e `--ts-hover` sobre os cards, cujos pares com texto, texto secundário e acento estão travados. O hover dos botões cheios mistura 15% de `--ts-text` no fundo (`color-mix`), o que só aumenta o contraste do texto — calculado (≥ 6,26:1), não travado por teste. A medição na tela, nos dois temas, é do roteiro da spec `janela-principal` (VJ17, VJ21) | `main-window.css`; `src/test/tokens.test.ts` |
 | Movimento | `prefers-reduced-motion` respeitado: sem escala nem pulso na pílula; na janela, sem transição e sem o deslocamento de 1 px do botão pressionado | `pill.css:178-189`; `main-window.css:514-525` |
 | Anúncio | A pílula é `role="status"` com `aria-live="polite"`; ícones com `aria-hidden="true"`. O anúncio por leitor de tela numa janela que nunca recebe foco não foi verificado. Na janela principal, as mensagens de salvar ficam em `role="status"` com `aria-live="polite"`, a barra lateral é um `nav` rotulado pelo nome do app, cada card é rotulado pelo seu título e todo campo tem `label` associado. O glifo, a marca do logo e os ícones da barra lateral são `aria-hidden` (o rótulo do item é o texto). O Narrador na janela se confere no VJ17 | `src/renderer/pill.html:15-16`; `src/renderer/main-window/index.html:17-64`, `:73-96`, `:143`, `:194`, `:207` |
 | Idioma | `lang="pt-BR"` | `src/renderer/pill.html:2`; `src/renderer/main-window/index.html:2` |
@@ -758,7 +771,7 @@ pílula, e cor nunca como único sinal. Estado conferido no código em 18/out/20
 
 | Arquivo | O que é | Usado em |
 | --- | --- | --- |
-| `docs/assets/logo.svg` (720 × 200) | Quadrado arredondado `#13A89E` com microfone branco e duas barras; "Touch" em `#13A89E` e "Speaker" em `#8B8B95`; slogan "fale · solte · está escrito" | Topo do `README.md`; a marca (só o quadrado) no topo da barra lateral da janela principal, redesenhada inline nas cores do tema (§6.5) |
+| `docs/assets/logo.svg` (720 × 200) | Quadrado arredondado `#13A89E` com microfone branco e duas barras; "Touch" em `#13A89E` e "Speaker" em `#8B8B95`; slogan "fale · solte · está escrito" | Topo do `README.md`; a marca (só o quadrado) no topo da barra lateral da janela principal, inline nas mesmas cores (§6.5) |
 | `frontend/src/renderer/fonts/InterVariable.woff2` + `OFL.txt` | Inter 4.1, variável, sem modificação, sob SIL OFL 1.1 | Todo texto das janelas (§4) |
 | `frontend/src/renderer/main-window/LICENSE-lucide.txt` | Licença ISC da Lucide 1.52.0, sem modificação | Ícones da barra lateral da janela principal (§11) |
 
@@ -768,9 +781,10 @@ pílula, e cor nunca como único sinal. Estado conferido no código em 18/out/20
   (§19).
 - **Logo na janela principal** (pedido do Victor de 18/out/2026: logo no topo da barra lateral, certo nos dois
   temas): a marca sai de `docs/assets/logo.svg` só com a geometria do quadrado — sem os textos, que o nome do app
-  já traz de `strings.ts` — e é pintada pelos tokens, não em `#13A89E`. O quadrado fica em `--ts-accent-fill`;
-  o microfone e as barras, em `--ts-on-accent` (`src/renderer/main-window/index.html:21-33`,
-  `main-window.css:75-85`). O arquivo `docs/assets/logo.svg` não mudou.
+  já traz de `strings.ts` — **nas cores do README** (Victor, 18/out/2026): quadrado `#13A89E`, microfone e barras
+  brancos, iguais nos dois temas, como atributos do SVG inline (`src/renderer/main-window/index.html:21-33`), sem
+  mudar a CSP. Até essa data ela era pintada pelos tokens (Slate Green/Moss Green). Contraste em §6.5: o quadrado
+  passa de 3:1 no escuro e fica em 2,95:1 sobre branco. O arquivo `docs/assets/logo.svg` não mudou.
 - Nome: "Touch Speaker" — nome do app (`app.setName`, `src/main/index.ts:51`), `productName` do
   `package.json`, `<title>` da pílula (`src/renderer/pill.html:9`) e da janela principal
   (`src/renderer/main-window/index.html:9`; título da `BrowserWindow`, `src/main/main-window.ts:84`), o topo da
@@ -832,9 +846,9 @@ conferidos pelo `npm test`. Tela nova de verdade começa por spec ([`docs/templa
 ## 19. Divergências conhecidas
 
 - **Logo × paleta do app** (aberta, intencional): o `docs/assets/logo.svg` segue em `#13A89E`, que não faz parte
-  da Sálvia (§14, D10). Desde 18/out/2026, a marca na barra lateral da janela principal sai nas cores do tema
-  (Slate Green no claro, Moss Green no escuro), então o app e o README mostram a marca em cores diferentes —
-  o Victor confere na tela.
+  da Sálvia (§14, D10). Desde 18/out/2026 (segunda decisão do dia), a marca na barra lateral também sai em
+  `#13A89E`, como no README; a divergência que sobra é entre a marca e o acento do app (Slate Green / Moss Green)
+  — o Victor confere na tela.
 - **Bandeja "pronto" com o hook indisponível** (aberta, fora do escopo da spec `janela-principal`): o Início da
   janela mostra "A tecla de ditado não está funcionando — reinicie o app", mas o status e a dica da bandeja só
   olham a chave e a gravação (`src/main/tray.ts:56`). Corrigir a bandeja é trabalho separado (spec

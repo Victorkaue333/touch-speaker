@@ -10,7 +10,7 @@
 ![Windows](<https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-0078D4?style=flat>)
 ![macOS](<https://img.shields.io/badge/macOS-13%2B%20%C2%B7%20em%20implementa%C3%A7%C3%A3o-lightgrey?style=flat>)
 ![Groq](<https://img.shields.io/badge/Groq-Whisper%20large--v3--turbo-F55036?style=flat>)
-![Testes](<https://img.shields.io/badge/testes-326%20passando-brightgreen?style=flat>)
+![Testes](<https://img.shields.io/badge/testes-352%20passando-brightgreen?style=flat>)
 ![Status](<https://img.shields.io/badge/status-fase%201%20%C2%B7%20em%20verifica%C3%A7%C3%A3o-orange?style=flat>)
 ![License](https://img.shields.io/badge/license-propriet%C3%A1ria-lightgrey?style=flat)
 
@@ -228,7 +228,7 @@ A única integração externa é a Groq: visão da integração (fluxo, nova ten
 - 🔐 **Segurança:** `contextIsolation` + `sandbox` nas duas janelas, CSP restrita, permissão de mídia só de áudio e só para a pílula, IPC validado no main (com o remetente conferido), chave da Groq cifrada pelo `safeStorage` (ADR-08)
 - 🗃️ **Histórico:** SQLite pelo `node:sqlite` que já vem no Electron (SQLite 3.53.4) — nenhuma dependência nova (ADR-09)
 - 🔤 **Fonte:** Inter 4.1 embutida (ADR-12), sobre os tokens do design system "Sálvia" (tema claro ou escuro: segue o sistema ou a escolha feita no botão da janela)
-- 🧪 **Qualidade:** `node:test` (326 testes) · TypeScript com `strict` e `noUncheckedIndexedAccess`
+- 🧪 **Qualidade:** `node:test` (352 testes) · TypeScript com `strict` e `noUncheckedIndexedAccess`
 
 `koffi` e `uiohook-napi` trazem binários prontos para win32-x64; os scripts de instalação deles ficam negados no `allowScripts` do `package.json`.
 
@@ -325,7 +325,7 @@ O texto do histórico nunca vai para o log nem sai do computador. Para apagar tu
 ### 8️⃣ Verificação
 
 ```powershell
-npm test            # compila e roda os 326 testes
+npm test            # compila e roda os 352 testes
 npm run typecheck   # TypeScript estrito, sem emitir (três programas do tsc)
 ```
 
@@ -335,7 +335,7 @@ npm run typecheck   # TypeScript estrito, sem emitir (três programas do tsc)
 
 | Item                      | Estado                                                                                                                                         |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm test`              | ✅ 326/326 — `HotkeyController`, filtros anti-lixo, `GroqTranscriber` (com `fetch` simulado), config, tokens e contraste do design system e da janela, ícone da bandeja, chave da Groq, preferências, IPC da janela principal, histórico (retenção, formatos, busca, IPC, sessão, banco SQLite real em pasta temporária, pasta, serviço, script da tela), tema e controles de Configurações |
+| `npm test`              | ✅ 352/352 — `HotkeyController`, filtros anti-lixo, `GroqTranscriber` (com `fetch` simulado), config, tokens e contraste do design system e da janela, ícone da bandeja, chave da Groq, preferências, IPC da janela principal, histórico (retenção, formatos, busca, IPC, sessão, banco SQLite real em pasta temporária, pasta, serviço, script da tela), tema e controles de Configurações |
 | `npm run typecheck`     | ✅ Sem erros                                                                                                                                   |
 | App sobe no Electron 44   | ✅ Hook de teclado e `koffi` carregados (`app_ready` no log)                                                                               |
 | Colagem via `SendInput` | ✅ Comprovada isoladamente e em ditado real                                                                                                    |

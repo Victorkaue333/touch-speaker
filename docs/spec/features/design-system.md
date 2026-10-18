@@ -527,6 +527,12 @@ Color Palettes for Premium Designs", de 22 de setembro — sem link disponível;
 **P** = valor da paleta. **D** = derivado, aprovado pelo Victor em 18/out/2026 (D8; erro na D6, aviso na D7).
 Os derivados mantêm o matiz do primitivo de origem ou são misturas de Black Hole com Alabaster.
 
+> **Revisto em 18/out/2026 (D11):** a coluna "Tema claro" abaixo é a aprovada com a spec. O tema claro em vigor é
+> o **branco neutro** da D11 — `--ts-bg` `#FFFFFF`, `--ts-surface` `#F7F7F8`, `--ts-card` `#FFFFFF`, `--ts-hover`
+> `#F4F4F5`, `--ts-border` `#E4E4E7`, `--ts-text-muted`/`--ts-working` `#65656D`, `--ts-on-accent` `#FFFFFF` — e a
+> tabela vigente está no [`docs/DESIGN.md` §3.2](../../DESIGN.md#3-cor).
+> O tema escuro não mudou.
+
 | Token | Papel | Tema claro | Tema escuro |
 | --- | --- | --- | --- |
 | `--ts-bg` | fundo da janela | Alabaster `#F4F1EB` (P) | Black Hole `#222222` (P) |
@@ -907,7 +913,8 @@ Editado na implementação, em 18/out/2026 (T5), exceto o `CLAUDE.md` (último i
 
 ## 17. Decisões
 
-Os pontos abertos D1–D10 foram decididos pelo Victor em **18/out/2026**. Nenhum `[PRECISA ESCLARECER]`
+Os pontos abertos D1–D10 foram decididos pelo Victor em **18/out/2026**; no mesmo dia ele reviu a D4 e a D10 e
+acrescentou a D11 (tema claro branco neutro), já no código. Nenhum `[PRECISA ESCLARECER]`
 segue aberto. A spec foi aprovada pelo Victor em 18/out/2026.
 
 | # | Questão | Decisão (18/out/2026) | Onde se aplica |
@@ -921,7 +928,8 @@ segue aberto. A spec foi aprovada pelo Victor em 18/out/2026.
 | D7 | Cor de aviso (`notice` e cronômetro dos últimos 30 s) | **Verde derivado**: `#567140` no claro, Moss Green `#7AA05A` no escuro | FR-DS-09, FR-DS-10; §9.3 |
 | D8 | Valores derivados | **Aprovados todos os tons derivados que passam no contraste** (§9.3, conferidos no §9.4 B): superfície escura, muted, bordas, `#BB7624`, `#567140`, Moss como acento do escuro, Candle como neutro de transcrevendo. As alternativas não adotadas do §9.4 ficam fora. As escalas não-cor do §9.5 seguem como proposta desta spec | §9.3–§9.5 |
 | D9 | Fonte Inter embutida, com exceção ao guardrail de binários de terceiros | **ADR-12** (número reservado em 18/out/2026), abaixo; aprovação final junto com a spec | §0, §17, T3 |
-| D10 | Logo (`docs/assets/logo.svg`) e cor da marca | **Fica como está por enquanto**; o `docs/DESIGN.md` §14 registra a diferença entre o logo e a paleta do app | §2, §16 |
+| D10 | Logo (`docs/assets/logo.svg`) e cor da marca | **Fica como está por enquanto**; o `docs/DESIGN.md` §14 registra a diferença entre o logo e a paleta do app. **Revista pelo Victor em 18/out/2026:** a marca na barra lateral da janela principal usa **as cores do README** (quadrado `#13A89E`, microfone e barras brancos), iguais nos dois temas, em vez de ser repintada pelos tokens (Slate Green/Moss Green). As cores são atributos do SVG inline; a CSP e o `main-window.css` não mudam. No claro o quadrado fica em 2,95:1 sobre branco e o branco sobre ele em 2,95:1 — abaixo de 3:1, aceito porque a marca é decorativa (`aria-hidden`) e o nome ao lado é o rótulo | §2, §16 |
+| D11 | Tema claro (pedido do Victor em 18/out/2026, depois de ver o tema claro creme) | **Branco neutro, não creme**: `--ts-bg` `#FFFFFF`, `--ts-surface` (barra lateral) `#F7F7F8`, cards em `#FFFFFF` com borda `#E4E4E7`, hover sobre card `#F4F4F5`, texto secundário (e `--ts-working`) `#65656D`, texto `#222222`, texto sobre o acento `#FFFFFF`. Sai o tom de Alabaster/Candle do fundo, das bordas e do hover no claro (os dois primitivos continuam, usados no escuro). Slate Green segue como marca, item ativo e botão principal; erro, aviso e gravação não mudam. Dois tokens novos, `--ts-card` e `--ts-hover`, para ter página e cards brancos com a barra lateral cinza: no escuro valem `--ts-surface` e `--ts-bg`, e o tema escuro não muda. `src/shared/palette.ts` ganha `DERIVED.bgLight` (fundo da janela antes de pintar). Todos os pares passam, com os novos sobre `--ts-card` e `--ts-hover` (TEST-005) | §9.3, §9.4 B; `tokens.css`, `palette.ts`, `main-window.css` |
 | — | Ícone da barra de menus do macOS (vindo da spec `distribuicao-windows-macos`) | ***Template image*** — monocromático, colorido pelo sistema; desenho na spec `distribuicao-windows-macos` | §0, §2, §7, §8 |
 
 ### ADR-12 — Fonte Inter embutida no app
