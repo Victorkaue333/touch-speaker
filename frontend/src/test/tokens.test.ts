@@ -93,6 +93,8 @@ function hexOf(token: string, theme: Theme): string {
 const SEMANTIC = [
   '--ts-bg',
   '--ts-surface',
+  '--ts-card',
+  '--ts-hover',
   '--ts-text',
   '--ts-text-muted',
   '--ts-accent',
@@ -169,6 +171,30 @@ describe('tokens.css: themes (FR-DS-02, FR-DS-05)', () => {
 
   it('every colour token resolves to an opaque #rrggbb in both themes', () => {
     for (const theme of THEMES) for (const token of SEMANTIC) hexOf(token, theme);
+  });
+
+  it('the manual-theme blocks (data-theme) repeat the light and dark themes exactly (FR-UI-39…42)', () => {
+    for (const theme of THEMES) {
+      const blocks = topBlocks.filter((b) => b.prelude === `:root[data-theme='${theme}']`);
+      assert.equal(blocks.length, 1, `tokens.css needs exactly one :root[data-theme='${theme}']`);
+      const manual = customProperties(blocks[0]?.body ?? '');
+      const auto = theme === 'dark' ? dark : new Map(SEMANTIC.map((t) => [t, light.get(t) ?? '']));
+      assert.deepEqual(new Map([...manual].sort()), new Map([...auto].sort()), `data-theme='${theme}' drifted`);
+    }
+  });
+
+  it('the light theme is neutral white: white page and cards, light grey surface (Victor, 18/out/2026)', () => {
+    assert.equal(hexOf('--ts-bg', 'light'), '#ffffff');
+    assert.equal(hexOf('--ts-card', 'light'), '#ffffff');
+    assert.equal(hexOf('--ts-surface', 'light'), '#f7f7f8');
+    assert.equal(hexOf('--ts-hover', 'light'), '#f4f4f5');
+    assert.equal(hexOf('--ts-border', 'light'), '#e4e4e7');
+    assert.equal(hexOf('--ts-text-muted', 'light'), '#65656d');
+  });
+
+  it('the dark theme keeps card = surface and hover = bg (unchanged look)', () => {
+    assert.equal(hexOf('--ts-card', 'dark'), hexOf('--ts-surface', 'dark'));
+    assert.equal(hexOf('--ts-hover', 'dark'), hexOf('--ts-bg', 'dark'));
   });
 });
 
@@ -311,6 +337,18 @@ describe('contrast pairs of §9.4 B (FR-DS-17)', () => {
     { fg: '--ts-focus', bg: '--ts-surface', min: GRAPHIC_MIN_CONTRAST },
     { fg: '--ts-border-strong', bg: '--ts-bg', min: GRAPHIC_MIN_CONTRAST },
     { fg: '--ts-border-strong', bg: '--ts-surface', min: GRAPHIC_MIN_CONTRAST },
+    // Cards, entries and popups (--ts-card) and the hover fill of the buttons and options on them (--ts-hover).
+    { fg: '--ts-text', bg: '--ts-card', min: TEXT_MIN_CONTRAST },
+    { fg: '--ts-text-muted', bg: '--ts-card', min: TEXT_MIN_CONTRAST },
+    { fg: '--ts-accent', bg: '--ts-card', min: TEXT_MIN_CONTRAST },
+    { fg: '--ts-error', bg: '--ts-card', min: TEXT_MIN_CONTRAST },
+    { fg: '--ts-notice', bg: '--ts-card', min: TEXT_MIN_CONTRAST },
+    { fg: '--ts-focus', bg: '--ts-card', min: GRAPHIC_MIN_CONTRAST },
+    { fg: '--ts-border-strong', bg: '--ts-card', min: GRAPHIC_MIN_CONTRAST },
+    { fg: '--ts-text', bg: '--ts-hover', min: TEXT_MIN_CONTRAST },
+    { fg: '--ts-text-muted', bg: '--ts-hover', min: TEXT_MIN_CONTRAST },
+    { fg: '--ts-accent', bg: '--ts-hover', min: TEXT_MIN_CONTRAST },
+    { fg: '--ts-error', bg: '--ts-hover', min: TEXT_MIN_CONTRAST },
     // The main window's destructive button: its text on the error fill (docs/DESIGN.md §6.5).
     { fg: '--ts-on-accent', bg: '--ts-error', min: TEXT_MIN_CONTRAST },
     // The pill: text, timer, hint, error and notice are text; dot, bars and dots are graphics.
@@ -355,6 +393,11 @@ describe('shared/palette.ts mirrors tokens.css (RISK-novo-1)', () => {
     for (const [key, token] of Object.entries(PRIMITIVE_TOKEN) as [keyof typeof PALETTE, string][]) {
       assert.equal(PALETTE[key].toLowerCase(), light.get(token)?.toLowerCase(), token);
     }
+  });
+
+  it('the main window frame is the page background of each theme', () => {
+    assert.equal(DERIVED.bgLight.toLowerCase(), hexOf('--ts-bg', 'light'));
+    assert.equal(PALETTE.blackHole.toLowerCase(), hexOf('--ts-bg', 'dark'));
   });
 
   it('the tray colours are the recording and neutral tokens', () => {

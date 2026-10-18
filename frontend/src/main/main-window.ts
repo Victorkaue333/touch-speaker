@@ -5,7 +5,7 @@
 // index.ts grants the microphone to the pill only), strict CSP in its index.html.
 import { BrowserWindow, nativeTheme, screen, type WebContents } from 'electron';
 import * as path from 'node:path';
-import { PALETTE } from '../shared/palette';
+import { DERIVED, PALETTE } from '../shared/palette';
 import { errorName } from './atomic-file';
 import { readTaskbarTheme, windowIcon } from './icon';
 import type { Logger } from './logger';
@@ -145,7 +145,7 @@ export class MainWindow {
   }
 
   private background(): string {
-    return nativeTheme.shouldUseDarkColors ? PALETTE.blackHole : PALETTE.alabaster;
+    return nativeTheme.shouldUseDarkColors ? PALETTE.blackHole : DERIVED.bgLight;
   }
 
   /** The app mode changed: the frame follows by itself, the content through prefers-color-scheme (FR-UI-34). */

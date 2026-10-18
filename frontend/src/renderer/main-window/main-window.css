@@ -5,8 +5,10 @@
    values of this window. No id selectors: ids belong to the script.
 
    Look: the shadcn/ui style rebuilt in plain CSS (Victor, 18/out/2026) — flat cards with a 1px border and no
-   shadow, 36px controls, a filled rounded row for the current nav item. Neutral hover fill is --ts-bg: every
-   control sits on --ts-surface (sidebar or card), and text, muted text and accent all pass on --ts-bg.
+   shadow, 36px controls, a filled rounded row for the current nav item. The sidebar is --ts-surface and its
+   rows fill with --ts-bg on hover; cards, entries and popups are --ts-card, and the buttons and options on them
+   fill with --ts-hover (since 18/out/2026, when the light theme turned neutral white: page and cards white,
+   sidebar light grey). Text, muted text and accent all pass on every one of these fills (tokens.test.ts).
    Filled buttons darken or lighten on hover by mixing in 15% of --ts-text, which only moves the fill away
    from the text on it, so its contrast can only go up. */
 
@@ -101,20 +103,6 @@ body {
   flex: none;
   width: 28px;
   height: 28px;
-}
-
-/* The logo mark in the theme's own colours: square in the accent fill, microphone in the text on it
-   (--ts-on-accent on --ts-accent-fill ≥ 4.5:1 in both themes, tokens.test.ts). */
-.logo-tile {
-  fill: var(--ts-accent-fill);
-}
-
-.logo-line {
-  stroke: var(--ts-on-accent);
-}
-
-.logo-ink {
-  fill: var(--ts-on-accent);
 }
 
 .brand-name {
@@ -274,7 +262,7 @@ body {
   gap: var(--ts-space-3);
   min-width: 0;
   padding: var(--ts-space-5);
-  background: var(--ts-surface);
+  background: var(--ts-card);
   border: 1px solid var(--ts-border);
   border-radius: var(--ts-radius-md);
 }
@@ -423,18 +411,18 @@ body {
   background: color-mix(in srgb, var(--ts-accent-fill) 85%, var(--ts-text));
 }
 
-/* Secondary / outline: the control edge is --ts-border-strong (≥ 3:1), the hover fill is --ts-bg. */
+/* Secondary / outline: the control edge is --ts-border-strong (≥ 3:1), the hover fill is --ts-hover. */
 .button-outline {
   border-color: var(--ts-border-strong);
 }
 
 .button-outline:hover:not(:disabled) {
-  background: var(--ts-bg);
+  background: var(--ts-hover);
 }
 
 /* Ghost: no edge until hover; the text is the boundary. */
 .button-ghost:hover:not(:disabled) {
-  background: var(--ts-bg);
+  background: var(--ts-hover);
 }
 
 /* Destructive: --ts-on-accent on --ts-error (≥ 4.5:1 in both themes, tokens.test.ts). */
@@ -560,7 +548,7 @@ selectedcontent .option-check {
   display: none;
 }
 
-/* The popup: surface, 1px edge, 8px radius (the 6px step + 2), the float shadow, 4px padding, ~280px tall at most. */
+/* The popup: card fill, 1px edge, 8px radius (the 6px step + 2), the float shadow, 4px padding, ~280px tall at most. */
 ::picker(select) {
   min-width: anchor-size(width);
   max-height: 280px;
@@ -569,12 +557,12 @@ selectedcontent .option-check {
   overflow-y: auto;
   border: 1px solid var(--ts-border);
   border-radius: calc(var(--ts-radius-sm) + 2px);
-  background: var(--ts-surface);
+  background: var(--ts-card);
   color: var(--ts-text);
   box-shadow: var(--ts-shadow-float);
 }
 
-/* Options: 32px rows, 6px radius; hover and keyboard highlight on the muted fill; the chosen one has the check. */
+/* Options: 32px rows, 6px radius; hover and keyboard highlight on --ts-hover; the chosen one has the check. */
 option {
   display: flex;
   align-items: center;
@@ -591,7 +579,7 @@ option {
 option:hover,
 option:focus,
 option:focus-visible {
-  background: var(--ts-bg);
+  background: var(--ts-hover);
   outline: none;
 }
 
@@ -976,7 +964,7 @@ select[aria-invalid='true'] {
   gap: var(--ts-space-2);
   min-width: 0;
   padding: var(--ts-space-3) var(--ts-space-4);
-  background: var(--ts-surface);
+  background: var(--ts-card);
   border: 1px solid var(--ts-border);
   border-radius: var(--ts-radius-md);
 }

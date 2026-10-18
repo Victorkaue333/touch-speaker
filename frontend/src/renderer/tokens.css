@@ -61,22 +61,26 @@
   --ts-focus-ring-offset: 2px;
 }
 
-/* ---- Semantic tokens, light theme (spec §9.3). P = palette, D = derived, approved 18/out/2026 ---- */
+/* ---- Semantic tokens, light theme (spec §9.3). P = palette, D = derived ----
+ * Neutral white since 18/out/2026 (Victor): white page and cards, a light neutral grey sidebar, neutral greys for
+ * muted text and borders; no Alabaster/Candle tint. Slate Green stays the brand, active and primary colour. */
 :root {
-  --ts-bg: var(--ts-palette-alabaster);
-  --ts-surface: var(--ts-palette-candle);
+  --ts-bg: #ffffff; /* D: white page */
+  --ts-surface: #f7f7f8; /* D: neutral grey sidebar and popups */
+  --ts-card: #ffffff; /* D: white card on the white page, edged by --ts-border */
+  --ts-hover: #f4f4f5; /* D: neutral hover fill on cards */
   --ts-text: var(--ts-palette-black-hole);
-  --ts-text-muted: #61605e; /* D: Black Hole + 30% Alabaster */
+  --ts-text-muted: #65656d; /* D: neutral grey */
   --ts-accent: var(--ts-palette-slate-green);
   --ts-accent-fill: var(--ts-palette-slate-green);
-  --ts-on-accent: var(--ts-palette-alabaster);
+  --ts-on-accent: #ffffff; /* D: white */
   --ts-secondary-fill: var(--ts-palette-moss-green);
   --ts-on-secondary: var(--ts-palette-black-hole);
-  --ts-border: #dbd8d3; /* D: Alabaster + 12% Black Hole; decorative, no threshold */
+  --ts-border: #e4e4e7; /* D: neutral; decorative, no threshold */
   --ts-border-strong: #817f7c; /* D: field and control edge */
   --ts-focus: var(--ts-palette-slate-green);
   --ts-recording: #bb7624; /* D: darker Apricot, same hue; graphics only, never text */
-  --ts-working: #61605e; /* D: = muted */
+  --ts-working: #65656d; /* D: = muted */
   --ts-notice: #567140; /* D: darker Moss Green, same hue */
   --ts-error: #a84a3a; /* D: terracotta */
   --ts-pill-surface: var(--ts-bg); /* opaque (D3) */
@@ -88,6 +92,8 @@
   :root {
     --ts-bg: var(--ts-palette-black-hole);
     --ts-surface: #2d2c2c; /* D: Black Hole + 5% Alabaster */
+    --ts-card: #2d2c2c; /* D: = surface */
+    --ts-hover: var(--ts-palette-black-hole); /* D: = bg */
     --ts-text: var(--ts-palette-alabaster);
     --ts-text-muted: #aba9a5; /* D: Alabaster + 35% Black Hole */
     --ts-accent: var(--ts-palette-moss-green);
@@ -114,20 +120,22 @@
  * query decides, and main's nativeTheme.themeSource makes it follow the choice in every window, the pill
  * included. Same values as the two blocks above; tokens.test.ts fails if they drift. */
 :root[data-theme='light'] {
-  --ts-bg: var(--ts-palette-alabaster);
-  --ts-surface: var(--ts-palette-candle);
+  --ts-bg: #ffffff;
+  --ts-surface: #f7f7f8;
+  --ts-card: #ffffff;
+  --ts-hover: #f4f4f5;
   --ts-text: var(--ts-palette-black-hole);
-  --ts-text-muted: #61605e;
+  --ts-text-muted: #65656d;
   --ts-accent: var(--ts-palette-slate-green);
   --ts-accent-fill: var(--ts-palette-slate-green);
-  --ts-on-accent: var(--ts-palette-alabaster);
+  --ts-on-accent: #ffffff;
   --ts-secondary-fill: var(--ts-palette-moss-green);
   --ts-on-secondary: var(--ts-palette-black-hole);
-  --ts-border: #dbd8d3;
+  --ts-border: #e4e4e7;
   --ts-border-strong: #817f7c;
   --ts-focus: var(--ts-palette-slate-green);
   --ts-recording: #bb7624;
-  --ts-working: #61605e;
+  --ts-working: #65656d;
   --ts-notice: #567140;
   --ts-error: #a84a3a;
   --ts-pill-surface: var(--ts-bg);
@@ -137,6 +145,8 @@
 :root[data-theme='dark'] {
   --ts-bg: var(--ts-palette-black-hole);
   --ts-surface: #2d2c2c;
+  --ts-card: #2d2c2c;
+  --ts-hover: var(--ts-palette-black-hole);
   --ts-text: var(--ts-palette-alabaster);
   --ts-text-muted: #aba9a5;
   --ts-accent: var(--ts-palette-moss-green);

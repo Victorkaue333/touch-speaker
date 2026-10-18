@@ -14,6 +14,8 @@ export const PALETTE = {
 
 /** Approved derived shades used outside CSS (spec design-system §9.3, D5 and D8). */
 export const DERIVED = {
+  /** Light-theme `--ts-bg`: neutral white since 18/out/2026 — the main window's frame before the page paints. */
+  bgLight: '#FFFFFF',
   /** Light-theme `--ts-recording`: Apricot darkened, same hue. */
   recordingLight: '#BB7624',
   /** `--ts-border-strong`: the neutral tray glyph when the taskbar theme cannot be read. */
