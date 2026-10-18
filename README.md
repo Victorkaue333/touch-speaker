@@ -47,13 +47,13 @@ Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) �
 
 | Ferramenta                 | Versão                                    | Para quê                             | Verificar                                               |
 | -------------------------- | ------------------------------------------ | ------------------------------------- | ------------------------------------------------------- |
-| 🪟 **Windows**       | 10 ou 11, 64 bits                          | O sistema em que o app roda hoje     | `winver`                                              |
-| 🍎 **macOS**         | 13 (Ventura) ou mais novo, Apple Silicon   | Suporte em implementação na M2 — ainda não roda ([ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)) | Menu Apple → Sobre este Mac |
-| 🟩 **Node.js**       | **24 LTS** (conferido com 24.20.0)   | Build e execução em desenvolvimento | `node --version`                                      |
-| 📦 **npm**           | o que vem com o Node (conferido com 11.21) | Dependências                         | `npm --version`                                       |
-| 🔧 **Git**           | atual                                      | Versionamento                         | `git --version`                                       |
-| 🎤 **Microfone**     | qualquer                                   | Captura da voz                        | Configurações → Sistema → Som                       |
-| 🔑 **Chave da Groq** | gratuita                                   | Transcrição                         | [Passo a passo logo abaixo](#-como-obter-sua-chave-da-groq-gratuita) |
+|  **Windows**       | 10 ou 11, 64 bits                          | O sistema em que o app roda hoje     | `winver`                                              |
+|  **macOS**         | 13 (Ventura) ou mais novo, Apple Silicon   | Suporte em implementação na M2 — ainda não roda ([ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)) | Menu Apple → Sobre este Mac |
+|  **Node.js**       | **24 LTS** (conferido com 24.20.0)   | Build e execução em desenvolvimento | `node --version`                                      |
+|  **npm**           | o que vem com o Node (conferido com 11.21) | Dependências                         | `npm --version`                                       |
+|  **Git**           | atual                                      | Versionamento                         | `git --version`                                       |
+|  **Microfone**     | qualquer                                   | Captura da voz                        | Configurações → Sistema → Som                       |
+|  **Chave da Groq** | gratuita                                   | Transcrição                         | [Passo a passo logo abaixo](#-como-obter-sua-chave-da-groq-gratuita) |
 
 > Não há banco, fila nem servidor para subir: o banco do histórico é um arquivo local que o próprio app cria na primeira abertura.
 
