@@ -377,21 +377,6 @@ O log guarda só tempos, tamanhos e códigos de erro — nunca o que você ditou
 
 ---
 
-## 🔌 Contratos
-
-O Touch Speaker não expõe API própria na Fase 1. Contratos completos em [`docs/API.md`](docs/API.md).
-
-| Contrato                                                                         | Entre           | Resumo                                                                                                                                                                  |
-| -------------------------------------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST https://api.groq.com/openai/v1/audio/transcriptions`                     | main → Groq    | Multipart com `file`, `model`, `language=pt`, `temperature=0`, `response_format=verbose_json`; timeout 20 s; 401/403 → chave inválida, 413 → gravação longa demais, 429 → limite (sem nova tentativa), 5xx → 1 nova tentativa após 500 ms |
-| `recorder:start` · `recorder:stop` · `recorder:cancel` · `pill:state` | main → pílula | Comandos de gravação e estado visual, sempre com `sessionId`                                                                                                        |
-| `recorder:started` · `recorder:result` · `recorder:error`                | pílula → main | Confirmação, áudio (≤ 25 MB) e erros de microfone — validados no main                                                                                              |
-| `app:*` · `settings:*` · `groq-key:*` · `login-item:set` · `theme:set` · `history:*` | janela principal ⇄ main | Textos, estado, preferências, chave (só de ida, nunca volta), início automático, tema e histórico (lista, busca, copiar, apagar, retenção, uso) — remetente e payload validados no main ([`docs/API.md`](docs/API.md)) |
-
-Códigos de erro e mensagens da pílula: [`docs/API.md` — Códigos de erro](docs/API.md#códigos-de-erro). Visão da integração com a Groq: [`docs/INTEGRATION.md`](docs/INTEGRATION.md).
-
----
-
 ## 📖 Documentação
 
 | Documento                                                                            | Conteúdo                                                |
