@@ -18,7 +18,6 @@
 
 Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) · Requisitos: [`docs/PRD.md`](docs/PRD.md) · Contrato de engenharia: [`docs/spec/spec-driven-development.md`](docs/spec/spec-driven-development.md) · Decisões: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-**📅 Estágio:** **Fase 1 (MVP) implementada e funcionando de ponta a ponta** no Windows do mantenedor desde 17/out/2026 (commit `bae6eba`). Medido nos primeiros ditados reais: **0,66–0,88 s** do fim da fala até o texto inserido e microfone aberto em 75–270 ms. Falta concluir o roteiro de verificação manual V1–V13 da [spec da feature](docs/spec/features/ditado-por-voz.md) (segurar, `Esc`, clipboard, outros apps, janela de administrador). Em 18/out/2026 entraram no código, da milestone M2, o design system "Sálvia", a **janela principal**, onde a chave Groq do próprio usuário é digitada e guardada cifrada, o **histórico local** dos ditados (só texto, neste computador) e o tema claro/escuro escolhido na janela (roteiros manuais pendentes). Não há instalador: roda em modo de desenvolvimento, **hoje só no Windows**. O suporte a macOS (13 ou mais novo, Apple Silicon) está especificado e aprovado — spec [`distribuicao-windows-macos`](docs/spec/features/distribuicao-windows-macos.md), [ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4) — e em implementação na M2; Linux vem depois, ainda sem data.
 
 ---
 
@@ -199,7 +198,7 @@ sequenceDiagram
     M->>P: estado "hidden"
 ```
 
-**Quem fala com quem:**
+**Quem fala com quem?:**
 
 ```mermaid
 flowchart TD
