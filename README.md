@@ -331,21 +331,6 @@ npm run typecheck   # TypeScript estrito, sem emitir (três programas do tsc)
 
 ---
 
-## 🧪 Testes e verificação
-
-| Item                      | Estado                                                                                                                                         |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm test`              | ✅ 352/352 — `HotkeyController`, filtros anti-lixo, `GroqTranscriber` (com `fetch` simulado), config, tokens e contraste do design system e da janela, ícone da bandeja, chave da Groq, preferências, IPC da janela principal, histórico (retenção, formatos, busca, IPC, sessão, banco SQLite real em pasta temporária, pasta, serviço, script da tela), tema e controles de Configurações |
-| `npm run typecheck`     | ✅ Sem erros                                                                                                                                   |
-| App sobe no Electron 44   | ✅ Hook de teclado e `koffi` carregados (`app_ready` no log)                                                                               |
-| Colagem via `SendInput` | ✅ Comprovada isoladamente e em ditado real                                                                                                    |
-| Roteiro manual V1–V13    | 🟡 Em andamento — V2 (mãos livres) aprovado; lista completa na [§12 da spec](docs/spec/features/ditado-por-voz.md#12-plano-de-verificação) |
-| Roteiros V-DS-1…6, VJ1–VJ27 e VH1–VH13 | ⏳ Pendentes — design system, janela principal (com o tema) e histórico (M2), implementados no código em 18/out/2026 |
-
-Não há testes de interface automatizados: gravação, colagem e pílula são verificadas à mão pelo roteiro da spec.
-
----
-
 ## 📋 Comandos úteis
 
 Todos de dentro de `frontend/`.
