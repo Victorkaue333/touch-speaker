@@ -437,6 +437,10 @@ async function main(): Promise<void> {
   log.info('app_ready', {
     version: app.getVersion(),
     electron: process.versions.electron ?? null,
+    // FR-PKG-12: which build is running, without telemetry — the person sends main.log by hand.
+    platform: process.platform,
+    arch: process.arch,
+    packaged: app.isPackaged,
     hotkey: config.hotkey,
     has_api_key: transcriber.hasCredentials(),
     groq_key: credentials.state(),

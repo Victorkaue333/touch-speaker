@@ -8,6 +8,8 @@ rea/
 node_modules/
 dist/
 out/
+# Saída do electron-builder (spec distribuicao-windows-macos D17)
+release/
 .env
 .env.*
 !.env.example

@@ -1,0 +1,111 @@
+# Packaging of Touch Speaker — electron-builder 26.15.3, exact version (ADR-10; spec distribuicao-windows-macos
+# §17.1). No bundler: the tool takes the dist/ that `npm run build` (tsc + copy-static) already wrote and puts it
+# in an app.asar (ADR-01 still holds). Run through `npm run dist:win` / `npm run dist:mac`.
+appId: com.victoralves.touchspeaker # = app.setAppUserModelId in src/main/index.ts
+productName: Touch Speaker
+copyright: Copyright © 2026 Victor Alves
+
+directories:
+  output: release # D17: the tool's default is dist/, which is the tsc output
+  buildResources: build
+
+asar: true
+# Native modules are Node-API with ready binaries (koffi, uiohook-napi): nothing is compiled, nothing is rebuilt
+# against Electron (FR-PKG-11). The history uses node:sqlite, built into Electron (ADR-09): no native module.
+npmRebuild: false
+buildDependenciesFromSource: false
+nodeGypRebuild: false
+asarUnpack:
+  - '**/*.node'
+
+# Allowlist (FR-PKG-09). dist/database carries the SQLite migrations the history reads (ADR-09).
+files:
+  - package.json
+  - dist/main/**
+  - dist/preload/**
+  - dist/shared/**
+  - dist/renderer/**
+  - dist/database/**
+  - '!dist/test/**'
+  - '!**/*.map'
+  - '!**/.env'
+  - '!**/.env.*'
+  - '!**/*.log'
+  # Sources, docs and build leftovers of the native modules (the binaries stay).
+  - '!node_modules/koffi/{doc,lib,vendor}/**'
+  - '!node_modules/koffi/src/koffi/src/**/*.{cc,hh,inc,c,h,S,asm,def}'
+  - '!node_modules/koffi/**/CMakeLists.txt'
+  - '!node_modules/@koromix/*/**/*.lib'
+  - '!node_modules/uiohook-napi/{libuiohook,src}/**'
+  - '!node_modules/uiohook-napi/binding.gyp'
+  - '!node_modules/**/{README,CHANGELOG}.md'
+  # Only the binaries of the artifact's system and architecture (FR-PKG-11). ${platform} is the build machine's
+  # (each artifact is built on its own system: Windows on Victor's PC, macOS on the GitHub runner — D3) and
+  # ${arch} the target's. Kept at this level on purpose: a `files` list under win:/mac: replaces this one.
+  - '!node_modules/uiohook-napi/prebuilds/!(${platform}-${arch}){,/**}'
+  - '!node_modules/@koromix/!(koffi-${platform}-${arch}){,/**}'
+
+# Electron Fuses (FR-PKG-14; Security Guide §15.1).
+electronFuses:
+  runAsNode: false
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+  resetAdHocDarwinSignature: true
+
+# Fails the build before the installer is written when the package holds a forbidden file, a Groq key, or
+# misses a required one (FR-PKG-10).
+afterPack: ./scripts/verify-package.mjs
+
+publish: null # no auto-update and no upload by the tool (§2); the GitHub workflow publishes the Release
+
+# ---- Windows 10/11 x64: NSIS assisted, per user, unsigned (D1) -------------------------------------------
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+
+nsis:
+  oneClick: false
+  perMachine: false # with customInstallMode (build/installer.nsh): always "only me", no UAC (FR-PKG-02)
+  allowElevation: false
+  packElevateHelper: false # never elevates, so elevate.exe is not shipped
+  allowToChangeInstallationDirectory: false
+  createStartMenuShortcut: true
+  createDesktopShortcut: true # optional on the options page of build/installer.nsh (D8)
+  shortcutName: Touch Speaker
+  runAfterFinish: true # "Abrir o Touch Speaker agora" on the last page (FR-PKG-05)
+  deleteAppDataOnUninstall: false # D9: %APPDATA%\Touch Speaker stays
+  installerLanguages: [pt_BR]
+  language: '1046'
+  multiLanguageInstaller: false
+  uninstallDisplayName: Touch Speaker
+  include: build/installer.nsh
+  artifactName: Touch-Speaker-Setup-${version}-win-x64.${ext}
+
+# ---- macOS 13+ on Apple Silicon only (D4), ad-hoc signature (D2), built on the GitHub runner (D3) ---------
+mac:
+  target:
+    - target: dmg
+      arch: [arm64]
+    - target: zip
+      arch: [arm64]
+  category: public.app-category.productivity
+  icon: build/icon.png
+  minimumSystemVersion: '13.0'
+  identity: '-' # ad-hoc (D2); a Developer ID would go here, with hardenedRuntime and notarize (future)
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  notarize: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    LSUIElement: true # menu bar only, no Dock icon (FR-MAC-08)
+    NSMicrophoneUsageDescription: O Touch Speaker usa o microfone só enquanto você segura a tecla de ditado; o áudio vai para a Groq, com a sua chave, para virar texto.
+  artifactName: Touch-Speaker-${version}-mac-${arch}.${ext}
+
+dmg:
+  title: Touch Speaker ${version}
+  sign: false

@@ -13,7 +13,11 @@
     "dev": "npm run build && node scripts/start.mjs",
     "start": "node scripts/start.mjs",
     "typecheck": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit && tsc -p tsconfig.main-window.json --noEmit",
-    "test": "npm run build && node --test \"dist/test/**/*.test.js\""
+    "test": "npm run build && node --test \"dist/test/**/*.test.js\" \"scripts/**/*.test.mjs\"",
+    "clean": "node scripts/clean.mjs",
+    "dist:win": "npm run clean && npm run build && electron-builder --win --x64 --publish never",
+    "dist:mac": "npm run clean && npm run build && electron-builder --mac --arm64 --publish never",
+    "verify:package": "node scripts/verify-package.mjs"
   },
   "dependencies": {
     "koffi": "3.3.3",
@@ -22,9 +26,11 @@
   "devDependencies": {
     "@types/node": "24.19.2",
     "electron": "44.9.0",
+    "electron-builder": "26.15.3",
     "typescript": "7.0.2"
   },
   "allowScripts": {
+    "electron-winstaller": false,
     "koffi": false,
     "uiohook-napi": false
   }
