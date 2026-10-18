@@ -1,0 +1,10 @@
+# Line endings: LF in the index and in every checkout, whatever core.autocrlf says (the windows-latest runner
+# checks out with core.autocrlf=true). Tests read source files and match them with regexes, and the font license
+# is checked by hash: a CRLF checkout must not change what they see.
+* text=auto eol=lf
+
+# Binary: never touched by end-of-line conversion or diffed as text.
+*.png binary
+*.ico binary
+*.icns binary
+*.woff2 binary

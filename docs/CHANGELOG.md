@@ -75,6 +75,8 @@ O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/), e
 
 ### Corrigido
 
+- **Testes no checkout CRLF do Windows** (18/out/2026) — o build da v0.1.0 no GitHub Actions parou no `npm test` do `windows-latest`: o runner faz o checkout com `core.autocrlf=true`, os arquivos chegam com CRLF, e um teste do Histórico (`history-screen.test.ts`) recortava `showSection` com uma regex que esperava LF e ficava com texto vazio. Correção: `.gitattributes` com `* text=auto eol=lf` (LF em todo checkout, qualquer que seja o `core.autocrlf`; PNG, ICO, ICNS e WOFF2 como binários) e o teste passa a normalizar CRLF → LF antes das regexes. Por quê: sem isso nenhum Release sai, e o macOS era cancelado junto. Conferido num clone com `core.autocrlf=true`: 390/390.
+
 Correções da **revisão de código da M2** (18/out/2026; ainda não commitadas antes dos commits por feature). A revisão achou um defeito visível — o ícone do botão de tema nunca trocava — e mais cinco problemas menores. Cada um ganhou teste: o `npm test` passa de 301 para **326** (TEST-020 novo; TEST-011, 012, 017 e 018 ampliados).
 
 - **Ícone do botão de tema** (FR-UI-41) — o botão mostrava sempre o mesmo glifo, qualquer que fosse o tema. O código escondia o sol e a lua com a propriedade `.hidden`, que não existe em `<svg>` (só em elementos HTML): a atribuição só criava uma propriedade solta, e o `[hidden]` do CSS nunca valia. Agora a troca liga e desliga o **atributo** `hidden` (`toggleAttribute`), os dois ícones são buscados por `svgById` e o `byId` recusa elemento que não é HTML, para o erro não voltar. Por quê: o botão é o único jeito de escolher o tema, e um ícone que não acompanha o tema diz o contrário do que o clique faz

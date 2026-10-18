@@ -10,8 +10,9 @@ import { rendererFunction } from './renderer-source';
 // of 18/out/2026; the TEST id is registered by the SDD.
 
 const DIR = path.join(__dirname, '..', '..', 'src', 'renderer', 'main-window');
-const script = readFileSync(path.join(DIR, 'main-window.ts'), 'utf8');
-const html = readFileSync(path.join(DIR, 'index.html'), 'utf8');
+// CRLF → LF: the regexes below assume LF, and a checkout with core.autocrlf=true writes CRLF.
+const script = readFileSync(path.join(DIR, 'main-window.ts'), 'utf8').replace(/\r\n/g, '\n');
+const html = readFileSync(path.join(DIR, 'index.html'), 'utf8').replace(/\r\n/g, '\n');
 
 type Page = (cursor: string | null, limit: number) => Promise<HistoryListResult>;
 type Collect = (page: Page, wanted: number, current: () => boolean) => Promise<{ last: HistoryListResult; entries: { id: string }[] }>;
