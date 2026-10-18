@@ -8,17 +8,19 @@ O **SDD** (`docs/spec/spec-driven-development.md`) é o **contrato de engenharia
 
 ## Identidade do projeto
 
-- **O que é:** Touch Speaker é um app de bandeja para **Windows e macOS** que transforma fala em texto digitado no app em foco: segura uma tecla, fala, solta, o texto aparece no cursor. Hoje roda no Windows; o suporte a macOS está especificado e aprovado (spec `distribuicao-windows-macos`, ADR-11), mas ainda em implementação na M2. Linux vem depois, sem data; mobile fica fora. Dono: Victor Alves. Idioma do produto e da documentação: **pt-BR**.
+- **O que é:** Touch Speaker é um app de bandeja para **Windows e macOS** que transforma fala em texto digitado no app em foco: segura uma tecla, fala, solta, o texto aparece no cursor. Roda no Windows; o porte para macOS (Apple Silicon) está no código desde 18/out/2026 (spec `distribuicao-windows-macos`, ADR-11), só compilado e testado com fakes — ainda não rodou num Mac. Quem só usa baixa o instalador (README, seção Download). Linux vem depois, sem data; mobile fica fora. Dono: Victor Alves. Idioma do produto e da documentação: **pt-BR**.
 - **Problema que resolve:** escrever no computador é lento (~40 palavras por minuto digitando, ~150 falando) e o ditado do Windows (`Win + H`) não dá conta de pt-BR com termos técnicos — resumo em [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md).
 - **Relação com outros sistemas:** uma só integração externa — o processo main envia o áudio à API de transcrição da Groq (`whisper-large-v3-turbo`) com a chave do próprio usuário, digitada em Configurações e guardada cifrada pelo `safeStorage` (ADR-08). Não há backend próprio, banco, telemetria nem outro serviço na Fase 1 — contrato em [`docs/INTEGRATION.md`](docs/INTEGRATION.md) e [`docs/API.md`](docs/API.md#transcrição-groq).
-- **Estágio:** Fase 1 (MVP — ditado básico) com T1–T8 implementadas em `frontend/` em 17/out/2026; **funcionando de ponta a ponta no PC do Victor**, com 0,66–0,88 s do fim da fala ao texto. Faltam T9 (resto do roteiro V1–V13) e T10 (fechar a spec). Da M2, as specs `design-system`, `janela-principal` e `historico` estão implementadas no código desde 18/out/2026 (não commitadas; roteiros manuais pendentes); 353/353 testes. Sem instalador: roda em modo de desenvolvimento.
+- **Estágio:** Fase 1 (MVP — ditado básico) com T1–T8 implementadas em `frontend/` em 17/out/2026; **funcionando de ponta a ponta no PC do Victor**, com 0,66–0,88 s do fim da fala ao texto. Faltam T9 (resto do roteiro V1–V13) e T10 (fechar a spec). Da M2, as quatro specs estão no código desde 18/out/2026 (roteiros manuais pendentes); 390/390 testes. Instalador do Windows gerado por `npm run dist:win`; o Release (`.exe` + `.dmg`) sai do GitHub Actions numa tag `v*` — nenhum publicado ainda.
 
 | Componente | O que é | Status |
 | --- | --- | --- |
 | **Atalho global** (`hotkey.ts`, `keyboard.ts`) | Hook de teclado (`uiohook-napi`); segurar ≥ 500 ms = falar segurando, toque curto = mãos livres, `Esc` cancela | Funciona — lógica coberta por 10 testes (TEST-001) |
 | **Pílula** (`pill-window.ts`, `renderer/`) | Janela flutuante que não rouba foco; grava o microfone (WebM/Opus) e mostra ouvindo / transcrevendo / erro | Funciona |
 | **Transcrição** (`transcribe/`) | `GroqTranscriber` com filtros contra alucinações do Whisper em silêncio | Funciona — TEST-002 e TEST-003 |
-| **Inserção** (`insert/`) | Clipboard + Ctrl+V via `SendInput` (`koffi`), restaura o clipboard, fallback para janelas de administrador | Colagem comprovada (V2); fallback de administrador ainda não verificado manualmente (V10, PEND-001) |
+| **Inserção** (`insert/`) | Clipboard + atalho de colar atrás de `PasteDriver`: Ctrl+V via `SendInput` no Windows (`win32.ts`), ⌘V via `CGEventPost` no Mac (`darwin.ts`), ambos por `koffi`; restaura o clipboard; fallback para janela de administrador (Windows) e falta de Acessibilidade ou entrada segura (Mac) | Colagem comprovada no Windows (V2); fallback de administrador (V10, PEND-001) e o Mac (VDM, PEND-011) ainda não verificados manualmente |
+| **Plataforma** (`platform.ts`, `permissions.ts`) | Escolhe na abertura o que muda por sistema; no Mac, Acessibilidade antes do hook, Microfone, barra de menus, menu de edição, Command direito | No código desde 18/out/2026 — TEST-novo-1/2 da spec; roteiro VDM pendente |
+| **Distribuição** (`electron-builder.yml`, `build/`, `scripts/verify-package.mjs`, `.github/workflows/release.yml`) | Instalador NSIS do Windows, `.dmg`/`.zip` arm64 do Mac (ad-hoc), Fuses, verificação do pacote, Release por tag (ADR-10) | Instalador do Windows gerado e conferido (107,2 MB); workflow e roteiro VDW pendentes |
 | **Sessão** (`session.ts`) | Máquina de estados, dono único do estado do ditado | Funciona |
 | **Bandeja, config e log** (`tray.ts`, `config.ts`, `logger.ts`) | Ícone (por tema da barra), "Abrir Touch Speaker", `config.json` (agora escrito também pela tela, por fila única), log só com metadados | Funciona — TEST-004 e TEST-006; gravação do `config.json` em TEST-008 |
 | **Janela principal** (`main-window.ts`, `renderer/main-window/`, `preload/main-window.ts`) | Aberta pela bandeja (ou sozinha na primeira execução sem chave salva): Início (tecla, como ditar, estado ao vivo, uso e ditados recentes), Histórico, Configurações (chave da Groq, sete preferências, retenção do histórico, aparência, "Iniciar com o Windows"), botão de tema claro/escuro; Dicionário "em breve" | No código desde 18/out/2026 — TEST-009, TEST-018, TEST-019; roteiros VJ1–VJ27 pendentes (PEND-007, PEND-010) |
@@ -44,18 +46,19 @@ O **SDD** (`docs/spec/spec-driven-development.md`) é o **contrato de engenharia
   - **`design-system`** — implementada no código em 18/out/2026 (não commitada); falta o roteiro manual V-DS-1…6 (PEND-006).
   - **`janela-principal`** — implementada no código em 18/out/2026 (não commitada): janela pela bandeja, chave da Groq em Configurações com `safeStorage` (ADR-08), `.env` só em desenvolvimento; falta o roteiro manual VJ1–VJ24 (PEND-007). No mesmo dia, a pedido do Victor: tema claro/escuro escolhido na janela (FR-UI-39…42, `config.json` `theme`, `theme:set`), "Como ditar" compacto e listas suspensas/caixas no estilo da janela; roteiro VJ25–VJ27 pendente (PEND-010).
   - **`historico`** — **implementada no código em 18/out/2026** (não commitada): banco SQLite em `%LOCALAPPDATA%\Touch Speaker\` pelo `node:sqlite` (ADR-09 aceita, spike T1), só texto e nunca áudio, tela Histórico (busca, copiar, apagar, apagar tudo), retenção em Configurações (30 dias por padrão), e — pedido do Victor — os cards "Seu uso" (`history:stats`) e "Ditados recentes" no Início. Spec de migração companheira [`historico-dados-v1`](docs/spec/features/historico-dados-v1.md) em `proposta` (implementação autorizada pelo Victor; a aprovação vem com a validação dele). Falta o roteiro VH1–VH13 (PEND-009).
-  - **`distribuicao-windows-macos`** — aprovada, ainda não implementada; a ADR-11 (Windows e macOS, distribuição restrita antes da Fase 4) foi aceita pelo Victor em 18/out/2026. Linux fica planejado para depois, sem data.
+  - **`distribuicao-windows-macos`** — **no código em 18/out/2026** (commits `6b73acb`, `acff340`, `80d642e` e o de docs, sem push): instalador do Windows com `electron-builder` 26.15.3 (ADR-10 aceita) — `Touch-Speaker-Setup-0.1.0-win-x64.exe`, 107,2 MB, só para o usuário, sem UAC, atalho e "Iniciar com o Windows" opcionais — com a verificação do pacote no `afterPack` e os Fuses; workflow `.github/workflows/release.yml` (tag `v*` → `.exe` no `windows-latest` e `.dmg` + `.zip` arm64 ad-hoc no `macos-14`, Release com `SHA256SUMS.txt`, só `GITHUB_TOKEN`); porte para o macOS (ADR-11) atrás de `PasteDriver` e `PermissionsPort`, só compilado e testado com fakes; seção "⬇️ Download" no README. D19 decidido pelo Victor: repositório e Releases públicos, link passado por ele. Faltam o ensaio do workflow, o primeiro Release, os roteiros VDW e VDM, a tela de permissões (T5, D14) e o resto da T10 (PEND-011). Linux fica planejado para depois, sem data.
 - **Revisão de código da M2** (18/out/2026): o ícone do botão de tema nunca trocava (o código usava a propriedade `.hidden` num `<svg>`, que não existe nele) — corrigido com o atributo `hidden`; mais cinco correções menores (recarga do Histórico que encolhia a lista, foco depois de "Apagar", busca em qualquer escrita e termo vazio, troca de fuso com o app aberto, transições na volta a "Seguir o sistema"). Os ícones Lucide ganharam a ADR-13 (**proposta**, aguardando o aval do Victor). Detalhe no [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
 - **Tema claro branco neutro e logo do README** (18/out/2026, pedido do Victor; spec `design-system` D10 revista e D11): página e cards brancos, barra lateral `#F7F7F8`, cinzas neutros, tokens novos `--ts-card` e `--ts-hover` (escuro inalterado); a marca da barra lateral em `#13A89E` como no README.
-- **Testes:** 353/353 em 18/out/2026 (`npm test`; 30 na Fase 1, +83 da `design-system`, +71 da `janela-principal`, +117 da `historico`, do tema e dos controles, +25 das correções da revisão de código, +26 do tema claro branco neutro, +1 da cor da marca); `npm run typecheck` limpo nos três programas do `tsc`.
-- **Pendências que mais pesam:** PEND-001 (T9 — roteiro manual V1 e V3–V13 e medição de latência; só o V2 foi feito), PEND-002 (T10 — a spec passa a `implementada` depois do T9), PEND-006 (roteiro V-DS-1…6), PEND-007 (roteiro VJ1–VJ24), PEND-009 (roteiro VH1–VH13 do histórico) e PEND-010 (roteiro VJ25–VJ27 do tema e dos controles) — registro no [SDD, Apêndice B](docs/spec/spec-driven-development.md#apêndice-b--pendências).
+- **Testes:** 390/390 em 18/out/2026 (`npm test`, que também roda `scripts/**/*.test.mjs`; 30 na Fase 1, +83 da `design-system`, +71 da `janela-principal`, +117 da `historico`, do tema e dos controles, +25 das correções da revisão de código, +26 do tema claro branco neutro, +1 da cor da marca, +37 da `distribuicao-windows-macos`); `npm run typecheck` limpo nos três programas do `tsc`.
+- **Pendências que mais pesam:** PEND-001 (T9 — roteiro manual V1 e V3–V13 e medição de latência; só o V2 foi feito), PEND-002 (T10 — a spec passa a `implementada` depois do T9), PEND-006 (roteiro V-DS-1…6), PEND-007 (roteiro VJ1–VJ24), PEND-009 (roteiro VH1–VH13 do histórico), PEND-010 (roteiro VJ25–VJ27 do tema e dos controles) e PEND-011 (distribuição: ensaio do workflow, primeiro Release, roteiros VDW e VDM) — registro no [SDD, Apêndice B](docs/spec/spec-driven-development.md#apêndice-b--pendências).
 - **Riscos que mais pesam:** RISK-005 (copiar código ou assets do Typeless por engano — sala limpa, permanente) e RISK-011 (primeiras sílabas cortadas: a captura começa até 300 ms depois da tecla) — registro no [SDD §26](docs/spec/spec-driven-development.md#26-riscos-e-mitigações).
 
 ## Stack
 
 - **App:** Electron 44 (44.9.0) + TypeScript (7.0.2; estrito, CommonJS, `tsc`, sem bundler na Fase 1) (ADR-01).
 - **Hook de teclado:** `uiohook-napi` (1.5.5) (ADR-02).
-- **Win32 (SendInput, elevação):** `koffi` (3.3.3) chamando `user32` / `kernel32` / `advapi32` (ADR-03).
+- **Win32 (SendInput, elevação):** `koffi` (3.3.3) chamando `user32` / `kernel32` / `advapi32` (ADR-03); no macOS, o mesmo `koffi` chamando CoreGraphics (`CGEventPost`) e Carbon (`IsSecureEventInputEnabled`) (ADR-11). Cada sistema só carrega as suas bibliotecas.
+- **Empacotamento:** `electron-builder` (26.15.3, devDependency) — NSIS no Windows, `.dmg`/`.zip` arm64 ad-hoc no macOS, Fuses, `scripts/verify-package.mjs` no `afterPack`; Release pelo GitHub Actions (ADR-10).
 - **Gravação:** `getUserMedia` + `MediaRecorder` (`audio/webm;codecs=opus`) no renderer da pílula.
 - **Transcrição:** Groq `whisper-large-v3-turbo` (plano gratuito), `language=pt` (ADR-04).
 - **Chave da Groq:** `safeStorage` do Electron (DPAPI) em `%APPDATA%\Touch Speaker\groq-key.bin`; `frontend/.env` só como reserva de desenvolvimento (ADR-08).
@@ -65,7 +68,7 @@ O **SDD** (`docs/spec/spec-driven-development.md`) é o **contrato de engenharia
 - **Runtime de dev:** Node.js 24 LTS.
 - **Banco local (M2):** SQLite pelo `node:sqlite` embutido no Electron 44 — sem dependência npm (ADR-09).
 - **Ícones da janela principal:** Lucide 1.52.0 (ISC), SVG inline vendorizado, sem pacote npm (ADR-13, proposta).
-- **Qualidade:** `npm run typecheck` e `npm test` (353/353 em 18/out/2026). Não há linter, formatador nem CI (`.github/` não existe) — detalhe em [`docs/Code-Style.md`](docs/Code-Style.md).
+- **Qualidade:** `npm run typecheck` e `npm test` (390/390 em 18/out/2026). Não há linter nem formatador; o único CI é o workflow de release (`.github/workflows/release.yml`), que roda typecheck e testes no Windows e no macOS antes de empacotar — detalhe em [`docs/Code-Style.md`](docs/Code-Style.md).
 
 ## Comandos essenciais
 
@@ -78,8 +81,13 @@ npm run dev              # compila e abre o app na bandeja; a chave da Groq vai 
 npm start                # abre sem recompilar
 npm test                 # compila e roda os testes (node:test)
 npm run typecheck        # os três programas do tsc
+npm run dist:win         # limpa, compila e gera o instalador do Windows em release/ (não abre nada)
+npm run verify:package   # confere de novo o pacote em release/
 copy .env.example .env   # opcional, só em desenvolvimento: GROQ_API_KEY como reserva
 ```
+
+- **Publicar uma versão:** subir a `version` de `frontend/package.json`, commit e push, depois `git tag v<versão>` e `git push origin v<versão>`: o workflow de release gera `.exe` e `.dmg` e publica o Release (passo a passo no README, "Como publicar uma versão"). O `.dmg` só sai do workflow (`npm run dist:mac` só roda num Mac).
+- Gerar o instalador não abre o app; **instalar** ou abrir o app empacotado é passo do roteiro VDW, do Victor.
 
 - Sempre abrir o app por `npm run dev`/`npm start` (passam por `scripts/start.mjs`, que remove o `ELECTRON_RUN_AS_NODE` herdado do VS Code).
 - **Chave da Groq pela interface:** bandeja → "Abrir Touch Speaker" (ou duplo clique no ícone) → Configurações → colar a chave → "Salvar chave". Fica cifrada em `%APPDATA%\Touch Speaker\groq-key.bin` (`safeStorage`) e vale no próximo ditado, sem reiniciar. Na primeira execução sem chave salva, a janela abre sozinha em Configurações.
@@ -88,7 +96,7 @@ copy .env.example .env   # opcional, só em desenvolvimento: GROQ_API_KEY como r
 - Para encerrar um app aberto por agente: `Stop-Process` nos `electron.exe` cujo caminho contém `touch-speaker`.
 - Sem chave (nem salva nem no `.env`) o app abre normalmente; ao tentar ditar, a pílula avisa `no_api_key` — "Falta a chave da Groq — abra o Touch Speaker pela bandeja" (BR-013).
 - Em `npm run dev`, F12 com a janela principal em foco abre o DevTools dela; "Iniciar com o Windows" fica desabilitado (só funciona no app instalado).
-- `koffi` e `uiohook-napi` trazem binários prontos para win32-x64; os scripts de instalação deles ficam negados no `allowScripts` do `package.json`, e o aviso do npm sobre isso é esperado.
+- `koffi` e `uiohook-napi` trazem binários prontos para win32-x64 e darwin-arm64; os scripts de instalação deles (e o do `electron-winstaller`, que vem com o `electron-builder`) ficam negados no `allowScripts` do `package.json`, e o aviso do npm sobre isso é esperado.
 
 Setup completo em [`README.md`](README.md); variáveis em [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md).
 
@@ -96,7 +104,8 @@ Setup completo em [`README.md`](README.md); variáveis em [`docs/ENVIRONMENT.md`
 
 O app fica em `frontend/`. Nas citações `arquivo.ts:linha` dos docs, os caminhos partem da raiz do repositório (`frontend/src/main/session.ts`) ou, quando o contexto já é o app, de `frontend/` (`src/main/session.ts`).
 
-- `frontend/` — app desktop Electron (main, preload, renderer): `src/main/` (processo main: hook, sessão, transcrição, inserção, bandeja, janela principal, chave da Groq em `credentials.ts`, preferências em `settings.ts`, item de login, config, log e os textos de interface em `strings.ts`), `src/preload/` (`pill.ts` → `window.touchSpeaker`; `main-window.ts` → `window.touchSpeakerApp`), `src/renderer/` (pílula, `tokens.css`, `fonts/` e `main-window/`, a janela principal), `src/shared/` (tipos do IPC, paleta e contraste), `src/test/` (testes `node:test`) e `scripts/` (`start.mjs`, `copy-static.mjs`). Três programas do `tsc`: `tsconfig.main.json`, `tsconfig.renderer.json` (pílula) e `tsconfig.main-window.json` (janela principal).
+- `frontend/` — app desktop Electron (main, preload, renderer): `src/main/` (processo main: hook, sessão, transcrição, inserção, bandeja, janela principal, chave da Groq em `credentials.ts`, preferências em `settings.ts`, item de login, config, log e os textos de interface em `strings.ts`), `src/preload/` (`pill.ts` → `window.touchSpeaker`; `main-window.ts` → `window.touchSpeakerApp`), `src/renderer/` (pílula, `tokens.css`, `fonts/` e `main-window/`, a janela principal), `src/shared/` (tipos do IPC, paleta e contraste), `src/test/` (testes `node:test`), `scripts/` (`start.mjs`, `copy-static.mjs`, `verify-package.mjs` + `package-rules.mjs` e o teste dele, `make-icons.mjs`, `clean.mjs`), `electron-builder.yml`, `build/` (ícones, `installer.nsh`, `entitlements.mac.plist`) e `release/` (saída do empacotamento, fora do git). Três programas do `tsc`: `tsconfig.main.json`, `tsconfig.renderer.json` (pílula) e `tsconfig.main-window.json` (janela principal). A plataforma fica em `src/main/platform.ts` e `permissions.ts`; a colagem de cada sistema em `src/main/insert/` (`paste-driver.ts`, `win32-driver.ts` + `win32.ts`, `darwin.ts`).
+- `.github/workflows/release.yml` — build e Release por tag `v*` (Windows e macOS).
 - `backend/` — API própria — vazio até a Fase 4.
 - `database/` — migrations: `local/` (SQLite, Fase 2) e `server/` (Fase 4).
 - `docs/` — PRD, ARCHITECTURE, API, INTEGRATION, DATABASE, DESIGN, DECISIONS, ENVIRONMENT, CHANGELOG, Code-Style, Security-Guide · `spec/` (SDD e specs de feature) · `templates/` (processo e templates de feature, milestone e migração) · `referencia/` (estudo do Typeless, não normativo) · `assets/` (logo).
@@ -104,17 +113,18 @@ O app fica em `frontend/`. Nas citações `arquivo.ts:linha` dos docs, os caminh
 
 ## Decisões fixas (não rediscutir sem aval do Victor)
 
-- Windows e macOS ([ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)); Linux planejado para depois; mobile fora. O macOS ainda está em implementação (spec `distribuicao-windows-macos`, M2).
+- Windows 10/11 x64 e macOS 13+ em Apple Silicon ([ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)), com as diferenças de sistema atrás de interface (`PasteDriver`, `PermissionsPort`); Linux planejado para depois; mobile, Mac Intel e Windows arm64 fora. Distribuição por Release público do GitHub, sem chave (cada pessoa usa a sua), com o link passado pelo Victor (D19).
+- Empacotamento com `electron-builder`, sem bundler, módulos nativos sem recompilar; Windows sem assinatura e macOS com assinatura ad-hoc por enquanto ([ADR-10](docs/DECISIONS.md#adr-10--empacotamento-com-electron-builder-sem-bundler-módulos-nativos-sem-recompilar)).
 - Electron + TypeScript ([ADR-01](docs/DECISIONS.md#adr-01--electron--typescript)).
 - Hook global com `uiohook-napi`, não `globalShortcut` ([ADR-02](docs/DECISIONS.md#adr-02--hook-global-com-uiohook-napi-não-globalshortcut)).
-- Inserção por clipboard + Ctrl+V via `SendInput` ([ADR-03](docs/DECISIONS.md#adr-03--inserção-por-clipboard--ctrlv-via-sendinput)).
+- Inserção por clipboard + Ctrl+V via `SendInput` ([ADR-03](docs/DECISIONS.md#adr-03--inserção-por-clipboard--ctrlv-via-sendinput)); no macOS, clipboard + ⌘V via `CGEventPost`, com o mesmo backup e a mesma restauração (ADR-11).
 - Groq Whisper, áudio inteiro ao soltar ([ADR-04](docs/DECISIONS.md#adr-04--groq-whisper-large-v3-turbo-áudio-inteiro-ao-soltar)).
 - Sem limpeza por IA na Fase 1; `Refiner` identidade como encaixe ([ADR-05](docs/DECISIONS.md#adr-05--sem-limpeza-por-ia-na-fase-1-mas-com-o-encaixe-pronto)).
 - Sem backend na Fase 1; app não é distribuído com chave ([ADR-06](docs/DECISIONS.md#adr-06--sem-backend-na-fase-1)).
 - Sala limpa em relação ao Typeless ([ADR-07](docs/DECISIONS.md#adr-07--sala-limpa-em-relação-ao-typeless)).
 - Chave da Groq no `safeStorage` do Electron, digitada em Configurações; `.env` só como reserva de desenvolvimento, nunca lido no app empacotado; a chave nunca volta ao renderer, nunca vai para log nem para o `config.json` e nunca é gravada em texto puro ([ADR-08](docs/DECISIONS.md#adr-08--chave-da-groq-no-safestorage-do-electron-com-o-env-só-como-reserva-de-desenvolvimento)).
 - Fonte Inter embutida, arquivo oficial sem modificação, com a licença OFL ao lado — a única exceção ao guardrail de binários de terceiros ([ADR-12](docs/DECISIONS.md#adr-12--fonte-inter-embutida-no-app)).
-- **ADRs propostas:** [ADR-13 — ícones Lucide embutidos](docs/DECISIONS.md#adr-13--ícones-lucide-embutidos), aguardando o aval do Victor (SDD §27). A ADR-10 segue reservada para a spec `distribuicao-windows-macos`; a ADR-11 foi aceita pelo Victor em 18/out/2026.
+- **ADRs propostas:** [ADR-13 — ícones Lucide embutidos](docs/DECISIONS.md#adr-13--ícones-lucide-embutidos), aguardando o aval do Victor (SDD §27). A ADR-10 e a ADR-11, da spec `distribuicao-windows-macos`, foram aceitas pelo Victor em 18/out/2026.
 
 Detalhe (contexto, decisão, consequências, implementação) em [`docs/DECISIONS.md`](docs/DECISIONS.md).
 

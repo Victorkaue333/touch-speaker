@@ -8,15 +8,65 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Node.js](<https://img.shields.io/badge/Node.js-24%20LTS-5FA04E?style=flat&logo=nodedotjs&logoColor=white>)
 ![Windows](<https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-0078D4?style=flat>)
-![macOS](<https://img.shields.io/badge/macOS-13%2B%20%C2%B7%20em%20implementa%C3%A7%C3%A3o-lightgrey?style=flat>)
+![macOS](<https://img.shields.io/badge/macOS-13%2B%20Apple%20Silicon%20%C2%B7%20em%20verifica%C3%A7%C3%A3o-lightgrey?style=flat>)
 ![Groq](<https://img.shields.io/badge/Groq-Whisper%20large--v3--turbo-F55036?style=flat>)
-![Testes](<https://img.shields.io/badge/testes-353%20passando-brightgreen?style=flat>)
+![Testes](<https://img.shields.io/badge/testes-390%20passando-brightgreen?style=flat>)
 ![Status](<https://img.shields.io/badge/status-fase%201%20%C2%B7%20em%20verifica%C3%A7%C3%A3o-orange?style=flat>)
 ![License](https://img.shields.io/badge/license-propriet%C3%A1ria-lightgrey?style=flat)
 
-> 🗣️ O **Touch Speaker** é um app de bandeja para Windows e macOS que transforma fala em texto digitado no app em foco. Você **segura o Ctrl direito**, fala e solta — em menos de um segundo o texto aparece no cursor do VS Code, do navegador, do WhatsApp ou de qualquer outro app, como se tivesse sido digitado. A transcrição em português é feita pelo Whisper (via Groq, plano gratuito) e o que você tinha copiado no clipboard volta ao lugar depois.
+> 🗣️ O **Touch Speaker** é um app de bandeja para Windows e macOS que transforma fala em texto digitado no app em foco. Você **segura o Ctrl direito** (no Mac, o **Command direito**), fala e solta — em menos de um segundo o texto aparece no cursor do VS Code, do navegador, do WhatsApp ou de qualquer outro app, como se tivesse sido digitado. A transcrição em português é feita pelo Whisper (via Groq, plano gratuito) e o que você tinha copiado no clipboard volta ao lugar depois.
 
 Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) · Requisitos: [`docs/PRD.md`](docs/PRD.md) · Contrato de engenharia: [`docs/spec/spec-driven-development.md`](docs/spec/spec-driven-development.md) · Decisões: [`docs/DECISIONS.md`](docs/DECISIONS.md)
+
+<a id="download"></a>
+
+## ⬇️ Download
+
+Para usar o Touch Speaker você **não precisa de terminal, Node nem do código**: baixe o instalador da última versão em **[Releases → última versão](https://github.com/Victorkaue333/touch-speaker/releases/latest)**. Cada pessoa usa a **própria chave da Groq** (gratuita), colada no app.
+
+| Sistema | Arquivo para baixar | Requisitos |
+| --- | --- | --- |
+| 🪟 **Windows** | `Touch-Speaker-Setup-<versão>-win-x64.exe` | Windows 10 ou 11, 64 bits |
+| 🍎 **macOS** | `Touch-Speaker-<versão>-mac-arm64.dmg` | macOS 13 (Ventura) ou mais novo, em **Mac com Apple Silicon** (M1 ou mais novo). Não abre em Mac Intel |
+
+Para conferir se o arquivo chegou inteiro (opcional), o Release traz o `SHA256SUMS.txt`: compare com `Get-FileHash <arquivo>` no Windows ou `shasum -a 256 <arquivo>` no Mac.
+
+### 🪟 Windows
+
+1. Baixe o `.exe` em [Releases](https://github.com/Victorkaue333/touch-speaker/releases/latest) e abra.
+2. O instalador ainda **não é assinado**, então o Windows mostra **"O Windows protegeu o computador"** (SmartScreen). Clique em **Mais informações** → **Executar assim mesmo**.
+3. No assistente, escolha se quer o **atalho na área de trabalho** e se o Touch Speaker **inicia com o Windows**, e clique em **Instalar**. Ele instala só para o seu usuário e não pede senha de administrador.
+4. Na última tela, deixe marcada a opção de abrir o Touch Speaker e conclua. O ícone de microfone aparece na bandeja, perto do relógio (às vezes escondido na setinha `^`).
+
+Se o aviso não tiver **Executar assim mesmo**, o Controle Inteligente de Aplicativos (Smart App Control) do Windows está ligado e bloqueia app sem assinatura — por enquanto o instalador não passa por ele.
+
+**Atualizar:** baixe a versão nova e instale por cima (feche o Touch Speaker antes, pelo menu da bandeja → **Sair**); configuração, chave e histórico ficam. **Desinstalar:** Configurações do Windows → Aplicativos → Aplicativos instalados → Touch Speaker → Desinstalar. Seus dados ficam em `%APPDATA%\Touch Speaker` e `%LOCALAPPDATA%\Touch Speaker`; apague as duas pastas se quiser tirar tudo.
+
+### 🍎 macOS (Apple Silicon)
+
+1. Baixe o `.dmg`, abra e **arraste o Touch Speaker para a pasta Aplicativos**. Abra sempre de Aplicativos — não de dentro do `.dmg` nem de Downloads, ou as permissões podem não valer.
+2. **Primeira abertura de cada versão.** O app tem só assinatura ad-hoc (sem a notarização paga da Apple), e o macOS bloqueia a primeira abertura:
+   - **macOS 13 ou 14:** em Aplicativos, clique com o **botão direito** (ou Control + clique) no Touch Speaker → **Abrir** → **Abrir**.
+   - **macOS 15 ou mais novo:** tente abrir uma vez e feche o aviso; vá em **Ajustes do Sistema → Privacidade e Segurança**, role até a mensagem sobre o Touch Speaker e clique em **Abrir Mesmo Assim**; confirme com a sua senha.
+3. **Acessibilidade.** Na primeira abertura o macOS pede: clique em **Abrir Ajustes do Sistema** → **Privacidade e Segurança → Acessibilidade** → ligue o **Touch Speaker**. Depois, clique no ícone do Touch Speaker na **barra de menus** (no alto da tela) → **Tentar de novo**; se não funcionar, **Reabrir o Touch Speaker**. É essa permissão que deixa o app ouvir a tecla de ditado e colar o texto.
+4. **Microfone.** No primeiro ditado (ou logo depois da Acessibilidade) o macOS pergunta: **Permitir**. Se negou sem querer: Ajustes do Sistema → Privacidade e Segurança → **Microfone** → ligue o Touch Speaker.
+5. A tecla de ditado no Mac é o **Command direito** (⌘, à direita da barra de espaço); dá para trocar em Configurações.
+
+O Touch Speaker fica só na barra de menus, sem ícone no Dock. Em campos de senha e no Terminal com "Entrada Segura de Teclado", o macOS esconde as teclas dos outros apps: ali a tecla de ditado pode não responder e o texto fica no clipboard — cole com ⌘V.
+
+**Atualizar no Mac:** saia pelo menu da barra de menus (**Sair**), arraste a versão nova para Aplicativos e substitua. O macOS pode pedir a liberação do passo 2 de novo, e a Acessibilidade pode aparecer ligada sem valer: em Acessibilidade, remova o Touch Speaker (botão **−**), adicione de novo (**+**) e use **Tentar de novo**. Se a chave da Groq não for lida, salve-a de novo em Configurações.
+
+### Depois de instalar: a chave da Groq
+
+1. Abra a janela do Touch Speaker. **Windows:** botão direito no ícone da bandeja → **Abrir Touch Speaker** (ou duplo clique no ícone). **Mac:** clique no ícone da barra de menus → **Abrir Touch Speaker**. Na primeira vez ela abre sozinha.
+2. Vá em **Configurações**, cole a chave em **Chave da Groq** e clique em **Salvar chave**. Ainda não tem a chave? Veja [Como obter sua chave da Groq](#-como-obter-sua-chave-da-groq-gratuita) — é gratuita.
+3. Pronto: clique num campo de texto de qualquer app, **segure a tecla de ditado** (Ctrl direito no Windows, Command direito no Mac), fale e solte.
+
+**O que sai do seu computador:** só o áudio de cada ditado, para a Groq, com a **sua** chave. Não há conta, servidor do Touch Speaker nem telemetria. Se algo der errado, o log (`main.log`, só metadados — nunca o texto ditado) fica em `%APPDATA%\Touch Speaker\logs` no Windows e em `~/Library/Application Support/Touch Speaker/logs` no Mac; mande-o ao Victor.
+
+🐧 **Linux:** planejado para depois, sem data.
+
+> 🛠️ Quer mexer no código ou rodar sem instalar? Veja [Rodar pelo código (desenvolvedores)](#desenvolvimento).
 
 ## 📸 Como é
 
@@ -40,7 +90,9 @@ A janela principal abre pela bandeja. No **Início** ficam a tecla de ditado, o 
 | **Atalho global** (`hotkey.ts`, `keyboard.ts`) | Hook de teclado (`uiohook-napi`); segurar ≥ 500 ms = falar segurando, toque curto = mãos livres, `Esc` cancela | ✅ Funciona — lógica coberta por 10 testes                               |
 | **Pílula** (`pill-window.ts`, `renderer/`)    | Janela flutuante que não rouba foco; grava o microfone (WebM/Opus) e mostra ouvindo / transcrevendo / erro          | ✅ Funciona                                                                |
 | **Transcrição** (`transcribe/`)                | `GroqTranscriber` com filtros contra alucinações do Whisper em silêncio                                         | ✅ Funciona — 17 testes (filtros 8 + `GroqTranscriber` 9)                |
-| **Inserção** (`insert/`)                       | Clipboard + Ctrl+V via `SendInput` (`koffi`), restaura o clipboard, fallback para janelas de administrador       | ✅ Colagem comprovada; fallback de admin ainda não verificado manualmente |
+| **Inserção** (`insert/`)                       | Clipboard + Ctrl+V via `SendInput` (`koffi`) no Windows, ⌘V via `CGEventPost` (`koffi`) no Mac; restaura o clipboard; fallback para janelas de administrador (Windows) e para falta de Acessibilidade ou entrada segura (Mac) | ✅ Colagem comprovada no Windows; fallback de admin e o Mac ainda não verificados manualmente |
+| **Plataforma** (`platform.ts`, `permissions.ts`) | Escolhe na abertura o que muda entre Windows e macOS; no Mac, Acessibilidade antes do hook, Microfone, barra de menus e menu de edição | 🟡 No código desde 18/out/2026; roteiro no Mac (VDM) pendente |
+| **Distribuição** (`electron-builder.yml`, `.github/workflows/`) | Instalador `.exe` (Windows) e `.dmg` arm64 (Mac), verificação do pacote, Release no GitHub | 🟡 Instalador do Windows gerado e conferido; primeiro Release e roteiros VDW/VDM pendentes |
 | **Sessão** (`session.ts`)                       | Máquina de estados, dono único do estado do ditado                                                                 | ✅ Funciona                                                                |
 | **Bandeja, config e log**                          | Ícone, `config.json`, log só com metadados                                                                       | ✅ Funciona                                                                |
 | **Janela principal** (`main-window.ts`, `renderer/main-window/`) | Aberta pela bandeja: Início (tecla, como ditar, estado, ditados recentes e seu uso), Histórico (busca, copiar de novo, apagar), Configurações (chave da Groq cifrada, preferências, guardar histórico, aparência, iniciar com o Windows); Dicionário "em breve"; botão de tema claro/escuro | 🟡 Implementada no código em 18/out/2026 (M2); roteiros VJ1–VJ27 pendentes |
@@ -57,10 +109,12 @@ A janela principal abre pela bandeja. No **Início** ficam a tecla de ditado, o 
 
 ## ✅ Pré-requisitos
 
+> Para **usar** o app basta o sistema e a chave da Groq — veja [Download](#download). Node, npm e Git só servem para quem roda pelo código.
+
 | Ferramenta                 | Versão                                    | Para quê                             | Verificar                                               |
 | -------------------------- | ------------------------------------------ | ------------------------------------- | ------------------------------------------------------- |
-|  **Windows**       | 10 ou 11, 64 bits                          | O sistema em que o app roda hoje     | `winver`                                              |
-|  **macOS**         | 13 (Ventura) ou mais novo, Apple Silicon   | Suporte em implementação na M2 — ainda não roda ([ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)) | Menu Apple → Sobre este Mac |
+|  **Windows**       | 10 ou 11, 64 bits                          | Sistema suportado                     | `winver`                                              |
+|  **macOS**         | 13 (Ventura) ou mais novo, Apple Silicon   | Sistema suportado desde a M2 — no código, ainda não verificado num Mac ([ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)) | Menu Apple → Sobre este Mac |
 |  **Node.js**       | **24 LTS** (conferido com 24.20.0)   | Build e execução em desenvolvimento | `node --version`                                      |
 |  **npm**           | o que vem com o Node (conferido com 11.21) | Dependências                         | `npm --version`                                       |
 |  **Git**           | atual                                      | Versionamento                         | `git --version`                                       |
@@ -97,15 +151,11 @@ A chave aparece na tela (ela começa com `gsk_`). **Copie agora**: o console pod
 
 ### Passo 5 — Coloque a chave no Touch Speaker (em Configurações)
 
-Se ainda não baixou o projeto, faça antes os passos 1️⃣ (clone) e 2️⃣ (dependências) do **Setup local detalhado**, mais abaixo. Depois, dentro da pasta `frontend/`, abra o app:
+Abra o Touch Speaker instalado (veja [Download](#download)). Se você roda pelo código, faça antes os passos 1️⃣ (clone) e 2️⃣ (dependências) de [Rodar pelo código](#desenvolvimento) e abra o app com `npm run dev`, dentro da pasta `frontend/`.
 
-```powershell
-npm run dev
-```
+Na primeira vez (sem `config.json` e sem chave salva), a janela do Touch Speaker abre sozinha em **Configurações**. Nas outras vezes, clique com o botão direito no ícone do Touch Speaker na bandeja (talvez escondido na setinha `^`) e escolha **Abrir Touch Speaker** — ou dê duplo clique no ícone — e vá em **Configurações**. No Mac, o ícone fica na barra de menus, no alto da tela: clique nele → **Abrir Touch Speaker**.
 
-Na primeira vez (sem `config.json` e sem chave salva), a janela do Touch Speaker abre sozinha em **Configurações**. Nas outras vezes, clique com o botão direito no ícone do Touch Speaker na bandeja (talvez escondido na setinha `^`) e escolha **Abrir Touch Speaker** — ou dê duplo clique no ícone — e vá em **Configurações**.
-
-Cole a chave no campo **Chave da Groq** e clique em **Salvar chave**. O campo se esvazia e aparece **"Chave salva"**. A chave fica **cifrada neste computador** pelo `safeStorage` do Electron (a proteção de dados do Windows, por usuário), em `%APPDATA%\Touch Speaker\groq-key.bin`, e vale a partir do próximo ditado, sem reiniciar. Ela nunca volta para a tela nem vai para o log ([ADR-08](docs/DECISIONS.md#adr-08--chave-da-groq-no-safestorage-do-electron-com-o-env-só-como-reserva-de-desenvolvimento)).
+Cole a chave no campo **Chave da Groq** e clique em **Salvar chave**. O campo se esvazia e aparece **"Chave salva"**. A chave fica **cifrada neste computador** pelo `safeStorage` do Electron (no Windows, a proteção de dados do sistema, por usuário, em `%APPDATA%\Touch Speaker\groq-key.bin`; no Mac, as Chaves do macOS, em `~/Library/Application Support/Touch Speaker/groq-key.bin`) e vale a partir do próximo ditado, sem reiniciar. Ela nunca volta para a tela nem vai para o log ([ADR-08](docs/DECISIONS.md#adr-08--chave-da-groq-no-safestorage-do-electron-com-o-env-só-como-reserva-de-desenvolvimento)).
 
 > 🛠️ **Só em desenvolvimento, alternativa:** a chave também pode ficar em `frontend/.env` (`copy .env.example .env`, depois `notepad .env` e cole a chave logo depois do `=` na linha `GROQ_API_KEY=`, sem espaços e sem aspas). O `.env` só é lido com o app rodando por `npm run dev`/`npm start`, só quando o app abre e só quando **não** há chave salva em Configurações; o app instalado nunca o lê. Detalhes em [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md#o-arquivo-env).
 
@@ -147,7 +197,7 @@ O uso pago do `whisper-large-v3-turbo` custa **US$ 0,04 por hora de áudio**, co
 
 ## 🏗️ Arquitetura
 
-Componentes, fluxo e fronteiras em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); as decisões (ADR-01…09 e ADR-12) em [`docs/DECISIONS.md`](docs/DECISIONS.md). O resumo visual:
+Componentes, fluxo e fronteiras em [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); as decisões (ADR-01…12) em [`docs/DECISIONS.md`](docs/DECISIONS.md). O resumo visual:
 
 ```text
 Teclado ──► uiohook-napi (hook global, thread própria)
@@ -219,15 +269,16 @@ A única integração externa é a Groq: visão da integração (fluxo, nova ten
 
 -  **App:** **Electron 44.9.0** · TypeScript 7.0.2 estrito · build com `tsc` (CommonJS no main, script clássico no renderer), sem bundler (ADR-01)
 -  **Teclado global:** `uiohook-napi` 1.5.5 — keydown/keyup globais, que o `globalShortcut` do Electron não oferece (ADR-02)
--  **Win32:** `koffi` 3.3.3 chamando `user32`/`kernel32`/`advapi32` — `SendInput`, detecção de janela elevada (ADR-03)
+-  **Win32 / macOS:** `koffi` 3.3.3 chamando `user32`/`kernel32`/`advapi32` no Windows — `SendInput`, detecção de janela elevada (ADR-03) — e CoreGraphics no Mac — ⌘V por `CGEventPost`, entrada segura (ADR-11); cada sistema só carrega as suas bibliotecas
+-  **Empacotamento:** `electron-builder` 26.15.3 — instalador NSIS do Windows, `.dmg`/`.zip` do Mac, Electron Fuses e verificação do pacote; Release pelo GitHub Actions (ADR-10)
 -  **Áudio:** `getUserMedia` + `MediaRecorder` em WebM/Opus 32 kbps mono, com cancelamento de eco, supressão de ruído e ganho automático
 -  **Transcrição:** Groq · `whisper-large-v3-turbo`, `language=pt`, `temperature=0`, `verbose_json` (ADR-04)
 -  **Segurança:** `contextIsolation` + `sandbox` nas duas janelas, CSP restrita, permissão de mídia só de áudio e só para a pílula, IPC validado no main (com o remetente conferido), chave da Groq cifrada pelo `safeStorage` (ADR-08)
 -  **Histórico:** SQLite pelo `node:sqlite` que já vem no Electron (SQLite 3.53.4) — nenhuma dependência nova (ADR-09)
 -  **Fonte:** Inter 4.1 embutida (ADR-12), sobre os tokens do design system "Sálvia" (tema claro ou escuro: segue o sistema ou a escolha feita no botão da janela)
-- 🧪 **Qualidade:** `node:test` (353 testes) · TypeScript com `strict` e `noUncheckedIndexedAccess`
+- 🧪 **Qualidade:** `node:test` (390 testes) · TypeScript com `strict` e `noUncheckedIndexedAccess` · typecheck e testes no Windows e no macOS a cada release (GitHub Actions)
 
-`koffi` e `uiohook-napi` trazem binários prontos para win32-x64; os scripts de instalação deles ficam negados no `allowScripts` do `package.json`.
+`koffi` e `uiohook-napi` trazem binários prontos para win32-x64 e darwin-arm64; os scripts de instalação deles ficam negados no `allowScripts` do `package.json`.
 
 ---
 
@@ -241,16 +292,21 @@ touch-speaker/
 │   ├── tsconfig.renderer.json      # renderer da pílula (script clássico, DOM)
 │   ├── tsconfig.main-window.json   # renderer da janela principal (script clássico, DOM)
 │   ├── .env.example                # GROQ_API_KEY= (só para desenvolvimento; copie para .env)
-│   ├── scripts/                    # start.mjs (abre o Electron) · copy-static.mjs
+│   ├── electron-builder.yml        # empacotamento: instalador do Windows e app do macOS (ADR-10)
+│   ├── build/                      # ícones do app, installer.nsh (opções do instalador), entitlements do Mac
+│   ├── scripts/                    # start.mjs (abre o Electron) · copy-static.mjs · verify-package.mjs ·
+│   │                               # package-rules.mjs (+ teste) · make-icons.mjs · clean.mjs
 │   └── src/
-│       ├── main/                   # sessão, atalho, transcrição, inserção, bandeja, janela principal,
-│       │                           # chave (credentials), preferências (settings), tema (theme-setting),
-│       │                           # histórico (history/), config, log
+│       ├── main/                   # sessão, atalho, transcrição, inserção (Windows e Mac), bandeja, janela
+│       │                           # principal, plataforma e permissões, chave (credentials), preferências
+│       │                           # (settings), tema (theme-setting), histórico (history/), config, log
 │       ├── preload/                # pill.ts e main-window.ts — a API mínima de cada janela
 │       ├── renderer/               # pílula (pill.*), tokens.css, fonts/ e main-window/ (a janela principal)
 │       ├── shared/                 # ipc.ts (contratos de IPC) · palette.ts · contrast.ts · theme.ts
 │       └── test/                   # hotkey · filters · groq · config · tokens · icon · credentials ·
-│                                   # settings · main-window-ipc · history-* · session-history · theme · controls
+│                                   # settings · main-window-ipc · history-* · session-history · theme · controls ·
+│                                   # platform · strings
+├── .github/workflows/release.yml   # build e Release (tag v*): .exe no Windows, .dmg/.zip no macOS
 ├── backend/                        # API própria — Fase 4
 ├── database/                       # migrations SQLite: local/0001_init.sql (histórico)
 ├── docs/                           # PRD, arquitetura, decisões, API, integração, dados, ambiente, design,
@@ -260,9 +316,11 @@ touch-speaker/
 
 ---
 
-## ⚙️ Setup local detalhado
+<a id="desenvolvimento"></a>
 
-> Objetivo: do `git clone` ao primeiro ditado sem perguntar nada. Os comandos rodam **dentro de `frontend/`**.
+## ⚙️ Rodar pelo código (desenvolvedores)
+
+> Para quem vai mexer no código. Para só usar o app, veja [Download](#download). Objetivo: do `git clone` ao primeiro ditado sem perguntar nada. Os comandos rodam **dentro de `frontend/`**; abaixo, no Windows (no Mac, os mesmos comandos num terminal — [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md#linux-e-macos)).
 
 ### 1️⃣ Clone
 
@@ -322,7 +380,7 @@ O texto do histórico nunca vai para o log nem sai do computador. Para apagar tu
 ### 8️⃣ Verificação
 
 ```powershell
-npm test            # compila e roda os 353 testes
+npm test            # compila e roda os 390 testes
 npm run typecheck   # TypeScript estrito, sem emitir (três programas do tsc)
 ```
 
@@ -339,6 +397,31 @@ Todos de dentro de `frontend/`.
 | `npm run build`     | Só compila (`dist/`)              |
 | `npm test`          | Compila e roda os testes             |
 | `npm run typecheck` | Checagem de tipos sem gerar arquivos |
+| `npm run dist:win`  | Gera o instalador do Windows em `release/` (só no Windows) |
+| `npm run dist:mac`  | Gera o `.dmg` e o `.zip` do Mac em `release/` (só num Mac; na prática, pelo GitHub Actions) |
+| `npm run verify:package` | Confere o pacote em `release/` (o `dist:*` já confere antes de gerar o instalador) |
+
+Detalhes do empacotamento em [`docs/ENVIRONMENT.md` — Empacotar e publicar](docs/ENVIRONMENT.md#empacotar-e-publicar).
+
+---
+
+## 📦 Como publicar uma versão
+
+Para o Victor. O workflow [`.github/workflows/release.yml`](.github/workflows/release.yml) faz o resto no GitHub Actions, sem segredo nenhum (só o `GITHUB_TOKEN`).
+
+1. Atualize a `"version"` em `frontend/package.json` (por exemplo, `0.1.0` → `0.2.0`), registre a versão no [`docs/CHANGELOG.md`](docs/CHANGELOG.md), faça o commit e o push no `main`. Para a primeira versão, a `0.1.0` já está no `package.json`.
+2. Crie a tag com o **mesmo número** e envie:
+
+   ```powershell
+   git tag v0.1.0
+   git push origin v0.1.0
+   ```
+
+   (No Git Bash ou no PowerShell 7, numa linha só: `git tag v0.1.0 && git push origin v0.1.0`.)
+3. Acompanhe em **Actions → Release**: typecheck e testes no Windows e no macOS, o `.exe` (Windows) e o `.dmg` + `.zip` (Mac arm64, assinatura ad-hoc), a verificação do pacote e o Release com o `SHA256SUMS.txt`. Se a tag não for igual à versão do `package.json`, o build para.
+4. Passe o link [github.com/Victorkaue333/touch-speaker/releases/latest](https://github.com/Victorkaue333/touch-speaker/releases/latest). O repositório é público: o Release também é, e qualquer pessoa com o link baixa.
+
+**Ensaio sem publicar:** Actions → Release → **Run workflow** gera os mesmos arquivos como artefatos da execução, sem criar Release — bom para testar um build do Mac antes da tag. Errou a tag? Apague o Release e a tag no GitHub (`git push origin :refs/tags/v0.1.0` e `git tag -d v0.1.0`), corrija e crie de novo.
 
 ---
 
@@ -351,7 +434,7 @@ Todos de dentro de `frontend/`.
 | [`AGENTS.md`](AGENTS.md)                                                            | Ponto de entrada para agentes de IA: projeto, docs canônicos e fonte normativa |
 | [`docs/PRD.md`](docs/PRD.md)                                                        | Requisitos (FR-DICT-01…13, NFR-01…07) e roadmap        |
 | [`docs/spec/spec-driven-development.md`](docs/spec/spec-driven-development.md)      | SDD — contrato de engenharia: princípios (C1–C8), requisitos, regras, riscos, pendências e roadmap |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md)                                            | ADR-01…09 e ADR-12: contexto, decisão, consequências e implementação |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md)                                            | ADR-01…12: contexto, decisão, consequências e implementação |
 | [`docs/spec/features/ditado-por-voz.md`](docs/spec/features/ditado-por-voz.md)      | Spec da Fase 1, tarefas e roteiro de verificação (formato anterior ao template) |
 | [`docs/templates/`](docs/templates/README.md)                                       | Como nasce uma feature (Spec → Gate → Execução) e os templates de spec, milestone e migração |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)                                      | Componentes, fluxo, fronteiras e evolução por fase      |
@@ -380,7 +463,7 @@ Todos de dentro de `frontend/`.
 | **3** | Contexto do app em foco (UI Automation), Ask Anything, tradução, aprendizado com as correções      | ⏳                                |
 | **4** | Backend próprio, contas, streaming de áudio, instalador assinado e atualização automática         | ⏳                                |
 
-**Plataformas:** Windows 10/11 x64 (hoje) e macOS 13+ em Apple Silicon (planejado na M2 — spec [`distribuicao-windows-macos`](docs/spec/features/distribuicao-windows-macos.md) aprovada, em implementação); Linux depois, sem data; mobile fora ([ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)).
+**Plataformas:** Windows 10/11 x64 e macOS 13+ em Apple Silicon, com instalador ([Download](#download); spec [`distribuicao-windows-macos`](docs/spec/features/distribuicao-windows-macos.md) — no código desde 18/out/2026, roteiros no Windows e no Mac pendentes); Linux depois, sem data; mobile fora ([ADR-11](docs/DECISIONS.md#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4)).
 
 Detalhes no [PRD](docs/PRD.md#roadmap). Feature nova começa sempre por uma spec ([os três estágios](docs/templates/README.md#os-três-estágios)).
 

@@ -19,11 +19,12 @@ Os caminhos citados em **Implementação** são relativos a `frontend/`, e as li
 | ADR-07 | 17/out/2026 | [Sala limpa em relação ao Typeless](#adr-07--sala-limpa-em-relação-ao-typeless) | Aceita — Victor Alves |
 | ADR-08 | 18/out/2026 | [Chave da Groq no `safeStorage` do Electron, com o `.env` só como reserva de desenvolvimento](#adr-08--chave-da-groq-no-safestorage-do-electron-com-o-env-só-como-reserva-de-desenvolvimento) | Aceita — Victor Alves |
 | ADR-09 | 18/out/2026 | [SQLite local pelo `node:sqlite` embutido para o histórico de ditados](#adr-09--sqlite-local-pelo-nodesqlite-embutido-para-o-histórico-de-ditados) | Aceita — Victor Alves |
-| ADR-11 | 18/out/2026 | [macOS como plataforma suportada e distribuição restrita antes da Fase 4](#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4) | Aceita — Victor Alves (implementação pendente) |
+| ADR-10 | 18/out/2026 | [Empacotamento com `electron-builder`, sem bundler, módulos nativos sem recompilar](#adr-10--empacotamento-com-electron-builder-sem-bundler-módulos-nativos-sem-recompilar) | Aceita — Victor Alves |
+| ADR-11 | 18/out/2026 | [macOS como plataforma suportada e distribuição restrita antes da Fase 4](#adr-11--macos-como-plataforma-suportada-e-distribuição-restrita-antes-da-fase-4) | Aceita — Victor Alves (no código; verificação num Mac pendente) |
 | ADR-12 | 18/out/2026 | [Fonte Inter embutida no app](#adr-12--fonte-inter-embutida-no-app) | Aceita — Victor Alves |
 | ADR-13 | 18/out/2026 | [Ícones Lucide embutidos](#adr-13--ícones-lucide-embutidos) | **Proposta** — aguardando aval do Victor |
 
-Uma ADR em proposta: a ADR-13, que registra os ícones Lucide já no código (SDD [§27](spec/spec-driven-development.md#27-adrs--decisões-arquiteturais)). Os números ADR-08 a ADR-11 foram reservados em 18/out/2026 pelas outras specs da M2 (`janela-principal`, `historico` e `distribuicao-windows-macos` — [doc-pai](milestones/M2-app-com-interface.md)) e entram aqui com a implementação de cada uma: a ADR-12 veio primeiro, com a spec `design-system`, a ADR-08 com a `janela-principal` e a ADR-09 com a `historico`. A ADR-11 (`distribuicao-windows-macos`) foi aceita pelo Victor em 18/out/2026, antes da implementação, porque muda uma decisão fixa de produto (as plataformas); a ADR-10, da mesma spec, segue reservada.
+Uma ADR em proposta: a ADR-13, que registra os ícones Lucide já no código (SDD [§27](spec/spec-driven-development.md#27-adrs--decisões-arquiteturais)). Os números ADR-08 a ADR-11 foram reservados em 18/out/2026 pelas outras specs da M2 (`janela-principal`, `historico` e `distribuicao-windows-macos` — [doc-pai](milestones/M2-app-com-interface.md)) e entram aqui com a implementação de cada uma: a ADR-12 veio primeiro, com a spec `design-system`, a ADR-08 com a `janela-principal` e a ADR-09 com a `historico`. A ADR-11 (`distribuicao-windows-macos`) foi aceita pelo Victor em 18/out/2026, antes da implementação, porque muda uma decisão fixa de produto (as plataformas); a ADR-10, da mesma spec, entrou aceita com a implementação, no mesmo dia.
 
 ---
 
@@ -293,9 +294,50 @@ A arquitetura foi estudada por engenharia reversa do Typeless 2.8.2 ([`referenci
 - `scripts/copy-static.mjs` — copia `database/local/*.sql` para `dist/database/local/`.
 - `docs/DATABASE.md`, `docs/ENVIRONMENT.md`, `docs/Security-Guide.md` §15.1.
 
+## ADR-10 — Empacotamento com `electron-builder`, sem bundler, módulos nativos sem recompilar
+
+18/out/2026 (spec [`distribuicao-windows-macos`](spec/features/distribuicao-windows-macos.md), §17.1) · Aceita — Victor Alves (spec aprovada em 18/out/2026; ADR confirmada ao pedir a implementação, no mesmo dia)
+
+**Contexto**
+
+- Não havia empacotamento: o app só rodava por `npm run dev`. A M2 pede instalador do Windows com assistente (atalho, iniciar com o Windows) e app do macOS, para quem não usa terminal.
+- A ADR-01 fixa `tsc` para CommonJS, sem bundler.
+- Os dois módulos nativos são Node-API e trazem binário pronto, o que dispensa recompilar contra o Electron: o `uiohook-napi` 1.5.5 traz `prebuilds/<sistema>-<arquitetura>` no pacote; o `koffi` 3.3.3, o binário por pacote opcional `@koromix/koffi-<sistema>-<arquitetura>`. O histórico usa o `node:sqlite` embutido no Electron ([ADR-09](#adr-09--sqlite-local-pelo-nodesqlite-embutido-para-o-histórico-de-ditados)): não há terceiro módulo nativo (a spec previa o `better-sqlite3`, que não entrou).
+- Scripts de instalação ficam negados no `allowScripts` do `package.json`.
+
+**Decisão**
+
+- `electron-builder` **26.15.3** (a `latest` do npm em 18/out/2026, versão exata) como devDependency, com a configuração em `frontend/electron-builder.yml` e os recursos em `frontend/build/`.
+- **Empacotar não é empacotar com bundler:** a ferramenta recebe o `dist/` do `npm run build` e o coloca num `app.asar`. A ADR-01 continua valendo.
+- `files` em lista de permissão: `package.json`, `dist/main`, `dist/preload`, `dist/shared`, `dist/renderer` e `dist/database` (as migrations do histórico); negados `dist/test`, `*.map`, `.env*`, logs e as fontes C dos módulos nativos. Os binários de outro sistema ou arquitetura saem por padrão com `${platform}-${arch}` na própria lista de cima (uma lista `files` em `win:`/`mac:` substituiria a de cima). Saída em `frontend/release/`, porque o padrão da ferramenta é `dist/`.
+- Módulos nativos: `npmRebuild: false`, `buildDependenciesFromSource: false`, `nodeGypRebuild: false`; `asarUnpack: **/*.node`. Nenhum script de instalação liberado: o `electron-winstaller`, que vem com a ferramenta e não é usado, entra negado no `allowScripts`.
+- Windows: NSIS assistido (`oneClick: false`), só x64, **por usuário e sem elevação** — `customInstallMode` fixa "só para mim" e o manifesto pede `asInvoker`; atalho no Menu Iniciar; página de opções em `build/installer.nsh` com o atalho na área de trabalho e "Iniciar o Touch Speaker com o Windows", gravado em `HKCU\…\Run` com o nome do `AppUserModelId` (`com.victoralves.touchspeaker`) e o caminho do executável entre aspas, o mesmo valor do `app.setLoginItemSettings`; "abrir agora" no fim; desinstalar apaga o valor e mantém os dados. Sem assinatura (D1).
+- macOS: `dmg` e `zip`, só arm64 (D4), macOS 13 no mínimo; `LSUIElement` e `NSMicrophoneUsageDescription` (pt-BR) no `Info.plist`; `build/entitlements.mac.plist` (`allow-jit`, `device.audio-input`, `disable-library-validation`); **assinatura ad-hoc** (`identity: "-"`, D2), sem *hardened runtime* e sem notarização. Opção futura: Developer ID com `hardenedRuntime: true` e `notarize`, com a chave de API da Apple nos segredos do GitHub.
+- Electron Fuses pela opção `electronFuses`: `runAsNode`, `enableNodeOptionsEnvironmentVariable` e `enableNodeCliInspectArguments` desligados; `enableEmbeddedAsarIntegrityValidation` e `onlyLoadAppFromAsar` ligados.
+- `scripts/verify-package.mjs` roda como `afterPack` (antes de escrever qualquer artefato) e de novo pelo `npm run verify:package`: falha ao achar arquivo proibido, `.node` dentro do `app.asar`, binário de outro sistema, o prefixo das chaves da Groq, ou ao faltar arquivo obrigatório.
+- O artefato do macOS só é gerado em macOS: **GitHub Actions** (serviço novo, entra por esta ADR), workflow `.github/workflows/release.yml`, disparado por tag `v*` (publica) ou à mão (ensaio, sem publicar), no `windows-latest` e no `macos-14`, com `npm ci`, typecheck, testes, empacotamento e verificação; publica `.exe`, `.dmg`, `.zip` e `SHA256SUMS.txt` num Release, só com o `GITHUB_TOKEN` (escrita só no job do Release); actions fixadas por commit.
+- Sem `electron-updater` (sem atualização automática).
+
+**Consequências**
+
+- Positivas: uma ferramenta para os dois sistemas; instalador com assistente; nada compila na instalação; build declarativo e verificável; o Mac é gerado sem o Victor ter um Mac.
+- Negativas aceitas pelo Victor (18/out/2026): aviso do SmartScreen no Windows (D1); bloqueio do Gatekeeper na primeira abertura de cada versão e permissões possivelmente pedidas de novo a cada versão no Mac (D2).
+- Negativas: a ferramenta traz ~270 dependências transitivas de desenvolvimento (não vão no app) e baixa binários próprios no build (Electron, NSIS) — cadeia de fornecimento a acompanhar com versão exata e `package-lock.json`; a página de opções é script NSIS, outra linguagem para manter; cada atualização do Electron exige conferir os dois módulos nativos nos dois sistemas (RISK-004).
+
+**Alternativas** — Electron Forge, `@electron/packager` + Inno Setup + `create-dmg`, MSIX/lojas, `.zip` portátil, Tauri, gerar o Mac no Windows, binário universal: rejeitadas na spec §12.
+
+**Implementação** (18/out/2026)
+
+- `frontend/package.json` — `electron-builder` 26.15.3; scripts `clean`, `dist:win`, `dist:mac`, `verify:package`; `npm test` também roda `scripts/**/*.test.mjs`; `electron-winstaller` negado no `allowScripts`.
+- `frontend/electron-builder.yml` — a configuração acima.
+- `frontend/build/` — `icon.ico` e `icon.png` (desenhados por `scripts/make-icons.mjs` a partir da geometria do logo, provisórios até a spec `design-system`), `installer.nsh` (página de opções, `customInstallMode`, `customInstall`, `customUnInstall`), `entitlements.mac.plist`.
+- `frontend/scripts/verify-package.mjs` (leitor de `app.asar`, hook `afterPack` e linha de comando), `scripts/package-rules.mjs` (regras puras) e `scripts/package-rules.test.mjs` (TEST-novo-3), `scripts/clean.mjs`.
+- `.github/workflows/release.yml`; `.gitignore` (`release/`).
+- Primeiro build (18/out/2026, PC do Victor): `Touch-Speaker-Setup-0.1.0-win-x64.exe`, 107,2 MB, 87 arquivos no pacote; Fuses e a integridade do `app.asar` conferidos no executável sem abri-lo.
+
 ## ADR-11 — macOS como plataforma suportada e distribuição restrita antes da Fase 4
 
-18/out/2026 (spec [`distribuicao-windows-macos`](spec/features/distribuicao-windows-macos.md), §17.2) · Aceita — Victor Alves (spec aprovada e ADR confirmada em 18/out/2026) · **implementação pendente**
+18/out/2026 (spec [`distribuicao-windows-macos`](spec/features/distribuicao-windows-macos.md), §17.2) · Aceita — Victor Alves (spec aprovada e ADR confirmada em 18/out/2026) · no código desde 18/out/2026; **verificação num Mac pendente** (roteiro VDM)
 
 Substitui a decisão fixa "Windows primeiro; nada de macOS/Linux/mobile antes da Fase 4" do `CLAUDE.md` e, em parte, a frase de consequência da [ADR-06](#adr-06--sem-backend-na-fase-1) "Distribuição exige o backend da Fase 4"; o resto da ADR-06 continua aceito.
 
@@ -310,7 +352,7 @@ Substitui a decisão fixa "Windows primeiro; nada de macOS/Linux/mobile antes da
 
 1. A partir da M2, o macOS 13 (Ventura) ou mais novo — o mínimo do Electron 44 — é plataforma suportada, ao lado do Windows 10/11 x64, em Mac com Apple Silicon (arm64 — D4 da spec). Mac Intel, mobile e Windows arm64 continuam fora até a Fase 4.
 2. **Linux:** planejado para depois, sem data (Victor, 18/out/2026). Entra por spec própria; até lá nada no código ou nos docs promete Linux.
-3. Antes da Fase 4, a distribuição é **restrita a pessoas convidadas pelo Victor**, sob o `LICENSE.md`, sem termo extra (D7), entregue por Release do GitHub (D6; ver D19), e **sem chave**: cada pessoa usa a própria chave da Groq, digitada no app e guardada no `safeStorage` (BYOK). Chave embutida continua proibida (ADR-06). Distribuição como produto (pública, com contas) continua exigindo o backend da Fase 4.
+3. Antes da Fase 4, a distribuição é **restrita a pessoas convidadas pelo Victor**, sob o `LICENSE.md`, sem termo extra (D7), entregue por Release do GitHub (D6) — **público**, num repositório público, com o link passado pelo Victor (D19, decidido por ele em 18/out/2026: "só convidados" vale pela discrição do link) —, e **sem chave**: cada pessoa usa a própria chave da Groq, digitada no app e guardada no `safeStorage` (BYOK). Chave embutida continua proibida (ADR-06). Distribuição como produto (pública, com contas) continua exigindo o backend da Fase 4.
 4. As diferenças de sistema ficam atrás de interface (`PasteDriver`, `PermissionsPort`), escolhidas na inicialização:
    - hook: `uiohook-napi` nos dois sistemas (a ADR-02 vale); no macOS, só inicia com a permissão de Acessibilidade, conferida antes;
    - colagem: no Windows, a ADR-03; no macOS, clipboard + Cmd+V por `CGEventPost` (CoreGraphics via `koffi`), com o mesmo backup e a mesma restauração;
@@ -322,7 +364,15 @@ Substitui a decisão fixa "Windows primeiro; nada de macOS/Linux/mobile antes da
 - Positivas: o amigo do Victor usa o app; o código ganha uma fronteira de plataforma testável; o próprio Victor deixa o modo de desenvolvimento.
 - Negativas: roteiro manual em dois sistemas a cada versão; o Victor não tem Mac (teste depende do amigo ou do CI — RISK-novo-7 da spec); sem assinatura paga por ora (D1, D2), o que deixa avisos do SmartScreen e do Gatekeeper e permissões do macOS possivelmente pedidas de novo a cada versão; NFR-06, o SDD (§2.2, §2.4, §29), o PRD e o `CLAUDE.md` mudam.
 
-**Implementação** — pendente: a spec está aprovada, mas o porte para macOS ainda não está no código (18/out/2026); hoje o app roda só no Windows. Previsto: `frontend/src/main/platform.ts`, `insert/darwin.ts`, o `PasteDriver` no `TextInserter`, `PermissionsPort`, `stringsFor`, `defaultConfig`, `keys.ts` (`RightMeta`), menu e Dock no `index.ts`, ícone modelo no `icon.ts`. Esta seção passa a citar arquivo e linha quando o código entrar.
+**Implementação** (18/out/2026; compila e passa nos testes no Windows — o comportamento no Mac ainda não foi visto num Mac)
+
+- `src/main/platform.ts` — `selectPlatform` (Windows ou macOS; outro sistema → `UnsupportedPlatformError`), `pasteDriverFor` (só a fábrica do sistema é chamada), `COPY_ONLY_DRIVER`, `shouldStartHook`, `trayStatus` e `trayActions` (hook parado nunca é "pronto"; "Tentar de novo", e no Mac "Abrir Ajustes de Acessibilidade…", "Reabrir o Touch Speaker" e "Abrir Ajustes de Microfone…"). Puro, testado em `src/test/platform.test.ts` (TEST-novo-1).
+- `src/main/insert/paste-driver.ts` — a interface `PasteDriver` (`targetBlocksPaste()` devolve o motivo ou `null`; `sendPasteShortcut()`). `insert/win32-driver.ts` embrulha o `win32.ts`, sem mudar a lógica dele; `insert/darwin.ts` — ⌘V por `CGEventCreateKeyboardEvent`/`CGEventSetFlags`/`CGEventPost` (tap de HID) e `CFRelease`, entrada segura por `IsSecureEventInputEnabled`, frameworks abertos só na primeira colagem. `insert/inserter.ts` recebe o driver; as regras (tecla solta, backup e restauração do clipboard, "copiado") não mudam.
+- `src/main/permissions.ts` — `PermissionsPort` (Acessibilidade, Microfone, `askForMediaAccess` só em `not-determined`, painéis fixos dos Ajustes), com o Electron entrando por `PermissionsSystem`.
+- `src/main/index.ts` — perfil escolhido na abertura (`:117`); menu de aplicativo com `appMenu` + `editMenu` só no Mac e `app.dock.hide()` (`:120-122`); `PermissionsPort` e o driver carregados sob demanda (`:167-195`); hook só com Acessibilidade no Mac, com "Tentar de novo" e o diálogo do sistema uma vez por abertura (`:300-335`), retentativa ao voltar a ficar ativo (`did-become-active`); `app_ready` com `platform`, `arch`, `packaged` e `accessibility` (`:525-539`).
+- `src/main/keys.ts` (`RightMeta`: 3676, só no Mac; `hotkeysFor`, `isHotkeyName` com sistema), `config.ts` (`defaultConfig(platform)`: Command direito no Mac), `settings.ts` (validação com sistema), `strings.ts` (`stringsFor`, `hotkeyNamesFor`, `errorMessagesFor`: ⌘V, "padrão do sistema", nomes de tecla do Mac, caminho dos Ajustes no `mic_denied`), `tray.ts` (estados do hook, ícone modelo no Mac), `icon-bitmap.ts`/`icon.ts` (`renderTemplateTrayBitmap`, `templateTrayIcon`), `pill-window.ts` (`type: 'panel'` e visível sobre tela cheia no Mac), `keyboard.ts` (sem listener duplicado ao tentar de novo).
+- Empacotamento do Mac: [ADR-10](#adr-10--empacotamento-com-electron-builder-sem-bundler-módulos-nativos-sem-recompilar) (`LSUIElement`, `NSMicrophoneUsageDescription`, entitlements, ad-hoc).
+- Pendente (spec §18 T5): a tela de permissões dentro da janela principal e os canais `permissions:*` (D14), mover para Aplicativos (FR-MAC-14) — hoje o caminho das permissões é o diálogo do macOS e o menu da barra de menus.
 
 ## ADR-12 — Fonte Inter embutida no app
 

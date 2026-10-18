@@ -1,20 +1,23 @@
 # Distribuição para Windows e macOS — spec
 
-> Criado: 18/out/2026 · Autor: agente de IA (Claude), para revisão do Victor Alves · Status: **aprovada** (18/out/2026 · Victor)
+> Criado: 18/out/2026 · Autor: agente de IA (Claude), para revisão do Victor Alves · Status: **aprovada** (18/out/2026 · Victor) · **em implementação** — no código em 18/out/2026 (commits `6b73acb`, `acff340`, `80d642e` e o de docs); roteiros VDW e VDM pendentes (§18, SDD PEND-011)
 > Origem: decisão do Victor em 18/out/2026, ao abrir a M2: o Touch Speaker vira um app que se baixa e
 > instala sem terminal — instalador `.exe` no Windows e app para macOS. Nas palavras dele: "um amigo meu usa
 > Mac, a gente tem que enfatizar isso".
 > Fase: M2 (milestone definida pelo Victor em 18/out/2026; ver §3 — instalador e macOS estavam na Fase 4 do
 > PRD) · Requisitos: FR-PKG-01…18, FR-MAC-01…16
 > Contrato: SDD (`docs/spec/spec-driven-development.md`) · Decisões relacionadas: ADR-01, ADR-02, ADR-03,
-> ADR-06, ADR-07 · **Propõe:** ADR-10 e ADR-11 (§17.1 e §17.2) · **Depende de:** ADR-08 (proposta, spec
-> `janela-principal` — chave da Groq no `safeStorage`) e da ADR proposta pela spec `historico` para o
-> `better-sqlite3`
+> ADR-06, ADR-07 · **Propõe:** ADR-10 e ADR-11 (§17.1 e §17.2) — as duas **aceitas** em 18/out/2026 ·
+> **Depende de:** ADR-08 (aceita, spec `janela-principal` — chave da Groq no `safeStorage`) e da ADR-09
+> (aceita, spec `historico`). *Nota de 18/out/2026:* a ADR-09 escolheu o `node:sqlite` embutido no
+> Electron, não o `better-sqlite3` que esta spec previa; os módulos nativos a empacotar são só dois —
+> `koffi` e `uiohook-napi` — e o histórico não exige nada além de levar `dist/database/` no pacote
 > Milestone: M2 (a registrar no SDD §29 — §3)
 > Decisões do Victor de 18/out/2026: D1–D7 fechadas (§17) — Windows sem assinatura; macOS com assinatura
 > ad-hoc; build do Mac no GitHub Actions; artefato do Mac só arm64 (Apple Silicon); Command direito como
 > tecla padrão no Mac; entrega por GitHub Releases só para convidados; LICENSE.md, sem termo extra. Um
-> conflito encontrado ao registrar essas decisões (repositório público × "só convidados") está no D19
+> conflito encontrado ao registrar essas decisões (repositório público × "só convidados") está no D19 —
+> decidido pelo Victor em 18/out/2026: repositório e Releases públicos, com o link passado por ele
 
 Hoje o Touch Speaker só roda para quem clona o repositório, instala o Node, cria um `.env` e abre o app por
 `npm run dev` no Windows. Esta spec transforma o app em algo que **qualquer pessoa conhecida do Victor baixa e
@@ -931,7 +934,7 @@ ramos herdados da Fase 1 — elevação, BR-009 — têm os FR-DICT dela).
 
 | Risco | Impacto | Mitigação |
 | --- | --- | --- |
-| **RISK-004** — módulos nativos quebram com o Electron | **piora**: três módulos × dois sistemas × até duas arquiteturas | todos Node-API com binário pronto, sem compilar (ADR-10); FR-PKG-12 mostra no log o que carregou; roteiro nos dois sistemas a cada atualização do Electron |
+| **RISK-004** — módulos nativos quebram com o Electron | **piora**: dois módulos (`koffi`, `uiohook-napi` — o histórico usa o `node:sqlite` embutido, ADR-09) × dois sistemas × uma arquitetura por sistema | todos Node-API com binário pronto, sem compilar (ADR-10); FR-PKG-12 mostra no log o que carregou; roteiro nos dois sistemas a cada atualização do Electron |
 | **RISK-005** — copiar do Typeless | igual | o desenho do Mac sai da documentação da Apple, do Electron e do `libuiohook` aberto; nada do Typeless para Mac |
 | **RISK-009** — chave em texto puro | **melhora** | o app empacotado ignora `.env` (FR-PKG-13); chave no `safeStorage` (ADR-08) |
 | **RISK-013** — `Esc` chega ao app em foco | igual, agora também no Mac | aceito, como na Fase 1 |
@@ -946,7 +949,7 @@ ramos herdados da Fase 1 — elevação, BR-009 — têm os FR-DICT dela).
 | **RISK-novo-8** — segredos no CI | vazamento de credencial | com ad-hoc (D2) não há certificado nem chave da Apple no CI; o workflow usa só o `GITHUB_TOKEN` com permissão mínima para criar o Release; se o Developer ID entrar no futuro, certificado e chave de API vão para os segredos do GitHub, nunca para o repositório |
 | **RISK-novo-9** — Mac Intel | quem tiver Mac Intel não roda o artefato | fora de escopo: só arm64 (D4); as instruções dizem "Mac com Apple Silicon (M1 ou mais novo)" |
 | **RISK-novo-10** — distribuir app proprietário a terceiros sem termo (LICENSE.md, SDD §18 "termos antes de distribuir") | ambiguidade jurídica e de privacidade | **decidido no D7 (18/out/2026)**: só convidados do Victor; vale o LICENSE.md, sem termo extra por ora; a frase do FR-PKG-16 diz o que sai do computador. Mas o repositório é público — ver D19 |
-| **RISK-novo-11** — o repositório `Victorkaue333/touch-speaker` é público (API do GitHub, 18/out/2026): um Release nele pode ser baixado por qualquer pessoa, e o código-fonte também está aberto | o "só convidados" do D7 não se sustenta com Release público | D19 |
+| **RISK-novo-11** — o repositório `Victorkaue333/touch-speaker` é público (API do GitHub, 18/out/2026): um Release nele pode ser baixado por qualquer pessoa, e o código-fonte também está aberto | o "só convidados" do D7 não se sustenta com Release público | **aceito no D19** (Victor, 18/out/2026): Release público, link passado pelo Victor; o README e as notas do Release dizem o que sai do computador |
 
 ---
 
@@ -1136,7 +1139,7 @@ esta spec, aceitos ou trocados no gate. D19 é um conflito encontrado ao registr
 
 | # | Questão | Situação | Decide |
 | --- | --- | --- | --- |
-| D19 | Release "só para convidados" num repositório público | O repositório `Victorkaue333/touch-speaker` é **público** (API do GitHub, 18/out/2026; o nome antigo `-touch-speaker` redireciona para ele). Num repositório público, todo Release — e o link dele — pode ser baixado por qualquer pessoa, e o código-fonte já está aberto. "Só convidados" (D7) passaria a valer só pela discrição do link. `[PRECISA ESCLARECER: para manter o D7 com o GitHub Releases (D6), o repositório passa a privado (cada convidado precisa de conta no GitHub com acesso de leitura; os minutos de macOS do Actions passam a contar na cota do plano), os Releases vão para um repositório privado separado só de distribuição, ou o Victor aceita Release público com o link passado só aos convidados?]` Rascunho de Release não serve: só quem tem acesso de escrita o vê | Victor |
+| D19 | Release "só para convidados" num repositório público | O repositório `Victorkaue333/touch-speaker` é **público** (API do GitHub, 18/out/2026; o nome antigo `-touch-speaker` redireciona para ele). Num repositório público, todo Release — e o link dele — pode ser baixado por qualquer pessoa, e o código-fonte já está aberto. "Só convidados" (D7) passaria a valer só pela discrição do link. `[PRECISA ESCLARECER: para manter o D7 com o GitHub Releases (D6), o repositório passa a privado (cada convidado precisa de conta no GitHub com acesso de leitura; os minutos de macOS do Actions passam a contar na cota do plano), os Releases vão para um repositório privado separado só de distribuição, ou o Victor aceita Release público com o link passado só aos convidados?]` Rascunho de Release não serve: só quem tem acesso de escrita o vê. **Decidido pelo Victor em 18/out/2026** (ao pedir a implementação): o repositório continua **público**, os Releases são **públicos** e o Victor passa o link; o README ganha a seção "Download". O "só convidados" do D7 vale pela discrição do link (RISK-novo-11 aceito) | Victor — **fechado** |
 
 **Defaults propostos por esta spec**
 
@@ -1159,9 +1162,13 @@ US$ 99/ano) custa dinheiro e uma conta Apple; o barato (ad-hoc) custa atrito a c
 amigo refazer as permissões e redigitar a chave a cada atualização. O Victor escolheu ad-hoc por ora
 (18/out/2026), aceitando o risco; o Developer ID fica como opção futura.
 
-### 17.1 ADR-10 — Empacotamento com `electron-builder`, sem bundler, módulos nativos sem recompilar (proposta)
+### 17.1 ADR-10 — Empacotamento com `electron-builder`, sem bundler, módulos nativos sem recompilar (aceita)
 
-*Texto para `docs/DECISIONS.md` quando aceita.*
+*Texto da proposta, mantido como foi aprovado. A versão aceita, com a implementação, está no
+[`docs/DECISIONS.md`](../../DECISIONS.md#adr-10--empacotamento-com-electron-builder-sem-bundler-módulos-nativos-sem-recompilar).
+Diferenças da implementação (18/out/2026): não há `better-sqlite3` — a ADR-09 escolheu o `node:sqlite`, e
+os módulos nativos são dois; `files` inclui `dist/database/` (migrations do histórico); o workflow gera também
+o `.exe` do Windows, além do Mac, e roda no `macos-14` (arm64), como o Victor pediu.*
 
 **Contexto**
 
@@ -1307,7 +1314,8 @@ gera o app que o spike do Mac executa):
    `asarUnpack`, `npmRebuild: false`, saída em `release/`; NSIS por usuário sem elevação, atalhos, página de
    opções com "Iniciar com o Windows" no mesmo valor de registro do Electron, "Abrir agora"; desinstalação.
    Confirmar que o app empacotado carrega `koffi`, `uiohook-napi` (e `better-sqlite3`, se a spec `historico`
-   já tiver entrado). (FR-PKG-01, 02, 03, 04, 05, 06, 11)
+   já tiver entrado — *não entrou: a ADR-09 usa o `node:sqlite`, nada a carregar além das migrations*).
+   (FR-PKG-01, 02, 03, 04, 05, 06, 11)
 2. **T2 — Higiene do pacote.** Verificador (`scripts/verify-package.mjs`) com a função pura testada;
    `.env` ignorado no empacotado; Fuses; campos novos do `app_ready`; nomes de artefato com versão, sistema e
    arquitetura; SHA-256. (FR-PKG-09, 10, 12, 13, 14, 16)
@@ -1350,3 +1358,65 @@ gera o app que o spike do Mac executa):
 11. **T11 — Testes + self-review.** `npm run typecheck`, `npm test`, checklist de segurança do PR (Security
     Guide §16, com a verificação do pacote), revisão de que nada veio do Typeless (ADR-07) e de que nenhum
     segredo de assinatura está no diff.
+
+### 18.1 Execução — estado em 18/out/2026
+
+Quatro commits no `main`, sem push: `6b73acb` (T1, T2), `acff340` (T6), `80d642e` (T3, parte do T4 e do T5)
+e o de documentação (T7, parte do T10). `npm run typecheck` sem erros; `npm test` 390/390 no Windows, e
+390/390 com `process.platform` simulado como `darwin`.
+
+- [x] **T1** — `Touch-Speaker-Setup-0.1.0-win-x64.exe`, 107,2 MB, gerado no PC do Victor. Conferido **sem
+  abrir o app nem o instalador**: manifesto `asInvoker` (sem UAC); `customInstallMode` inserido (macro do NSIS
+  sem diferença de maiúsculas, conferido com o próprio `makensis`); `koffi` e `uiohook-napi` só win32-x64 e
+  fora do `app.asar`. *Só compilado:* a página de opções, o atalho opcional, o valor do "Iniciar com o Windows"
+  lido pelo `getLoginItemSettings`, o "abrir agora" e a desinstalação — ficam para a VDW.
+- [x] **T2** — verificador com regras puras (TEST-novo-3, `scripts/package-rules.test.mjs`), rodando no
+  `afterPack`: com um arquivo permitido contendo o prefixo das chaves, o build parou e nenhum `.exe` saiu
+  (critério 10). Fuses lidos no executável (critério 14, parte estática); integridade do `app.asar` embutida e
+  conferida contra o hash do cabeçalho. `.env` ignorado no empacotado já vinha da ADR-08. `app_ready` com
+  `platform`, `arch`, `packaged` (e `accessibility` no Mac). SHA-256 no Release (`SHA256SUMS.txt`).
+- [x] **T3** — `platform.ts`, `PasteDriver` (`win32-driver.ts` sobre o `win32.ts` sem mudança de lógica),
+  `PermissionsPort` (`permissions.ts`), `stringsFor`/`hotkeyNamesFor`/`errorMessagesFor`, `defaultConfig`,
+  `RightMeta` só no Mac, "teclado indisponível" com "Tentar de novo" nos dois sistemas; TEST-novo-1
+  (`platform.test.ts`), TEST-novo-2 (`strings.test.ts`), TEST-004 ampliado. *Falta:* o roteiro da Fase 1 no
+  Windows sem regressão (VDW).
+- [ ] **T4** — o código do spike está pronto (Acessibilidade antes do `start`, "Tentar de novo" × "Reabrir",
+  ⌘V por `CGEventPost` no tap de HID com `IsSecureEventInputEnabled`, pílula `type: 'panel'` visível sobre tela
+  cheia, menu de edição, `LSUIElement`, ícone modelo, URLs dos painéis), **só compilado**: falta rodar no Mac
+  do amigo, com o app do workflow. A pergunta "Monitoramento de Entrada além de Acessibilidade?" continua aberta.
+- [ ] **T5** — parcial: microfone (`askForMediaAccess` só em `not-determined`, depois do hook,
+  `NSMicrophoneUsageDescription`), "Abrir Ajustes de Microfone…" com o microfone negado, segunda abertura
+  (`second-instance`, que já existia) e item de login (`LoginItem`, que já existia). **Adiados** (opção segura,
+  sem canal IPC novo): a tela de permissões na janela principal com `permissions:*` (D14) — hoje o caminho é o
+  diálogo do próprio macOS, uma vez por abertura, e o menu da barra de menus — e "mover para Aplicativos"
+  (FR-MAC-14), coberto pelas instruções ("abra sempre de Aplicativos").
+- [x] **T6** — `.github/workflows/release.yml`: tag `v*` (publica) ou "Run workflow" (ensaio), `windows-latest`
+  e `macos-14`, typecheck + testes antes do build, tag = versão do `package.json`, só `GITHUB_TOKEN`. Diferença
+  do texto do T6: o `.exe` também sai do workflow (pedido do Victor), não só do PC dele. *Ainda não rodou:* o
+  primeiro ensaio é a primeira vez que os testes e o empacotamento rodam num macOS. D19 fechado.
+- [x] **T7** — seção "⬇️ Download" no `README.md` (SmartScreen, Smart App Control, Gatekeeper no 13–14 e no
+  15+, Acessibilidade e Microfone e o que fazer a cada versão, tecla Command direito, chave da Groq, log, como
+  atualizar e desinstalar, entrada segura, o que sai do computador) e "Como publicar uma versão"; as notas do
+  Release resumem o mesmo.
+- [ ] **T8** — roteiro VDW: pendente (Victor, com o app instalado).
+- [ ] **T9** — roteiro VDM: pendente (amigo do Victor).
+- [ ] **T10** — parcial: `CHANGELOG`, `DECISIONS` (ADR-10 aceita, ADR-11 com a implementação), `ENVIRONMENT`,
+  `README`, `CLAUDE.md`, SDD (§1.1, versão 1.5, PEND-008 resolvida no código, PEND-011). Faltam a numeração
+  definitiva no SDD e PRD, `PROJECT_CONTEXT.md`, `ARCHITECTURE.md`, `API.md`, `DATABASE.md`, `DESIGN.md`,
+  `Security-Guide.md`, `AGENTS.md` e os templates (PEND-011).
+- [x] **T11** — typecheck e testes antes de cada commit; nenhuma chave da Groq nem `.env` nos diffs; nada do Typeless.
+
+**Escolhas feitas na execução** (pontos que a spec deixava para a implementação, na opção mais segura):
+
+- `files` ganhou `dist/database/**` — sem ele o histórico ficaria indisponível no app instalado.
+- Exclusão dos binários de outro sistema com `${platform}-${arch}` na lista de cima: uma lista `files` em
+  `win:`/`mac:` substitui a de cima no `electron-builder` 26.15.3 e empacotava o projeto inteiro (a verificação
+  pegou).
+- O verificador procura o prefixo das chaves em todo arquivo do app (`app.asar` e `app.asar.unpacked`), não
+  nos binários do Electron, que vêm do pacote `electron` em versão exata.
+- `PasteDriver.targetBlocksPaste()` devolve o motivo (`elevated_target`, `no_accessibility`, `secure_input`)
+  em vez de um booleano, para o log ter `secure_input_active` sem o `TextInserter` conhecer o sistema.
+- Ícone do app e do instalador desenhados em código a partir da geometria do `docs/assets/logo.svg` (provisórios
+  até a spec `design-system`); ícone da barra de menus em imagem modelo, com o mesmo glifo da bandeja.
+- `electron-builder` 26.15.3, a `latest` do npm (a `26.17.0` só está na tag `v26`); actions fixadas por commit
+  em versões com pelo menos duas semanas.
