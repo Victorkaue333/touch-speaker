@@ -22,15 +22,13 @@ Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) �
 
 A pílula aparece enquanto você fala, sem tirar o foco do app em que você está:
 
-![Pílula do Touch Speaker gravando: ponto e barras de nível, o texto "Ouvindo…", a dica "toque de novo para terminar" e o cronômetro 0:12](docs/assets/app/pilula.png)
+![Pílula do Touch Speaker gravando: ponto e barras de nível, o texto "Ouvindo…", a dica "toque de novo para terminar" e o cronômetro 0:01](docs/assets/app/pilula.png)
 
 A janela principal abre pela bandeja. No **Início** ficam a tecla de ditado, o estado e o seu uso; no **Histórico**, os ditados guardados neste computador; em **Configurações** você cola a chave da Groq (não precisa de `.env`):
 
 ![Início da janela do Touch Speaker no tema escuro: como ditar com Ctrl direito, estado "Pronto", chave da Groq "Salva no app" e o card "Seu uso"](docs/assets/app/inicio.png)
 
 ![Histórico da janela do Touch Speaker no tema escuro, ainda vazio: "Nenhum ditado guardado ainda" e "Guardando os ditados dos últimos 30 dias"](docs/assets/app/historico.png)
-
-> As capturas são de 18/out/2026, antes de a cor da marca (o verde-azulado do logo) passar a valer no acento, na pílula e no ícone.
 
 
 ---
