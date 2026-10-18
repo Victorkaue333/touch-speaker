@@ -1,7 +1,7 @@
 {
   "name": "touch-speaker",
   "productName": "Touch Speaker",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Ditado por voz para Windows e macOS: segure uma tecla, fale e o texto aparece no cursor.",
   "private": true,
   "type": "commonjs",
