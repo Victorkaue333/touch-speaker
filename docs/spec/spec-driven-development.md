@@ -11,7 +11,7 @@
 | Campo | Valor |
 |---|---|
 | Projeto | Touch Speaker — app de bandeja para Windows que transforma fala em texto digitado no app em foco |
-| Repositório | `Victorkaue333/-touch-speaker` (`git remote -v`; o nome do repositório começa com hífen) — **FATO** |
+| Repositório | `Victorkaue333/touch-speaker` (https://github.com/Victorkaue333/touch-speaker; até 18/out/2026 o nome começava com hífen, `-touch-speaker`) — **FATO** |
 | Versão da SDD | 1.4 |
 | Status | **vigente** |
 | Criada em | 17/out/2026 |
@@ -1671,7 +1671,7 @@ touch-speaker/
 Windows (PowerShell) — único sistema suportado (NFR-06):
 
 ```powershell
-git clone https://github.com/Victorkaue333/-touch-speaker.git touch-speaker
+git clone https://github.com/Victorkaue333/touch-speaker.git
 cd touch-speaker\frontend
 npm install                    # o aviso de scripts de koffi e uiohook-napi não executados é esperado
 copy .env.example .env         # e preencher GROQ_API_KEY (chave gratuita: console.groq.com → API Keys)

@@ -22,14 +22,18 @@ Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) �
 
 ## ⬇️ Download
 
-Para usar o Touch Speaker você **não precisa de terminal, Node nem do código**: baixe o instalador com um clique nos links abaixo. Cada pessoa usa a **própria chave da Groq** (gratuita), colada no app.
+Para usar o Touch Speaker você **não precisa de terminal, Node nem do código**: baixe o instalador da última versão. Cada pessoa usa a **própria chave da Groq** (gratuita), colada no app.
+
+### **[⬇️ Baixar a versão mais recente](https://github.com/Victorkaue333/touch-speaker/releases/latest)**
+
+Na página, clique no `.exe` (Windows) ou no `.dmg` (Mac). Ou baixe direto, com um clique:
 
 | Sistema | Download direto (última versão) | Requisitos |
 | --- | --- | --- |
 | 🪟 **Windows** | **[⬇️ Baixar para Windows (.exe)](https://github.com/Victorkaue333/touch-speaker/releases/latest/download/Touch-Speaker-Setup-win-x64.exe)**<br>`Touch-Speaker-Setup-win-x64.exe` | Windows 10 ou 11, 64 bits |
 | 🍎 **macOS** | **[⬇️ Baixar para macOS — Apple Silicon (.dmg)](https://github.com/Victorkaue333/touch-speaker/releases/latest/download/Touch-Speaker-mac-arm64.dmg)**<br>`Touch-Speaker-mac-arm64.dmg` | macOS 13 (Ventura) ou mais novo, em **Mac com Apple Silicon** (M1 ou mais novo). Não abre em Mac Intel |
 
-Os links diretos passam a funcionar quando o primeiro Release for publicado. Versões anteriores e o `.zip` do Mac: [todas as versões](https://github.com/Victorkaue333/touch-speaker/releases).
+Os links diretos funcionam a partir da **v0.1.1**: a v0.1.0 saiu com a versão no nome dos arquivos — baixe-a pelo botão acima. Versões anteriores e o `.zip` do Mac: [todas as versões](https://github.com/Victorkaue333/touch-speaker/releases).
 
 Para conferir se o arquivo chegou inteiro (opcional), o Release traz o `SHA256SUMS.txt`: compare com `Get-FileHash <arquivo>` no Windows ou `shasum -a 256 <arquivo>` no Mac.
 
