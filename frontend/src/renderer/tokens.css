@@ -28,6 +28,8 @@
   --ts-palette-slate-green: #2d5a4a;
   --ts-palette-moss-green: #7aa05a;
   --ts-palette-apricot: #d78b30;
+  /* The brand teal of docs/assets/logo.svg (Victor, 18/out/2026): accent, focus and recording. */
+  --ts-palette-teal: #13a89e;
 }
 
 /* ---- Base for every window, not colour (spec §9.5) ---- */
@@ -63,7 +65,7 @@
 
 /* ---- Semantic tokens, light theme (spec §9.3). P = palette, D = derived ----
  * Neutral white since 18/out/2026 (Victor): white page and cards, a light neutral grey sidebar, neutral greys for
- * muted text and borders; no Alabaster/Candle tint. Slate Green stays the brand, active and primary colour. */
+ * muted text and borders; no Alabaster/Candle tint. The brand teal (darkened for contrast) is the accent. */
 :root {
   --ts-bg: #ffffff; /* D: white page */
   --ts-surface: #f7f7f8; /* D: neutral grey sidebar and popups */
@@ -71,15 +73,15 @@
   --ts-hover: #f4f4f5; /* D: neutral hover fill on cards */
   --ts-text: var(--ts-palette-black-hole);
   --ts-text-muted: #65656d; /* D: neutral grey */
-  --ts-accent: var(--ts-palette-slate-green);
-  --ts-accent-fill: var(--ts-palette-slate-green);
+  --ts-accent: #0d7a72; /* D: brand teal darkened, same hue — text on white */
+  --ts-accent-fill: #0d7a72; /* D: = accent, white text on it */
   --ts-on-accent: #ffffff; /* D: white */
   --ts-secondary-fill: var(--ts-palette-moss-green);
   --ts-on-secondary: var(--ts-palette-black-hole);
   --ts-border: #e4e4e7; /* D: neutral; decorative, no threshold */
   --ts-border-strong: #817f7c; /* D: field and control edge */
-  --ts-focus: var(--ts-palette-slate-green);
-  --ts-recording: #bb7624; /* D: darker Apricot, same hue; graphics only, never text */
+  --ts-focus: #0d7a72; /* D: = accent */
+  --ts-recording: #0f8a81; /* D: brand teal darkened; graphics only, never text */
   --ts-working: #65656d; /* D: = muted */
   --ts-notice: #567140; /* D: darker Moss Green, same hue */
   --ts-error: #a84a3a; /* D: terracotta */
@@ -96,15 +98,15 @@
     --ts-hover: var(--ts-palette-black-hole); /* D: = bg */
     --ts-text: var(--ts-palette-alabaster);
     --ts-text-muted: #aba9a5; /* D: Alabaster + 35% Black Hole */
-    --ts-accent: var(--ts-palette-moss-green);
-    --ts-accent-fill: var(--ts-palette-moss-green);
+    --ts-accent: var(--ts-palette-teal);
+    --ts-accent-fill: var(--ts-palette-teal);
     --ts-on-accent: var(--ts-palette-black-hole);
     --ts-secondary-fill: var(--ts-palette-slate-green);
     --ts-on-secondary: var(--ts-palette-alabaster);
     --ts-border: #424140; /* D: Black Hole + 15% Alabaster; decorative, no threshold */
     --ts-border-strong: #817f7c; /* D */
-    --ts-focus: var(--ts-palette-moss-green);
-    --ts-recording: var(--ts-palette-apricot);
+    --ts-focus: var(--ts-palette-teal);
+    --ts-recording: var(--ts-palette-teal);
     --ts-working: var(--ts-palette-candle);
     --ts-notice: var(--ts-palette-moss-green);
     --ts-error: #e08a7a; /* D: light terracotta */
@@ -126,15 +128,15 @@
   --ts-hover: #f4f4f5;
   --ts-text: var(--ts-palette-black-hole);
   --ts-text-muted: #65656d;
-  --ts-accent: var(--ts-palette-slate-green);
-  --ts-accent-fill: var(--ts-palette-slate-green);
+  --ts-accent: #0d7a72;
+  --ts-accent-fill: #0d7a72;
   --ts-on-accent: #ffffff;
   --ts-secondary-fill: var(--ts-palette-moss-green);
   --ts-on-secondary: var(--ts-palette-black-hole);
   --ts-border: #e4e4e7;
   --ts-border-strong: #817f7c;
-  --ts-focus: var(--ts-palette-slate-green);
-  --ts-recording: #bb7624;
+  --ts-focus: #0d7a72;
+  --ts-recording: #0f8a81;
   --ts-working: #65656d;
   --ts-notice: #567140;
   --ts-error: #a84a3a;
@@ -149,15 +151,15 @@
   --ts-hover: var(--ts-palette-black-hole);
   --ts-text: var(--ts-palette-alabaster);
   --ts-text-muted: #aba9a5;
-  --ts-accent: var(--ts-palette-moss-green);
-  --ts-accent-fill: var(--ts-palette-moss-green);
+  --ts-accent: var(--ts-palette-teal);
+  --ts-accent-fill: var(--ts-palette-teal);
   --ts-on-accent: var(--ts-palette-black-hole);
   --ts-secondary-fill: var(--ts-palette-slate-green);
   --ts-on-secondary: var(--ts-palette-alabaster);
   --ts-border: #424140;
   --ts-border-strong: #817f7c;
-  --ts-focus: var(--ts-palette-moss-green);
-  --ts-recording: var(--ts-palette-apricot);
+  --ts-focus: var(--ts-palette-teal);
+  --ts-recording: var(--ts-palette-teal);
   --ts-working: var(--ts-palette-candle);
   --ts-notice: var(--ts-palette-moss-green);
   --ts-error: #e08a7a;

@@ -149,6 +149,7 @@ const PRIMITIVE_TOKEN: Record<keyof typeof PALETTE, string> = {
   slateGreen: '--ts-palette-slate-green',
   mossGreen: '--ts-palette-moss-green',
   apricot: '--ts-palette-apricot',
+  teal: '--ts-palette-teal',
 };
 
 describe('tokens.css: themes (FR-DS-02, FR-DS-05)', () => {
@@ -387,7 +388,7 @@ describe('contrastRatio (WCAG 2.x)', () => {
 });
 
 describe('shared/palette.ts mirrors tokens.css (RISK-novo-1)', () => {
-  it('the six primitives are the same', () => {
+  it('the palette primitives are the same', () => {
     const primitives = [...light.keys()].filter((t) => t.startsWith('--ts-palette-'));
     assert.deepEqual(primitives.sort(), Object.values(PRIMITIVE_TOKEN).sort());
     for (const [key, token] of Object.entries(PRIMITIVE_TOKEN) as [keyof typeof PALETTE, string][]) {
@@ -400,11 +401,22 @@ describe('shared/palette.ts mirrors tokens.css (RISK-novo-1)', () => {
     assert.equal(PALETTE.blackHole.toLowerCase(), hexOf('--ts-bg', 'dark'));
   });
 
-  it('the tray colours are the recording and neutral tokens', () => {
-    assert.equal(DERIVED.recordingLight.toLowerCase(), hexOf('--ts-recording', 'light'));
+  it('the tray colours are the brand accent, Apricot and the neutral token (D5, D12)', () => {
+    assert.equal(TRAY_COLORS.dark.glyph.toLowerCase(), hexOf('--ts-accent', 'dark'));
+    assert.equal(TRAY_COLORS.light.glyph.toLowerCase(), hexOf('--ts-accent', 'light'));
+    assert.equal(DERIVED.tealLight.toLowerCase(), hexOf('--ts-accent', 'light'));
     assert.equal(DERIVED.neutral.toLowerCase(), hexOf('--ts-border-strong', 'light'));
     assert.equal(DERIVED.neutral.toLowerCase(), hexOf('--ts-border-strong', 'dark'));
-    assert.equal(TRAY_COLORS.dark.dot.toLowerCase(), hexOf('--ts-recording', 'dark'));
-    assert.equal(TRAY_COLORS.light.dot.toLowerCase(), hexOf('--ts-recording', 'light'));
+    assert.equal(TRAY_COLORS.dark.dot, PALETTE.apricot);
+    assert.equal(TRAY_COLORS.light.dot, DERIVED.apricotDark);
+  });
+
+  it('the brand teal is the logo colour and the dark-theme accent and recording (D12)', () => {
+    const logo = readFileSync(path.join(SRC, '..', '..', 'docs', 'assets', 'logo.svg'), 'utf8');
+    assert.match(logo, new RegExp(`fill="${PALETTE.teal}"`));
+    assert.equal(hexOf('--ts-accent', 'dark'), PALETTE.teal.toLowerCase());
+    assert.equal(hexOf('--ts-recording', 'dark'), PALETTE.teal.toLowerCase());
+    assert.equal(hexOf('--ts-accent', 'light'), '#0d7a72');
+    assert.equal(hexOf('--ts-recording', 'light'), '#0f8a81');
   });
 });

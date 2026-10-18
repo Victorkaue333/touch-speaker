@@ -97,17 +97,20 @@ pelo main, e o fundo da janela principal antes de a página pintar (`backgroundC
 | Alabaster | `--ts-palette-alabaster` | `#F4F1EB` | texto no escuro (desde 18/out/2026, não pinta mais o tema claro) |
 | Candle | `--ts-palette-candle` | `#EFE9D7` | "transcrevendo" no escuro (desde 18/out/2026, não pinta mais o tema claro) |
 | Black Hole | `--ts-palette-black-hole` | `#222222` | texto no claro; fundo escuro |
-| Slate Green | `--ts-palette-slate-green` | `#2D5A4A` | acento no claro |
-| Moss Green | `--ts-palette-moss-green` | `#7AA05A` | acento e aviso no escuro; destaque secundário no claro |
-| Apricot | `--ts-palette-apricot` | `#D78B30` | gravando (no escuro) |
+| Slate Green | `--ts-palette-slate-green` | `#2D5A4A` | destaque secundário no escuro (acento do claro até 18/out/2026) |
+| Moss Green | `--ts-palette-moss-green` | `#7AA05A` | aviso no escuro; destaque secundário no claro (acento do escuro até 18/out/2026) |
+| Apricot | `--ts-palette-apricot` | `#D78B30` | ponto de gravação da bandeja (a pílula grava em verde-azulado desde 18/out/2026) |
+| Verde-azulado da marca | `--ts-palette-teal` | `#13A89E` | **cor da marca** (o do `docs/assets/logo.svg`, Victor, 18/out/2026): acento, foco e gravação no escuro; glifo da bandeja na barra escura; no claro, escurecido para contraste |
 
 ### 3.2 Tokens semânticos por tema (`tokens.css:67-88` claro, `:91-114` escuro; `:122-166` repetem os dois para o tema escolhido na janela)
 
 **P** = valor da paleta. **D** = derivado, aprovado pelo Victor em 18/out/2026 (spec `design-system`, D6–D8):
 no escuro, mantém o matiz do primitivo de origem ou mistura Black Hole com Alabaster. **Tema claro branco
 neutro** (Victor, 18/out/2026, depois de ver o tema claro creme): página e cards brancos, barra lateral cinza
-neutro bem claro, cinzas neutros no texto secundário e nas bordas, sem o tom de Alabaster/Candle; o Slate Green
-continua como cor da marca, do item ativo e do botão principal. O tema escuro não mudou.
+neutro bem claro, cinzas neutros no texto secundário e nas bordas, sem o tom de Alabaster/Candle. **Cor da marca** (Victor, 18/out/2026, D12 da spec): o verde-azulado do logo
+`#13A89E` é o acento, o foco e a gravação no escuro; no claro, o mesmo matiz escurecido — `#0D7A72` no acento, no
+foco e no botão principal (texto branco), `#0F8A81` na gravação — porque `#13A89E` fica em 2,95:1 sobre branco. O
+Slate Green e o Moss Green deixam de ser acento. Os fundos do escuro não mudaram.
 
 | Token | Papel | Tema claro | Tema escuro |
 | --- | --- | --- | --- |
@@ -117,24 +120,25 @@ continua como cor da marca, do item ativo e do botão principal. O tema escuro n
 | `--ts-hover` | hover de botão e de opção sobre card (desde 18/out/2026) | `#F4F4F5` (D: cinza neutro) | `= --ts-bg` `#222222` (P) |
 | `--ts-text` | texto principal | Black Hole `#222222` (P) | Alabaster (P) |
 | `--ts-text-muted` | texto secundário, dica, cronômetro | `#65656D` (D: cinza neutro) | `#ABA9A5` (D) |
-| `--ts-accent` | texto, ícone e link no tom da marca | Slate Green (P) | Moss Green (P) |
-| `--ts-accent-fill` | fundo da ação principal | Slate Green (P) | Moss Green (P) |
+| `--ts-accent` | texto, ícone e link no tom da marca | `#0D7A72` (D: verde-azulado escurecido; 5,19:1 sobre branco) | Verde-azulado `#13A89E` (P; 5,40:1 sobre Black Hole) |
+| `--ts-accent-fill` | fundo da ação principal | `#0D7A72` (D; texto branco 5,19:1) | `#13A89E` (P; texto Black Hole 5,40:1) |
 | `--ts-on-accent` | texto sobre `--ts-accent-fill` | `#FFFFFF` (D: branco) | Black Hole (P) |
 | `--ts-secondary-fill` | fundo de destaque secundário | Moss Green (P) | Slate Green (P) |
 | `--ts-on-secondary` | texto sobre `--ts-secondary-fill` | Black Hole (P) | Alabaster (P) |
 | `--ts-border` | divisória e borda de card (sem limiar de contraste) | `#E4E4E7` (D: cinza neutro) | `#424140` (D) |
 | `--ts-border-strong` | limite de campo e de controle | `#817F7C` (D) | `#817F7C` (D) |
-| `--ts-focus` | anel de foco | Slate Green (P) | Moss Green (P) |
-| `--ts-recording` | gravando: ponto, barras, ponto da bandeja | `#BB7624` (D: Apricot escurecido — só gráfico, nunca texto) | Apricot `#D78B30` (P) |
+| `--ts-focus` | anel de foco | `#0D7A72` (D: = acento) | `#13A89E` (P) |
+| `--ts-recording` | gravando na pílula: ponto e barras | `#0F8A81` (D: verde-azulado escurecido — só gráfico, nunca texto; 3,94:1 no pior fundo) | `#13A89E` (P) |
 | `--ts-working` | transcrevendo (neutro de propósito, para não competir com a gravação) | `#65656D` (D: = muted) | Candle (P) |
 | `--ts-notice` | aviso e cronômetro nos últimos 30 s | `#567140` (D: Moss escurecido) | Moss Green (P) |
 | `--ts-error` | erro | `#A84A3A` (D: terracota) | `#E08A7A` (D: terracota clara) |
 | `--ts-pill-surface` | fundo da pílula, **opaco** | `= --ts-bg` (branco) | `= --ts-bg` (Black Hole) |
 | `--ts-pill-border` | borda de 1 px da pílula | `= --ts-border` | `= --ts-border` |
 
-Regras de uso, que evitam derivado novo: Moss Green e Apricot **nunca como texto sobre fundo claro** (ficam
-abaixo de 3:1); no tema claro, o Apricot só aparece como preenchimento com texto Black Hole ou pelo ajuste
-`--ts-recording`. O limite de um botão vem do texto ou de `--ts-border-strong`, nunca só do preenchimento. Cor
+Regras de uso, que evitam derivado novo: Moss Green, Apricot e o verde-azulado `#13A89E` **nunca como texto
+sobre fundo claro** (ficam abaixo de 3:1); no tema claro, o verde-azulado só aparece escurecido (`#0D7A72`,
+`#0F8A81`) e o Apricot só no ponto escurecido da bandeja (`#BB7624`). A exceção é o quadrado do logo na barra
+lateral, decorativo (§6.5). O limite de um botão vem do texto ou de `--ts-border-strong`, nunca só do preenchimento. Cor
 nova entra só como token em `tokens.css`, com o par de contraste no `tokens.test.ts` (§17).
 
 ### 3.3 Cor de estado
@@ -150,10 +154,10 @@ nova entra só como token em `tokens.css`, com o par de contraste no `tokens.tes
 | Janela principal — aviso (falta a chave, chave ilegível) | `--ts-notice` na borda do card, no glifo e no texto do estado | Triângulo de alerta, 16 px | `main-window.css:151-154`, `:176-183` |
 | Janela principal — erro (tecla de ditado indisponível) | `--ts-error` na borda do card, no glifo e no texto do estado | Triângulo de alerta, 16 px | `main-window.css:156-158`, `:185-192` |
 
-"Gravando" (Apricot) e erro (terracota) têm cores diferentes: até 17/out/2026 o ponto da bandeja usava o
-vermelho do erro. Cor nunca é o único sinal: todo estado tem forma e texto próprios (§13) — para esta paleta a
-regra é obrigatória, porque Apricot, Moss Green e a terracota têm luminância parecida e podem se confundir para
-quem não distingue vermelho e verde.
+"Gravando" (verde-azulado na pílula, Apricot no ponto da bandeja) e erro (terracota) têm cores diferentes: até
+17/out/2026 o ponto da bandeja usava o vermelho do erro. Cor nunca é o único sinal: todo estado tem forma e texto
+próprios (§13) — para esta paleta a regra é obrigatória, porque o verde-azulado, o Moss Green do aviso, o Apricot
+e a terracota podem se confundir para quem não distingue vermelho e verde.
 
 ## 4. Tipografia
 
@@ -267,10 +271,12 @@ estilo em `pill.css` ou `main-window.css` sobre os tokens de `tokens.css`, ou ob
 
   | Variante | Barra escura | Barra clara | Sem leitura do tema (reserva) |
   | --- | --- | --- | --- |
-  | Parado | glifo Moss Green `#7AA05A` (7,00:1 contra preto) | glifo Slate Green `#2D5A4A` (7,86:1 contra branco) | glifo `#817F7C` (3,99:1 contra branco, 5,26:1 contra preto) |
+  | Parado | glifo verde-azulado `#13A89E` (7,12:1 contra preto) | glifo `#0D7A72` (5,19:1 contra branco) | glifo `#817F7C` (3,99:1 contra branco, 5,26:1 contra preto) |
   | Gravando | glifo + ponto Apricot `#D78B30` (7,63:1 contra preto) | glifo + ponto `#BB7624` (3,67:1 contra branco) | glifo `#817F7C` + ponto `#BB7624` |
 
-  Contraste medido contra os extremos (preto e branco); a cor real da barra se mede no roteiro V-DS-2.
+  Contraste medido contra os extremos (preto e branco); a cor real da barra se mede no roteiro V-DS-2. Desde
+  18/out/2026 (D12) o glifo é a cor da marca; o ponto de gravação **continua Apricot** de propósito: num ícone
+  de 16 px, um ponto verde-azulado sobre um microfone verde-azulado não se distingue.
 - Gerado em 16 px e nas escalas 1,5× e 2×, isto é, 16/24/32 px; o Windows escolhe pela escala da tela
   (`src/main/icon.ts:18-33`).
 - O mesmo glifo, sem o ponto e com base de 32 px, é o ícone da janela principal na barra de título e na barra
@@ -409,7 +415,7 @@ secundário e acento passam de 4,5:1 sobre todos esses fundos nos dois temas (pa
 
   | Variante | Em repouso | Ao passar o mouse | Onde |
   | --- | --- | --- | --- |
-  | Primário (`.button-primary`) | fundo `--ts-accent-fill`, texto `--ts-on-accent` | o fundo recebe 15% de `--ts-text` (`color-mix`, só com tokens): escurece no claro, clareia no escuro. O fundo se afasta do texto, então o contraste só sobe — 8,78:1 no claro, 6,26:1 no escuro (calculado; o teste trava o par em repouso) | "Salvar chave", "Salvar preferências", "Configurar chave" |
+  | Primário (`.button-primary`) | fundo `--ts-accent-fill`, texto `--ts-on-accent` | o fundo recebe 15% de `--ts-text` (`color-mix`, só com tokens): escurece no claro, clareia no escuro. O fundo se afasta do texto, então o contraste só sobe — 6,17:1 no claro, 6,20:1 no escuro (calculado; o teste trava o par em repouso) | "Salvar chave", "Salvar preferências", "Configurar chave" |
   | Secundário / contorno (`.button-outline`) | sem fundo, borda `--ts-border-strong` (≥ 3:1) | fundo `--ts-hover` | "Reiniciar agora" |
   | Fantasma (`.button-ghost`) | sem fundo nem borda: o texto é o limite | fundo `--ts-hover` | "Cancelar" (na confirmação de remover a chave) |
   | Destrutivo (`.button-destructive`) | fundo `--ts-error`, texto `--ts-on-accent` — 5,67:1 no claro (branco), 6,13:1 no escuro, par travado no `tokens.test.ts` | 15% de `--ts-text`, como o primário (6,69:1 / 6,99:1) | "Remover chave", "Confirmar remoção" |
@@ -567,7 +573,7 @@ Valores de cada estado por tema:
 
 | Estado | Tema escuro | Tema claro |
 | --- | --- | --- |
-| `listening` | ponto e barras em Apricot `#D78B30`; "Ouvindo…" em Alabaster; cronômetro e dica em `#ABA9A5`; últimos 30 s: cronômetro em Moss Green `#7AA05A` | ponto e barras em `#BB7624`; "Ouvindo…" em Black Hole; cronômetro e dica em `#65656D`; últimos 30 s: cronômetro em `#567140` |
+| `listening` | ponto e barras no verde-azulado `#13A89E`; "Ouvindo…" em Alabaster; cronômetro e dica em `#ABA9A5`; últimos 30 s: cronômetro em Moss Green `#7AA05A` | ponto e barras em `#0F8A81`; "Ouvindo…" em Black Hole; cronômetro e dica em `#65656D`; últimos 30 s: cronômetro em `#567140` |
 | `transcribing` | três pontos em Candle `#EFE9D7` | três pontos em `#65656D` |
 | `notice` | glifo em Moss Green, texto em Alabaster | glifo em `#567140`, texto em Black Hole |
 | `error` | glifo e texto em `#E08A7A` | glifo e texto em `#A84A3A` |
@@ -757,10 +763,10 @@ pílula, e cor nunca como único sinal. Estado conferido no código em 18/out/20
 | Tema | Estado | Evidência |
 | --- | --- | --- |
 | Cor não é o único sinal | Todo estado da pílula tem ícone + texto. Na janela principal, aviso e erro têm **borda + glifo + texto**, e o item atual da barra lateral tem fundo, peso 500 e o texto que passa de secundário a principal, além do `aria-current` | `src/renderer/pill.html:16-27`; `main-window.css:136-140`, `:216-256` |
-| Contraste | **Medido e travado por teste**: o `npm test` falha se um par texto/fundo cair abaixo de 4,5:1 ou um par gráfico/fundo (ponto, barras, pontos, anel de foco, limite de campo) abaixo de 3:1, nos dois temas e contra a superfície da pílula. Desde 18/out/2026, também o texto do botão destrutivo da janela principal (`--ts-on-accent` sobre `--ts-error`: 5,67:1 no claro, 6,13:1 no escuro) e, também desde 18/out/2026, os pares sobre `--ts-card` e `--ts-hover`. Menores margens no claro, depois do tema branco neutro: `--ts-recording` sobre `--ts-surface` (3,42:1) e `--ts-notice` sobre `--ts-hover` (4,99:1). Os blocos `:root[data-theme]` também são conferidos: o teste falha se divergirem dos dois temas | `src/test/tokens.test.ts`, `src/shared/contrast.ts`; pares na spec `design-system` §9.4 B |
+| Contraste | **Medido e travado por teste**: o `npm test` falha se um par texto/fundo cair abaixo de 4,5:1 ou um par gráfico/fundo (ponto, barras, pontos, anel de foco, limite de campo) abaixo de 3:1, nos dois temas e contra a superfície da pílula. Desde 18/out/2026, também o texto do botão destrutivo da janela principal (`--ts-on-accent` sobre `--ts-error`: 5,67:1 no claro, 6,13:1 no escuro) e, também desde 18/out/2026, os pares sobre `--ts-card` e `--ts-hover`. Menores margens no claro, depois do tema branco neutro e da cor da marca: `--ts-accent` sobre `--ts-hover` (4,72:1), `--ts-recording` sobre `--ts-surface` (3,94:1) e `--ts-notice` sobre `--ts-hover` (4,99:1); no escuro, `--ts-accent` sobre `--ts-card` (4,72:1). Os blocos `:root[data-theme]` também são conferidos: o teste falha se divergirem dos dois temas | `src/test/tokens.test.ts`, `src/shared/contrast.ts`; pares na spec `design-system` §9.4 B |
 | Contraste da bandeja | Glifo e ponto ≥ 3:1 contra a barra da variante (preto ou branco); a reserva neutra passa nos dois | `src/test/icon.test.ts`; §6.2 |
 | Confirmação não visual | Sons de início, fim e erro (desligáveis) | §6.4 |
-| Contraste da janela principal | O `main-window.css` só usa tokens (o `tokens.test.ts` falha com cor literal ou token próprio). Hover e item atual usam `--ts-bg` na barra lateral e `--ts-hover` sobre os cards, cujos pares com texto, texto secundário e acento estão travados. O hover dos botões cheios mistura 15% de `--ts-text` no fundo (`color-mix`), o que só aumenta o contraste do texto — calculado (≥ 6,26:1), não travado por teste. A medição na tela, nos dois temas, é do roteiro da spec `janela-principal` (VJ17, VJ21) | `main-window.css`; `src/test/tokens.test.ts` |
+| Contraste da janela principal | O `main-window.css` só usa tokens (o `tokens.test.ts` falha com cor literal ou token próprio). Hover e item atual usam `--ts-bg` na barra lateral e `--ts-hover` sobre os cards, cujos pares com texto, texto secundário e acento estão travados. O hover dos botões cheios mistura 15% de `--ts-text` no fundo (`color-mix`), o que só aumenta o contraste do texto — calculado (≥ 6,17:1), não travado por teste. A medição na tela, nos dois temas, é do roteiro da spec `janela-principal` (VJ17, VJ21) | `main-window.css`; `src/test/tokens.test.ts` |
 | Movimento | `prefers-reduced-motion` respeitado: sem escala nem pulso na pílula; na janela, sem transição e sem o deslocamento de 1 px do botão pressionado | `pill.css:178-189`; `main-window.css:514-525` |
 | Anúncio | A pílula é `role="status"` com `aria-live="polite"`; ícones com `aria-hidden="true"`. O anúncio por leitor de tela numa janela que nunca recebe foco não foi verificado. Na janela principal, as mensagens de salvar ficam em `role="status"` com `aria-live="polite"`, a barra lateral é um `nav` rotulado pelo nome do app, cada card é rotulado pelo seu título e todo campo tem `label` associado. O glifo, a marca do logo e os ícones da barra lateral são `aria-hidden` (o rótulo do item é o texto). O Narrador na janela se confere no VJ17 | `src/renderer/pill.html:15-16`; `src/renderer/main-window/index.html:17-64`, `:73-96`, `:143`, `:194`, `:207` |
 | Idioma | `lang="pt-BR"` | `src/renderer/pill.html:2`; `src/renderer/main-window/index.html:2` |
@@ -775,10 +781,10 @@ pílula, e cor nunca como único sinal. Estado conferido no código em 18/out/20
 | `frontend/src/renderer/fonts/InterVariable.woff2` + `OFL.txt` | Inter 4.1, variável, sem modificação, sob SIL OFL 1.1 | Todo texto das janelas (§4) |
 | `frontend/src/renderer/main-window/LICENSE-lucide.txt` | Licença ISC da Lucide 1.52.0, sem modificação | Ícones da barra lateral da janela principal (§11) |
 
-- **O arquivo do logo fica como está por enquanto** (decisão do Victor de 18/out/2026, D10). Ele usa o
-  verde-azulado `#13A89E`, que **não** é mais cor do app: desde a Sálvia, o acento é Slate Green / Moss Green e
-  a gravação é Apricot. A diferença entre o logo e a paleta do app é conhecida e intencional até nova decisão
-  (§19).
+- **O arquivo do logo fica como está** (decisão do Victor de 18/out/2026, D10). O verde-azulado dele, `#13A89E`,
+  **voltou a ser a cor do app** no mesmo dia (D12): é o primitivo `--ts-palette-teal`, o acento e a gravação no
+  escuro e, escurecido (`#0D7A72`, `#0F8A81`), no claro. O `tokens.test.ts` confere que o `logo.svg` e o primitivo
+  têm o mesmo valor.
 - **Logo na janela principal** (pedido do Victor de 18/out/2026: logo no topo da barra lateral, certo nos dois
   temas): a marca sai de `docs/assets/logo.svg` só com a geometria do quadrado — sem os textos, que o nome do app
   já traz de `strings.ts` — **nas cores do README** (Victor, 18/out/2026): quadrado `#13A89E`, microfone e barras
@@ -845,10 +851,11 @@ conferidos pelo `npm test`. Tela nova de verdade começa por spec ([`docs/templa
 
 ## 19. Divergências conhecidas
 
-- **Logo × paleta do app** (aberta, intencional): o `docs/assets/logo.svg` segue em `#13A89E`, que não faz parte
-  da Sálvia (§14, D10). Desde 18/out/2026 (segunda decisão do dia), a marca na barra lateral também sai em
-  `#13A89E`, como no README; a divergência que sobra é entre a marca e o acento do app (Slate Green / Moss Green)
-  — o Victor confere na tela.
+- **Logo × paleta do app** (fechada em 18/out/2026, D12): o acento, o foco, a gravação da pílula e o glifo da
+  bandeja passaram ao verde-azulado do logo. Sobra uma diferença de propósito: no tema claro o acento é o
+  verde-azulado escurecido (`#0D7A72`), não o `#13A89E` do quadrado do logo, porque este fica abaixo de 4,5:1 sobre
+  branco. O ponto de gravação da bandeja segue Apricot (§6.2). As capturas de tela do README foram feitas antes
+  dessa troca.
 - **Bandeja "pronto" com o hook indisponível** (aberta, fora do escopo da spec `janela-principal`): o Início da
   janela mostra "A tecla de ditado não está funcionando — reinicie o app", mas o status e a dica da bandeja só
   olham a chave e a gravação (`src/main/tray.ts:56`). Corrigir a bandeja é trabalho separado (spec

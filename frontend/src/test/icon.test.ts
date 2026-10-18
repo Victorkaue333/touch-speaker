@@ -11,8 +11,8 @@ const BLACK = '#000000';
 
 /** Expected colours, written out here so the test does not just repeat TRAY_COLORS. */
 const EXPECTED: Record<TaskbarTheme, { glyph: string; dot: string }> = {
-  dark: { glyph: '#7AA05A', dot: '#D78B30' }, // Moss Green, Apricot
-  light: { glyph: '#2D5A4A', dot: '#BB7624' }, // Slate Green, darker Apricot
+  dark: { glyph: '#13A89E', dot: '#D78B30' }, // brand teal, Apricot
+  light: { glyph: '#0D7A72', dot: '#BB7624' }, // darker brand teal, darker Apricot
   unknown: { glyph: '#817F7C', dot: '#BB7624' }, // neutral fallback
 };
 const THEMES = Object.keys(EXPECTED) as TaskbarTheme[];
