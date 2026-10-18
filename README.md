@@ -10,13 +10,27 @@
 ![Windows](<https://img.shields.io/badge/Windows-10%20%7C%2011%20x64-0078D4?style=flat>)
 ![macOS](<https://img.shields.io/badge/macOS-13%2B%20%C2%B7%20em%20implementa%C3%A7%C3%A3o-lightgrey?style=flat>)
 ![Groq](<https://img.shields.io/badge/Groq-Whisper%20large--v3--turbo-F55036?style=flat>)
-![Testes](<https://img.shields.io/badge/testes-352%20passando-brightgreen?style=flat>)
+![Testes](<https://img.shields.io/badge/testes-353%20passando-brightgreen?style=flat>)
 ![Status](<https://img.shields.io/badge/status-fase%201%20%C2%B7%20em%20verifica%C3%A7%C3%A3o-orange?style=flat>)
 ![License](https://img.shields.io/badge/license-propriet%C3%A1ria-lightgrey?style=flat)
 
 > 🗣️ O **Touch Speaker** é um app de bandeja para Windows e macOS que transforma fala em texto digitado no app em foco. Você **segura o Ctrl direito**, fala e solta — em menos de um segundo o texto aparece no cursor do VS Code, do navegador, do WhatsApp ou de qualquer outro app, como se tivesse sido digitado. A transcrição em português é feita pelo Whisper (via Groq, plano gratuito) e o que você tinha copiado no clipboard volta ao lugar depois.
 
 Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) · Requisitos: [`docs/PRD.md`](docs/PRD.md) · Contrato de engenharia: [`docs/spec/spec-driven-development.md`](docs/spec/spec-driven-development.md) · Decisões: [`docs/DECISIONS.md`](docs/DECISIONS.md)
+
+## 📸 Como é
+
+A pílula aparece enquanto você fala, sem tirar o foco do app em que você está:
+
+![Pílula do Touch Speaker gravando: ponto e barras de nível, o texto "Ouvindo…", a dica "toque de novo para terminar" e o cronômetro 0:12](docs/assets/app/pilula.png)
+
+A janela principal abre pela bandeja. No **Início** ficam a tecla de ditado, o estado e o seu uso; no **Histórico**, os ditados guardados neste computador; em **Configurações** você cola a chave da Groq (não precisa de `.env`):
+
+![Início da janela do Touch Speaker no tema escuro: como ditar com Ctrl direito, estado "Pronto", chave da Groq "Salva no app" e o card "Seu uso"](docs/assets/app/inicio.png)
+
+![Histórico da janela do Touch Speaker no tema escuro, ainda vazio: "Nenhum ditado guardado ainda" e "Guardando os ditados dos últimos 30 dias"](docs/assets/app/historico.png)
+
+> As capturas são de 18/out/2026, antes de a cor da marca (o verde-azulado do logo) passar a valer no acento, na pílula e no ícone.
 
 
 ---
@@ -61,8 +75,6 @@ Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) �
 
 ## 🔑 Como obter sua chave da Groq (gratuita)
 
-<!-- Prints em docs/assets/groq/ (01 a 07), um por passo. Nos prints 04 e 05 a chave tem de estar borrada (ou use uma chave já revogada). -->
-
 O Touch Speaker não tem servidor próprio: o áudio vai do seu computador direto para a Groq, autenticado com a **sua** chave. A Groq tem um **plano gratuito** que basta para o ditado de uma pessoa (veja os [limites](#limites-do-plano-gratuito) abaixo).
 
 > ⚠️ **Groq não é Grok.** A **Groq** ([groq.com](https://groq.com)) é a empresa que roda o Whisper usado aqui. O **Grok** é o assistente de IA da xAI: outra empresa, outro produto. A chave do Grok não serve para o Touch Speaker.
@@ -71,25 +83,19 @@ O Touch Speaker não tem servidor próprio: o áudio vai do seu computador diret
 
 Abra [console.groq.com](https://console.groq.com) e crie uma conta. Se já tiver uma, só entre.
 
-![Página inicial do console da Groq, com as opções para criar conta e para entrar](docs/assets/groq/01-criar-conta.png)
-
 ### Passo 2 — Abra a página API Keys
 
 No menu do console, abra **API Keys**. Se preferir, vá direto em [console.groq.com/keys](https://console.groq.com/keys).
 
-![Console da Groq com a página API Keys aberta e o item API Keys destacado no menu](docs/assets/groq/02-api-keys.png)
+[![Página API Keys do console da Groq: título, descrição, botão "Create API Key" e a tabela de chaves com a chave touch-speacker; a coluna da chave secreta está apagada](docs/assets/groq/02-api-keys.png)](https://console.groq.com/keys)
 
 ### Passo 3 — Crie uma chave nova
 
 Clique em **Create API Key** e dê à chave um nome que lembre para que ela serve, por exemplo `touch-speaker`. Confirme.
 
-![Janela de criação de chave do console da Groq, com o nome touch-speaker preenchido](docs/assets/groq/03-nova-chave.png)
-
 ### Passo 4 — Copie a chave na hora
 
 A chave aparece na tela (ela começa com `gsk_`). **Copie agora**: o console pode não mostrá-la de novo. Se você perder a chave, não tem problema: apague essa e crie outra (passo 3).
-
-![Chave recém-criada no console da Groq, com o valor borrado e o botão de copiar em destaque](docs/assets/groq/04-copiar-chave.png)
 
 ### Passo 5 — Coloque a chave no Touch Speaker (em Configurações)
 
@@ -104,16 +110,12 @@ Na primeira vez (sem `config.json` e sem chave salva), a janela do Touch Speaker
 Cole a chave no campo **Chave da Groq** e clique em **Salvar chave**. O campo se esvazia e aparece **"Chave salva"**. A chave fica **cifrada neste computador** pelo `safeStorage` do Electron (a proteção de dados do Windows, por usuário), em `%APPDATA%\Touch Speaker\groq-key.bin`, e vale a partir do próximo ditado, sem reiniciar. Ela nunca volta para a tela nem vai para o log ([ADR-08](docs/DECISIONS.md#adr-08--chave-da-groq-no-safestorage-do-electron-com-o-env-só-como-reserva-de-desenvolvimento)).
 
 > 🛠️ **Só em desenvolvimento, alternativa:** a chave também pode ficar em `frontend/.env` (`copy .env.example .env`, depois `notepad .env` e cole a chave logo depois do `=` na linha `GROQ_API_KEY=`, sem espaços e sem aspas). O `.env` só é lido com o app rodando por `npm run dev`/`npm start`, só quando o app abre e só quando **não** há chave salva em Configurações; o app instalado nunca o lê. Detalhes em [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md#o-arquivo-env).
->
-> ![Arquivo frontend/.env aberto no Bloco de Notas, com a linha GROQ_API_KEY preenchida e a chave borrada](docs/assets/groq/05-env.png)
 
 ### Passo 6 — Confira
 
 Passe o mouse sobre o ícone do Touch Speaker na bandeja ou clique nele com o botão direito. Deve aparecer **"Touch Speaker — pronto"**; o **Início** da janela mostra o mesmo estado e de onde vem a chave ("Salva no app" ou "Vinda do .env de desenvolvimento"). Se aparecer **"Touch Speaker — falta a chave da Groq"**, abra o Touch Speaker pela bandeja e salve a chave em Configurações.
 
 Para trocar a chave, salve a nova em Configurações (vale no próximo ditado). Para apagá-la, **Remover chave** → **Confirmar remoção**; em desenvolvimento, o app volta a usar o `.env`, se houver.
-
-![Menu do ícone do Touch Speaker na bandeja do Windows mostrando "Touch Speaker — pronto"](docs/assets/groq/06-app-na-bandeja.png)
 
 ### Cuidados com a chave
 
@@ -138,8 +140,6 @@ Para o modelo `whisper-large-v3-turbo`, em out/2026:
 Os limites valem por **organização** (a sua conta da Groq), não por chave: criar mais chaves não aumenta a cota. Se passar do limite, a pílula mostra "Limite gratuito da Groq atingido — tente em instantes" e aquele ditado não é inserido; é só esperar um pouco.
 
 Esses números podem mudar. A fonte oficial é a página de limites da sua conta, [console.groq.com/settings/limits](https://console.groq.com/settings/limits) (documentação: [console.groq.com/docs/rate-limits](https://console.groq.com/docs/rate-limits)).
-
-![Página de limites do console da Groq, com a linha do modelo whisper-large-v3-turbo](docs/assets/groq/07-limites.png)
 
 ### E se um dia precisar de mais?
 
@@ -227,7 +227,7 @@ A única integração externa é a Groq: visão da integração (fluxo, nova ten
 -  **Segurança:** `contextIsolation` + `sandbox` nas duas janelas, CSP restrita, permissão de mídia só de áudio e só para a pílula, IPC validado no main (com o remetente conferido), chave da Groq cifrada pelo `safeStorage` (ADR-08)
 -  **Histórico:** SQLite pelo `node:sqlite` que já vem no Electron (SQLite 3.53.4) — nenhuma dependência nova (ADR-09)
 -  **Fonte:** Inter 4.1 embutida (ADR-12), sobre os tokens do design system "Sálvia" (tema claro ou escuro: segue o sistema ou a escolha feita no botão da janela)
-- 🧪 **Qualidade:** `node:test` (352 testes) · TypeScript com `strict` e `noUncheckedIndexedAccess`
+- 🧪 **Qualidade:** `node:test` (353 testes) · TypeScript com `strict` e `noUncheckedIndexedAccess`
 
 `koffi` e `uiohook-napi` trazem binários prontos para win32-x64; os scripts de instalação deles ficam negados no `allowScripts` do `package.json`.
 
@@ -324,7 +324,7 @@ O texto do histórico nunca vai para o log nem sai do computador. Para apagar tu
 ### 8️⃣ Verificação
 
 ```powershell
-npm test            # compila e roda os 352 testes
+npm test            # compila e roda os 353 testes
 npm run typecheck   # TypeScript estrito, sem emitir (três programas do tsc)
 ```
 
