@@ -224,3 +224,7 @@ api.onState((state) => {
   }
   previousState = state.state;
 });
+
+// Ask for Inter while the pill is still hidden, so the first dictation already shows it (FR-DS-13). If
+// the file does not load, the text stays in the fallback stack of --ts-font-sans (FR-DS-12).
+void document.fonts.load('500 13px Inter').catch(() => undefined);

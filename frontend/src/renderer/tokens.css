@@ -1,0 +1,156 @@
+/*
+ * Design system "Sálvia" — the single source of colour, font and visual measures for every window
+ * (docs/DESIGN.md §3–§5, spec docs/spec/features/design-system.md §9).
+ *
+ * - Light theme in :root, dark theme in the prefers-color-scheme media query: the OS theme decides by
+ *   default (FR-DS-03, FR-DS-04); since 18/out/2026 the person can pick light or dark in the main window,
+ *   through the data-theme blocks at the end (janela-principal FR-UI-39…42). All blocks define the same
+ *   semantic tokens (FR-DS-02).
+ * - Window CSS only uses var(--ts-…); no literal colour outside this file (FR-DS-01).
+ * - src/shared/palette.ts repeats the hex values the main process draws the tray icon with;
+ *   src/test/tokens.test.ts fails if the two files diverge or a contrast pair drops below its threshold.
+ */
+
+/* Inter 4.1, variable (wght 100–900, opsz 14–32), unmodified, SIL OFL 1.1 — fonts/OFL.txt (ADR-12). */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/InterVariable.woff2') format('woff2');
+}
+
+/* ---- Primitives: the Sálvia palette (spec §9.2) ---- */
+:root {
+  --ts-palette-alabaster: #f4f1eb;
+  --ts-palette-candle: #efe9d7;
+  --ts-palette-black-hole: #222222;
+  --ts-palette-slate-green: #2d5a4a;
+  --ts-palette-moss-green: #7aa05a;
+  --ts-palette-apricot: #d78b30;
+}
+
+/* ---- Base for every window, not colour (spec §9.5) ---- */
+:root {
+  --ts-font-sans: 'Inter', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --ts-font-size-xs: 12px;
+  --ts-font-size-sm: 13px;
+  --ts-font-size-md: 15px;
+  --ts-font-size-lg: 18px;
+  --ts-font-size-xl: 24px;
+  --ts-font-weight-regular: 400;
+  --ts-font-weight-medium: 500;
+  --ts-font-weight-semibold: 600;
+  --ts-space-1: 4px;
+  --ts-space-2: 8px;
+  --ts-space-3: 12px;
+  --ts-space-4: 16px;
+  --ts-space-5: 24px;
+  --ts-space-6: 32px;
+  --ts-radius-sm: 6px;
+  --ts-radius-md: 10px;
+  --ts-radius-pill: 20px;
+  --ts-shadow-float: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --ts-duration-enter: 120ms;
+  --ts-duration-exit: 160ms;
+  /* Pill only: the "transcribing" pulse, unchanged (docs/DESIGN.md §5). */
+  --ts-duration-pulse: 900ms;
+  --ts-duration-pulse-stagger: 150ms;
+  /* Focus ring: 2 px solid in --ts-focus, 2 px away from the control. */
+  --ts-focus-ring: 2px solid var(--ts-focus);
+  --ts-focus-ring-offset: 2px;
+}
+
+/* ---- Semantic tokens, light theme (spec §9.3). P = palette, D = derived, approved 18/out/2026 ---- */
+:root {
+  --ts-bg: var(--ts-palette-alabaster);
+  --ts-surface: var(--ts-palette-candle);
+  --ts-text: var(--ts-palette-black-hole);
+  --ts-text-muted: #61605e; /* D: Black Hole + 30% Alabaster */
+  --ts-accent: var(--ts-palette-slate-green);
+  --ts-accent-fill: var(--ts-palette-slate-green);
+  --ts-on-accent: var(--ts-palette-alabaster);
+  --ts-secondary-fill: var(--ts-palette-moss-green);
+  --ts-on-secondary: var(--ts-palette-black-hole);
+  --ts-border: #dbd8d3; /* D: Alabaster + 12% Black Hole; decorative, no threshold */
+  --ts-border-strong: #817f7c; /* D: field and control edge */
+  --ts-focus: var(--ts-palette-slate-green);
+  --ts-recording: #bb7624; /* D: darker Apricot, same hue; graphics only, never text */
+  --ts-working: #61605e; /* D: = muted */
+  --ts-notice: #567140; /* D: darker Moss Green, same hue */
+  --ts-error: #a84a3a; /* D: terracotta */
+  --ts-pill-surface: var(--ts-bg); /* opaque (D3) */
+  --ts-pill-border: var(--ts-border);
+}
+
+/* ---- Semantic tokens, dark theme ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ts-bg: var(--ts-palette-black-hole);
+    --ts-surface: #2d2c2c; /* D: Black Hole + 5% Alabaster */
+    --ts-text: var(--ts-palette-alabaster);
+    --ts-text-muted: #aba9a5; /* D: Alabaster + 35% Black Hole */
+    --ts-accent: var(--ts-palette-moss-green);
+    --ts-accent-fill: var(--ts-palette-moss-green);
+    --ts-on-accent: var(--ts-palette-black-hole);
+    --ts-secondary-fill: var(--ts-palette-slate-green);
+    --ts-on-secondary: var(--ts-palette-alabaster);
+    --ts-border: #424140; /* D: Black Hole + 15% Alabaster; decorative, no threshold */
+    --ts-border-strong: #817f7c; /* D */
+    --ts-focus: var(--ts-palette-moss-green);
+    --ts-recording: var(--ts-palette-apricot);
+    --ts-working: var(--ts-palette-candle);
+    --ts-notice: var(--ts-palette-moss-green);
+    --ts-error: #e08a7a; /* D: light terracotta */
+    --ts-pill-surface: var(--ts-bg); /* opaque (D3) */
+    --ts-pill-border: var(--ts-border);
+  }
+}
+
+/* ---- Manual theme (spec janela-principal FR-UI-39…42; Victor, 18/out/2026, revising D4) ----
+ * The main window sets data-theme on <html> synchronously when the person picks a theme: these selectors are
+ * more specific than the :root above and inside the media query, so they win in either OS mode, at once —
+ * the View Transition snapshot already has the new theme. Without data-theme ("Seguir o sistema"), the media
+ * query decides, and main's nativeTheme.themeSource makes it follow the choice in every window, the pill
+ * included. Same values as the two blocks above; tokens.test.ts fails if they drift. */
+:root[data-theme='light'] {
+  --ts-bg: var(--ts-palette-alabaster);
+  --ts-surface: var(--ts-palette-candle);
+  --ts-text: var(--ts-palette-black-hole);
+  --ts-text-muted: #61605e;
+  --ts-accent: var(--ts-palette-slate-green);
+  --ts-accent-fill: var(--ts-palette-slate-green);
+  --ts-on-accent: var(--ts-palette-alabaster);
+  --ts-secondary-fill: var(--ts-palette-moss-green);
+  --ts-on-secondary: var(--ts-palette-black-hole);
+  --ts-border: #dbd8d3;
+  --ts-border-strong: #817f7c;
+  --ts-focus: var(--ts-palette-slate-green);
+  --ts-recording: #bb7624;
+  --ts-working: #61605e;
+  --ts-notice: #567140;
+  --ts-error: #a84a3a;
+  --ts-pill-surface: var(--ts-bg);
+  --ts-pill-border: var(--ts-border);
+}
+
+:root[data-theme='dark'] {
+  --ts-bg: var(--ts-palette-black-hole);
+  --ts-surface: #2d2c2c;
+  --ts-text: var(--ts-palette-alabaster);
+  --ts-text-muted: #aba9a5;
+  --ts-accent: var(--ts-palette-moss-green);
+  --ts-accent-fill: var(--ts-palette-moss-green);
+  --ts-on-accent: var(--ts-palette-black-hole);
+  --ts-secondary-fill: var(--ts-palette-slate-green);
+  --ts-on-secondary: var(--ts-palette-alabaster);
+  --ts-border: #424140;
+  --ts-border-strong: #817f7c;
+  --ts-focus: var(--ts-palette-moss-green);
+  --ts-recording: var(--ts-palette-apricot);
+  --ts-working: var(--ts-palette-candle);
+  --ts-notice: var(--ts-palette-moss-green);
+  --ts-error: #e08a7a;
+  --ts-pill-surface: var(--ts-bg);
+  --ts-pill-border: var(--ts-border);
+}

@@ -1,14 +1,5 @@
-/* Tokens: docs/DESIGN.md §3 */
-:root {
-  --ts-surface: rgba(18, 18, 22, 0.92);
-  --ts-border: rgba(255, 255, 255, 0.14);
-  --ts-text: #f4f4f5;
-  --ts-text-muted: #a1a1aa;
-  --ts-listening: #13a89e;
-  --ts-working: #d4d4d8;
-  --ts-error: #f87171;
-  --ts-notice: #fbbf24;
-}
+/* The pill. Every colour, font, radius, shadow and duration comes from tokens.css (docs/DESIGN.md §3–§6);
+   no literal colour here (FR-DS-01). The pill follows the OS theme and its surface is opaque (D2, D3). */
 
 html,
 body {
@@ -17,7 +8,7 @@ body {
   background: transparent;
   overflow: hidden;
   user-select: none;
-  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--ts-font-sans);
 }
 
 body {
@@ -35,25 +26,25 @@ body {
   max-width: 360px;
   padding: 0 14px;
   box-sizing: border-box;
-  border-radius: 20px;
-  background: var(--ts-surface);
-  border: 1px solid var(--ts-border);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  border-radius: var(--ts-radius-pill);
+  background: var(--ts-pill-surface);
+  border: 1px solid var(--ts-pill-border);
+  box-shadow: var(--ts-shadow-float);
   color: var(--ts-text);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: var(--ts-font-size-sm);
+  font-weight: var(--ts-font-weight-medium);
   white-space: nowrap;
   opacity: 1;
   transform: scale(1);
   transition:
-    opacity 120ms ease-out,
-    transform 120ms ease-out;
+    opacity var(--ts-duration-enter) ease-out,
+    transform var(--ts-duration-enter) ease-out;
 }
 
 .pill[data-state='hidden'] {
   opacity: 0;
   transform: scale(0.96);
-  transition: opacity 160ms ease-in;
+  transition: opacity var(--ts-duration-exit) ease-in;
 }
 
 .label {
@@ -63,8 +54,8 @@ body {
 
 .hint {
   color: var(--ts-text-muted);
-  font-size: 12px;
-  font-weight: 400;
+  font-size: var(--ts-font-size-xs);
+  font-weight: var(--ts-font-weight-regular);
 }
 
 .hint:empty {
@@ -73,7 +64,7 @@ body {
 
 .timer {
   color: var(--ts-text-muted);
-  font-size: 12px;
+  font-size: var(--ts-font-size-xs);
   font-variant-numeric: tabular-nums;
 }
 
@@ -100,7 +91,7 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--ts-listening);
+  background: var(--ts-recording);
 }
 
 .bars {
@@ -113,7 +104,7 @@ body {
   width: 3px;
   height: 4px;
   border-radius: 2px;
-  background: var(--ts-listening);
+  background: var(--ts-recording);
 }
 
 .working {
@@ -126,15 +117,15 @@ body {
   height: 6px;
   border-radius: 50%;
   background: var(--ts-working);
-  animation: pulse 900ms infinite ease-in-out;
+  animation: pulse var(--ts-duration-pulse) infinite ease-in-out;
 }
 
 .working span:nth-child(2) {
-  animation-delay: 150ms;
+  animation-delay: var(--ts-duration-pulse-stagger);
 }
 
 .working span:nth-child(3) {
-  animation-delay: 300ms;
+  animation-delay: calc(2 * var(--ts-duration-pulse-stagger));
 }
 
 @keyframes pulse {
