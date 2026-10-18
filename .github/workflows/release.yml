@@ -32,13 +32,15 @@ jobs:
           - label: Windows x64
             os: windows-latest
             script: dist:win
-            artifacts: frontend/release/*.exe
+            # Exact, version-less names (FR-PKG-16): the README links straight to releases/latest/download/<name>,
+            # so a renamed artifact must fail here (if-no-files-found: error), not break the download link.
+            artifacts: frontend/release/Touch-Speaker-Setup-win-x64.exe
           - label: macOS arm64
             os: macos-14
             script: dist:mac
             artifacts: |
-              frontend/release/*.dmg
-              frontend/release/*.zip
+              frontend/release/Touch-Speaker-mac-arm64.dmg
+              frontend/release/Touch-Speaker-mac-arm64.zip
     runs-on: ${{ matrix.os }}
     defaults:
       run:

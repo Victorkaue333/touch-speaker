@@ -22,18 +22,20 @@ Contexto de negócio (o "porquê"): [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) �
 
 ## ⬇️ Download
 
-Para usar o Touch Speaker você **não precisa de terminal, Node nem do código**: baixe o instalador da última versão em **[Releases → última versão](https://github.com/Victorkaue333/touch-speaker/releases/latest)**. Cada pessoa usa a **própria chave da Groq** (gratuita), colada no app.
+Para usar o Touch Speaker você **não precisa de terminal, Node nem do código**: baixe o instalador com um clique nos links abaixo. Cada pessoa usa a **própria chave da Groq** (gratuita), colada no app.
 
-| Sistema | Arquivo para baixar | Requisitos |
+| Sistema | Download direto (última versão) | Requisitos |
 | --- | --- | --- |
-| 🪟 **Windows** | `Touch-Speaker-Setup-<versão>-win-x64.exe` | Windows 10 ou 11, 64 bits |
-| 🍎 **macOS** | `Touch-Speaker-<versão>-mac-arm64.dmg` | macOS 13 (Ventura) ou mais novo, em **Mac com Apple Silicon** (M1 ou mais novo). Não abre em Mac Intel |
+| 🪟 **Windows** | **[⬇️ Baixar para Windows (.exe)](https://github.com/Victorkaue333/touch-speaker/releases/latest/download/Touch-Speaker-Setup-win-x64.exe)**<br>`Touch-Speaker-Setup-win-x64.exe` | Windows 10 ou 11, 64 bits |
+| 🍎 **macOS** | **[⬇️ Baixar para macOS — Apple Silicon (.dmg)](https://github.com/Victorkaue333/touch-speaker/releases/latest/download/Touch-Speaker-mac-arm64.dmg)**<br>`Touch-Speaker-mac-arm64.dmg` | macOS 13 (Ventura) ou mais novo, em **Mac com Apple Silicon** (M1 ou mais novo). Não abre em Mac Intel |
+
+Os links diretos passam a funcionar quando o primeiro Release for publicado. Versões anteriores e o `.zip` do Mac: [todas as versões](https://github.com/Victorkaue333/touch-speaker/releases).
 
 Para conferir se o arquivo chegou inteiro (opcional), o Release traz o `SHA256SUMS.txt`: compare com `Get-FileHash <arquivo>` no Windows ou `shasum -a 256 <arquivo>` no Mac.
 
 ### 🪟 Windows
 
-1. Baixe o `.exe` em [Releases](https://github.com/Victorkaue333/touch-speaker/releases/latest) e abra.
+1. Baixe o `.exe` ([download direto](https://github.com/Victorkaue333/touch-speaker/releases/latest/download/Touch-Speaker-Setup-win-x64.exe)) e abra.
 2. O instalador ainda **não é assinado**, então o Windows mostra **"O Windows protegeu o computador"** (SmartScreen). Clique em **Mais informações** → **Executar assim mesmo**.
 3. No assistente, escolha se quer o **atalho na área de trabalho** e se o Touch Speaker **inicia com o Windows**, e clique em **Instalar**. Ele instala só para o seu usuário e não pede senha de administrador.
 4. Na última tela, deixe marcada a opção de abrir o Touch Speaker e conclua. O ícone de microfone aparece na bandeja, perto do relógio (às vezes escondido na setinha `^`).
@@ -44,7 +46,7 @@ Se o aviso não tiver **Executar assim mesmo**, o Controle Inteligente de Aplica
 
 ### 🍎 macOS (Apple Silicon)
 
-1. Baixe o `.dmg`, abra e **arraste o Touch Speaker para a pasta Aplicativos**. Abra sempre de Aplicativos — não de dentro do `.dmg` nem de Downloads, ou as permissões podem não valer.
+1. Baixe o `.dmg` ([download direto](https://github.com/Victorkaue333/touch-speaker/releases/latest/download/Touch-Speaker-mac-arm64.dmg)), abra e **arraste o Touch Speaker para a pasta Aplicativos**. Abra sempre de Aplicativos — não de dentro do `.dmg` nem de Downloads, ou as permissões podem não valer.
 2. **Primeira abertura de cada versão.** O app tem só assinatura ad-hoc (sem a notarização paga da Apple), e o macOS bloqueia a primeira abertura:
    - **macOS 13 ou 14:** em Aplicativos, clique com o **botão direito** (ou Control + clique) no Touch Speaker → **Abrir** → **Abrir**.
    - **macOS 15 ou mais novo:** tente abrir uma vez e feche o aviso; vá em **Ajustes do Sistema → Privacidade e Segurança**, role até a mensagem sobre o Touch Speaker e clique em **Abrir Mesmo Assim**; confirme com a sua senha.

@@ -83,7 +83,9 @@ nsis:
   multiLanguageInstaller: false
   uninstallDisplayName: Touch Speaker
   include: build/installer.nsh
-  artifactName: Touch-Speaker-Setup-${version}-win-x64.${ext}
+  # Fixed name, no version (FR-PKG-16): the README links to releases/latest/download/<name>, which only works
+  # when every Release carries the same file name. The version lives in the tag and the Release title.
+  artifactName: Touch-Speaker-Setup-win-${arch}.${ext}
 
 # ---- macOS 13+ on Apple Silicon only (D4), ad-hoc signature (D2), built on the GitHub runner (D3) ---------
 mac:
@@ -104,7 +106,7 @@ mac:
   extendInfo:
     LSUIElement: true # menu bar only, no Dock icon (FR-MAC-08)
     NSMicrophoneUsageDescription: O Touch Speaker usa o microfone só enquanto você segura a tecla de ditado; o áudio vai para a Groq, com a sua chave, para virar texto.
-  artifactName: Touch-Speaker-${version}-mac-${arch}.${ext}
+  artifactName: Touch-Speaker-mac-${arch}.${ext} # fixed name, no version (FR-PKG-16; see nsis.artifactName)
 
 dmg:
   title: Touch Speaker ${version}

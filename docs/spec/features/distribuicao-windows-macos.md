@@ -332,7 +332,7 @@ as notas no SDD e no PRD.
 | FR-PKG-13 | ENQUANTO o app roda empacotado (`app.isPackaged`) O SISTEMA DEVE ignorar qualquer `.env` e ler a chave só do `safeStorage` (ADR-08) | Security Guide §10 | P1 |
 | FR-PKG-14 | QUANDO o app é empacotado O SISTEMA DEVE gravar os Electron Fuses: `RunAsNode`, `EnableNodeOptionsEnvironmentVariable` e `EnableNodeCliInspectArguments` desligados; `EnableEmbeddedAsarIntegrityValidation` e `OnlyLoadAppFromAsar` ligados | Security Guide §15.1 | P2 |
 | FR-PKG-15 | SE o hook de teclado não inicia (em qualquer sistema) ENTÃO O SISTEMA DEVE mostrar isso na bandeja ou barra de menus — status e item de menu com o que fazer — em vez de continuar "pronto" | C4; §1.4 | P1 |
-| FR-PKG-16 | QUANDO um artefato é publicado O SISTEMA DEVE ter no nome o produto, a versão do `package.json`, o sistema e a arquitetura, e vir com o SHA-256 e as instruções de instalação em pt-BR daquele sistema — no Windows, o aviso do SmartScreen ("Mais informações → Executar assim mesmo", D1); no macOS, a liberação do Gatekeeper na primeira abertura de cada versão (botão direito → Abrir no macOS 13 e 14; Ajustes → Privacidade e Segurança → "Abrir Mesmo Assim" no macOS 15 ou mais novo, D2) e o aviso de que as permissões podem ser pedidas de novo a cada versão; e o que o app envia para fora (só o áudio, para a Groq, com a chave da própria pessoa) | instalação sem terminal; D1, D2; C1 | P1 |
+| FR-PKG-16 | QUANDO um artefato é publicado O SISTEMA DEVE ter no nome o produto, o sistema e a arquitetura, com o mesmo nome em toda versão (`Touch-Speaker-Setup-win-x64.exe`, `Touch-Speaker-mac-arm64.dmg`, `Touch-Speaker-mac-arm64.zip`; a versão fica na tag e no título do Release, para o link direto `releases/latest/download/<nome>` do README valer sempre), e vir com o SHA-256 e as instruções de instalação em pt-BR daquele sistema — no Windows, o aviso do SmartScreen ("Mais informações → Executar assim mesmo", D1); no macOS, a liberação do Gatekeeper na primeira abertura de cada versão (botão direito → Abrir no macOS 13 e 14; Ajustes → Privacidade e Segurança → "Abrir Mesmo Assim" no macOS 15 ou mais novo, D2) e o aviso de que as permissões podem ser pedidas de novo a cada versão; e o que o app envia para fora (só o áudio, para a Groq, com a chave da própria pessoa) | instalação sem terminal; D1, D2; C1; Victor 18/out (nome fixo, para o link direto) | P1 |
 | FR-PKG-17 | ONDE houver certificado de assinatura do Windows O SISTEMA DEVE assinar o instalador e os executáveis com carimbo de tempo, com a mesma identidade em todas as versões. **Hoje não se aplica:** D1 (18/out/2026) = sem assinatura | Security Guide §15.1; D1 | P3 (futuro) |
 | FR-PKG-18 | QUANDO o app do macOS é empacotado O SISTEMA DEVE assiná-lo com assinatura ad-hoc (D2) e, ONDE um dia houver Developer ID, assinar com *hardened runtime*, notarizar e grampear o tíquete no `.dmg` (opção futura) | Apple Silicon só executa código assinado; D2 | P1 (ad-hoc) |
 
@@ -898,7 +898,7 @@ flowchart TD
     N -- sim --> V
     V{Verificacao do pacote acha proibido FR-PKG-09 FR-PKG-10}
     V -- sim --> V1[/Build falha e nada e publicado/]
-    V -- nao --> Y[/Release do GitHub: nome com versao, sistema e arquitetura, SHA-256 e instrucoes FR-PKG-16/]
+    V -- nao --> Y[/Release do GitHub: nome fixo com sistema e arquitetura, SHA-256 e instrucoes FR-PKG-16/]
 ```
 
 Conferência FR × ramo: FR-PKG-01…18 e FR-MAC-01…16 aparecem nos três fluxogramas; não há ramo sem FR (os
@@ -957,7 +957,7 @@ ramos herdados da Fase 1 — elevação, BR-009 — têm os FR-DICT dela).
 
 | # | Critério | Verifica |
 | --- | --- | --- |
-| 1 | DADO um clone limpo no Windows QUANDO o Victor roda `npm ci` e o comando de empacotamento do Windows ENTÃO sai `Touch-Speaker-Setup-<versão>-x64.exe` (ou nome equivalente com versão, sistema e arquitetura) em `frontend/release/`, sem bundler | FR-PKG-01, FR-PKG-16 |
+| 1 | DADO um clone limpo no Windows QUANDO o Victor roda `npm ci` e o comando de empacotamento do Windows ENTÃO sai `Touch-Speaker-Setup-win-x64.exe` (nome fixo, sem versão, com sistema e arquitetura — FR-PKG-16) em `frontend/release/`, sem bundler | FR-PKG-01, FR-PKG-16 |
 | 2 | DADO um usuário Windows sem privilégio de administrador QUANDO executa o instalador ENTÃO instala sem pedido de UAC | FR-PKG-02 |
 | 3 | DADO o assistente com "atalho na área de trabalho" marcado QUANDO a instalação termina ENTÃO há atalho no Menu Iniciar e na área de trabalho; com a opção desmarcada, só no Menu Iniciar | FR-PKG-03 |
 | 4 | DADO "Iniciar com o Windows" marcado QUANDO o usuário sai e entra de novo no Windows ENTÃO o Touch Speaker abre na bandeja, e `app.getLoginItemSettings().openAtLogin` é `true`; desmarcado, não abre | FR-PKG-04 |
@@ -1317,7 +1317,7 @@ gera o app que o spike do Mac executa):
    já tiver entrado — *não entrou: a ADR-09 usa o `node:sqlite`, nada a carregar além das migrations*).
    (FR-PKG-01, 02, 03, 04, 05, 06, 11)
 2. **T2 — Higiene do pacote.** Verificador (`scripts/verify-package.mjs`) com a função pura testada;
-   `.env` ignorado no empacotado; Fuses; campos novos do `app_ready`; nomes de artefato com versão, sistema e
+   `.env` ignorado no empacotado; Fuses; campos novos do `app_ready`; nomes de artefato fixos (sem versão, desde 18/out), com sistema e
    arquitetura; SHA-256. (FR-PKG-09, 10, 12, 13, 14, 16)
 3. **T3 — Fronteira de plataforma.** `platform.ts`, `PasteDriver` no `TextInserter` (o `win32.ts` vira
    `Win32PasteDriver` sem mudar lógica), `PermissionsPort`, `stringsFor(platform)`, `defaultConfig(platform)`

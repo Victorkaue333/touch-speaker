@@ -53,8 +53,8 @@ Spec [`distribuicao-windows-macos`](spec/features/distribuicao-windows-macos.md)
 
 | Comando (em `frontend/`) | O que faz |
 | --- | --- |
-| `npm run dist:win` | Apaga `dist/` e `release/`, compila e gera `release/Touch-Speaker-Setup-<versão>-win-x64.exe` (NSIS, x64). Só no Windows. Primeiro build de 18/out/2026: 107,2 MB |
-| `npm run dist:mac` | O mesmo para o macOS: `release/Touch-Speaker-<versão>-mac-arm64.dmg` e `.zip`, com assinatura ad-hoc. **Só roda num Mac** (o binário `koffi` do macOS só se instala lá; `codesign` e o `.dmg` são do macOS) — na prática, no GitHub Actions |
+| `npm run dist:win` | Apaga `dist/` e `release/`, compila e gera `release/Touch-Speaker-Setup-win-x64.exe` (NSIS, x64; nome fixo, sem versão — FR-PKG-16). Só no Windows. Primeiro build de 18/out/2026: 107,2 MB |
+| `npm run dist:mac` | O mesmo para o macOS: `release/Touch-Speaker-mac-arm64.dmg` e `Touch-Speaker-mac-arm64.zip` (nome fixo), com assinatura ad-hoc. **Só roda num Mac** (o binário `koffi` do macOS só se instala lá; `codesign` e o `.dmg` são do macOS) — na prática, no GitHub Actions |
 | `npm run verify:package` | Confere de novo cada `app.asar` em `release/` (o `dist:*` já confere no `afterPack`, antes de escrever o instalador) |
 | `node scripts/make-icons.mjs` | Redesenha `build/icon.png` e `build/icon.ico` a partir da geometria do logo (provisório até a arte final da spec `design-system`) |
 
