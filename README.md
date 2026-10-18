@@ -360,23 +360,6 @@ Todos de dentro de `frontend/`.
 
 ---
 
-## 🩺 Problemas comuns
-
-| Sintoma                                    | Causa e solução                                                                                                   |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| O app abre e fecha na hora, sem erro       | Variável `ELECTRON_RUN_AS_NODE` herdada do VS Code. Abra sempre por `npm run dev`/`npm start`, que a removem |
-| Pílula "Falta a chave da Groq — abra o Touch Speaker pela bandeja" | Nenhuma chave salva no app (nem `.env` de desenvolvimento) — abra a janela pela bandeja e salve a chave em Configurações ([Como obter sua chave da Groq](#-como-obter-sua-chave-da-groq-gratuita) e passo 4️⃣) |
-| Início ou Configurações: "A chave salva não pôde ser lida — salve de novo" | O arquivo cifrado não abre mais (troca de máquina ou de usuário do Windows, pasta de dados apagada) — salve a chave de novo em Configurações |
-| Pílula "Chave da Groq inválida"           | Chave incompleta, errada ou revogada — crie outra em [API Keys](https://console.groq.com/keys) e salve a nova em Configurações (ou troque no `.env` e reabra o app, em desenvolvimento) |
-| Pílula "Limite gratuito da Groq atingido — tente em instantes" | Passou de um [limite do plano gratuito](#limites-do-plano-gratuito) — espere um pouco e dite de novo |
-| Pílula "Texto copiado — cole com Ctrl+V" | O app em foco roda como administrador e o Windows bloqueia colagem simulada; o texto ficou no clipboard             |
-| Dois apps reagem ao atalho                 | Feche o Typeless ou outro app de ditado com atalho parecido                                                         |
-| Nada acontece ao segurar a tecla           | O Início da janela diz "A tecla de ditado não está funcionando — reinicie o app" quando o hook não carregou; no `%APPDATA%\Touch Speaker\logs\main.log`, `keyboard_hook` deve estar `true` no `app_ready` |
-
-O log guarda só tempos, tamanhos e códigos de erro — nunca o que você ditou. Mais casos e o formato do log em [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md#problemas-comuns).
-
----
-
 ## 📖 Documentação
 
 | Documento                                                                            | Conteúdo                                                |
